@@ -246,7 +246,6 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 		}
 		if (!_bNoIcons)
 		{
-			_global.skse.Log("reading category info for " + entry.text);
 			switch (entry.flag)
 			{
 				case Defines.FLAG_ITEM_FAVORITES :
