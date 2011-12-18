@@ -51,7 +51,7 @@ class MagicMenu extends ItemMenu
 			if (Shared.GlobalFunc.IsKeyPressed(details))
 			{
 				// Change navigation to LEFT since menu is on left now
-				if (InventoryLists_mc.currentState == InventoryLists.ONE_PANEL && details.navEquivalent == NavigationCode.LEFT)
+				if (InventoryLists_mc.currentState != InventoryLists.SHOW_PANEL && details.navEquivalent == NavigationCode.LEFT)
 				{
 					StartMenuFade();
 					GameDelegate.call("ShowTweenMenu", []);

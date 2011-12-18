@@ -170,9 +170,9 @@ class skyui.HorizontalList extends skyui.FilteredCategoryList
 	{
 		if (_selectedIndex == -1)
 		{
-					// force containers to start at entry 0
+			// force containers to start at entry 0
 			_global.skse.Log("Current category selected index = " + _selectedIndex);
-			restoreSelectedEntry(0);
+			restoreSelectedEntry(_filteredList[0].unfilteredIndex);
 			_global.skse.Log("category selected index now = " + _selectedIndex);
 		}
 		if (_selectorPos < _targetSelectorPos)

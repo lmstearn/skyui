@@ -411,12 +411,12 @@ _global.skse.Log("ItemMenu RestoreIndices() argument[0] = " + arguments[0]);
 		// TODO: Gets called when the menu closes, so I put that icon reset here. Still would be nice to find something more appropriate.
 
 		// Restore to defaults for enchanting etc
-		skse.SetINISetting("fInventory3DItemPosScaleWide:Interface",1.5000);
+		/*skse.SetINISetting("fInventory3DItemPosScaleWide:Interface",1.5000);
 		skse.SetINISetting("fInventory3DItemPosXWide:Interface",-22.0000);
 		skse.SetINISetting("fInventory3DItemPosZWide:Interface",12.0000);
 
 		skse.SetINISetting("fInventory3DItemPosScale:Interface",1.8700);
 		skse.SetINISetting("fInventory3DItemPosX:Interface",-29.0000);
-		skse.SetINISetting("fInventory3DItemPosZ:Interface",16.0000);
+		skse.SetINISetting("fInventory3DItemPosZ:Interface",16.0000);*/
 	}
 }
