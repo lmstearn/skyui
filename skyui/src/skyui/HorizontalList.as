@@ -168,6 +168,13 @@ class skyui.HorizontalList extends skyui.FilteredCategoryList
 
 	function onEnterFrame()
 	{
+		if (_selectedIndex == -1)
+		{
+					// force containers to start at entry 0
+			_global.skse.Log("Current category selected index = " + _selectedIndex);
+			restoreSelectedEntry(0);
+			_global.skse.Log("category selected index now = " + _selectedIndex);
+		}
 		if (_selectorPos < _targetSelectorPos)
 		{
 			_selectorPos = _selectorPos + (_targetSelectorPos - _selectorPos) * 0.2 + 1;

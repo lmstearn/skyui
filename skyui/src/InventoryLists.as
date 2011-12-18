@@ -80,6 +80,7 @@ class InventoryLists extends MovieClip
 
 	function onLoad()
 	{
+	_global.skse.Log("InventoryLists onLoad()");
 		_ItemsList.addFilter(_typeFilter);
 		_ItemsList.addFilter(_nameFilter);
 		_ItemsList.addFilter(_sortFilter);
@@ -117,6 +118,7 @@ class InventoryLists extends MovieClip
 
 	function SetPlatform(a_platform:Number, a_bPS3Switch:Boolean)
 	{
+	_global.skse.Log("InventoryLists SetPlatform()");
 		_platform = a_platform;
 
 		_CategoriesList.setPlatform(a_platform,a_bPS3Switch);
@@ -125,6 +127,7 @@ class InventoryLists extends MovieClip
 
 	function handleInput(details, pathToFocus)
 	{
+                _global.skse.Log("InventoryLists handleInput()");
 		var bCaught = false;
 
 		if (_currentState == SHOW_PANEL)
@@ -136,17 +139,20 @@ class InventoryLists extends MovieClip
 					//if (_CategoriesList.selectedIndex == 0 && _CategoriesList.selectedEntry.flag != 1047552 && _CategoriesList.selectedEntry.flag != 10)
 					if (_CategoriesList.selectedIndex > 0)
 					{
+                                                _global.skse.Log("InventoryLists handleInput() navigation LWDR");
 						_CategoriesList.moveSelectionLeft();
 						bCaught = true;
 					}
 					else
 					{
+                                                _global.skse.Log("InventoryLists handleInput() exitMenuRect");
 						_parent.onExitMenuRectClick();
 					}
 
 				}
 				else if (details.navEquivalent == NavigationCode.RIGHT)
 				{
+                                       _global.skse.Log("InventoryLists handleInput() navigation RIGHT");
 					_CategoriesList.moveSelectionRight();
 					bCaught = true;
 
@@ -154,6 +160,7 @@ class InventoryLists extends MovieClip
 				}
 				else if (details.code == _searchKey)
 				{
+                                        _global.skse.Log("InventoryLists handleInput() details.code = " + details.code + " , searchKey = " + _searchKey);
 					bCaught = true;
 					_SearchWidget.startInput();
 				}
@@ -161,6 +168,7 @@ class InventoryLists extends MovieClip
 			if (!bCaught)
 			{
 				bCaught = pathToFocus[0].handleInput(details, pathToFocus.slice(1));
+                                _global.skse.Log("InventoryLists handleInput() bCaught = " + bCaught);
 			}
 		}
 		return bCaught;
@@ -189,6 +197,7 @@ class InventoryLists extends MovieClip
 
 	function set currentState(a_newState)
 	{
+	_global.skse.Log("InventoryLists currentState(aiNewState) set currentState to " + a_newState);
 		if (a_newState == SHOW_PANEL)
 		{
 			FocusHandler.instance.setFocus(_ItemsList,0);
@@ -199,11 +208,13 @@ class InventoryLists extends MovieClip
 
 	function RestoreCategoryIndex()
 	{
+	_global.skse.Log("InventoryLists RestoreCategoryIndex()");
 		_CategoriesList.selectedIndex = _currCategoryIndex;
 	}
 
 	function ShowCategoriesList(a_bPlayBladeSound:Boolean)
 	{
+_global.skse.Log("InventoryLists ShowCategoriesList()");
 		_currentState = TRANSITIONING_TO_SHOW_PANEL;
 		gotoAndPlay("PanelShow");
 
@@ -217,6 +228,7 @@ class InventoryLists extends MovieClip
 
 	function HideCategoriesList()
 	{
+_global.skse.Log("InventoryLists HideCategoriesList()");
 		_currentState = TRANSITIONING_TO_HIDE_PANEL;
 		gotoAndPlay("PanelHide");
 		GameDelegate.call("PlaySound",["UIMenuBladeCloseSD"]);
@@ -237,6 +249,7 @@ class InventoryLists extends MovieClip
 	*/
 	function showItemsList()
 	{
+	_global.skse.Log("InventoryLists ShowItemsList()");
 		_currCategoryIndex = _CategoriesList.selectedIndex;
 
 		_CategoryLabel.textField.SetText(_CategoriesList.selectedEntry.text);
@@ -275,6 +288,7 @@ class InventoryLists extends MovieClip
 	// Not needed anymore, items list always visible
 	function hideItemsList()
 	{
+               _global.skse.Log("InventoryLists HideItemsList()");
 		//_currentState = TRANSITIONING_TO_ONE_PANEL;
 		//dispatchEvent({type:"hideItemsList", index:_ItemsList.selectedIndex});
 		//_ItemsList.selectedIndex = -1;
@@ -285,25 +299,30 @@ class InventoryLists extends MovieClip
 
 	function onCategoriesItemPress()
 	{
+                	_global.skse.Log("InventoryLists onCategoriesItemPress()");
 		showItemsList();
 	}
 
 	function onCategoriesListPress()
 	{
+          _global.skse.Log("InventoryLists onCategoriesListPress()");
 	}
 
 	function onCategoriesListMoveUp(event)
 	{
+		_global.skse.Log("InventoryLists onCategoriesListMoveUp()");
 		doCategorySelectionChange(event);
 	}
 
 	function onCategoriesListMoveDown(event)
 	{
+		_global.skse.Log("InventoryLists onCategoriesListMoveDown()");
 		doCategorySelectionChange(event);
 	}
 
 	function onCategoriesListMouseSelectionChange(event)
 	{
+		_global.skse.Log("InventoryLists onCategoriesListMouseSelectionChange()");
 		if (event.keyboardOrMouse == 0)
 		{
 			doCategorySelectionChange(event);
@@ -312,16 +331,19 @@ class InventoryLists extends MovieClip
 
 	function onItemsListMoveUp(event)
 	{
+		_global.skse.Log("InventoryLists onItemsListMoveUp()");
 		this.doItemsSelectionChange(event);
 	}
 
 	function onItemsListMoveDown(event)
 	{
+		_global.skse.Log("InventoryLists onItemsListMoveDown()");
 		this.doItemsSelectionChange(event);
 	}
 
 	function onItemsListMouseSelectionChange(event)
 	{
+		_global.skse.Log("InventoryLists onItemsListMouseSelectionChange()");
 		if (event.keyboardOrMouse == 0)
 		{
 			doItemsSelectionChange(event);
@@ -330,6 +352,7 @@ class InventoryLists extends MovieClip
 
 	function doCategorySelectionChange(event)
 	{
+		_global.skse.Log("InventoryLists doCategorySelectionChange()");
 		dispatchEvent({type:"categoryChange", index:event.index});
 
 		if (event.index != -1)
@@ -340,6 +363,7 @@ class InventoryLists extends MovieClip
 
 	function doItemsSelectionChange(event)
 	{
+		_global.skse.Log("InventoryLists onItemsSelectionChange()");
 		_CategoriesList.selectedEntry.savedItemIndex = _ItemsList.scrollPosition;
 
 		if (_bFirstSelectionFlag)
@@ -389,6 +413,7 @@ class InventoryLists extends MovieClip
 	// API - Called to initially set the category list
 	function SetCategoriesList()
 	{
+		_global.skse.Log("InventoryLists SetCategoriesList()");
 		var textOffset = 0;
 		var flagOffset = 1;
 		var bDontHideOffset = 2;
@@ -413,6 +438,7 @@ class InventoryLists extends MovieClip
 	// API - Called whenever the underlying entryList data is updated (using an item, equipping etc.)
 	function InvalidateListData()
 	{
+                _global.skse.Log("InventoryLists InvalidateListData()");
 		var flag = _CategoriesList.selectedEntry.flag;
 
 		for (var i = 0; i < _CategoriesList.entryList.length; i++)
@@ -449,13 +475,13 @@ class InventoryLists extends MovieClip
 			_typeFilter.itemFilter = _CategoriesList.selectedEntry.flag;
 			dispatchEvent({type:"categoryChange", index:_CategoriesList.selectedIndex});
 		}
-		// Probably not necessary anymore  
 
-		//if (_currentState != TWO_PANELS && _currentState != TRANSITIONING_TO_TWO_PANELS) {
-		//_ItemsList.selectedIndex = -1;
-		//} else {
-		//dispatchEvent({type:"itemHighlightChange", index:_ItemsList.selectedIndex});
-		//dispatchEvent({type: "showItemsList", index:_ItemsList.selectedIndex});
-		//}
+                // This is called when an ItemCard list closes(ex. ShowSoulGemList) to refresh ItemCard data
+		if (_currentState != SHOW_PANEL) {
+		_ItemsList.selectedIndex = -1;
+		} else {
+		dispatchEvent({type:"itemHighlightChange", index:_ItemsList.selectedIndex});
+		dispatchEvent({type: "showItemsList", index:_ItemsList.selectedIndex});
+		}
 	}
 }

@@ -33,7 +33,7 @@ class InventoryMenu extends ItemMenu
 	function InitExtensions()
 	{
 		super.InitExtensions();
-
+		_global.skse.Log("InventoryMenu InitExtensions()");
 		GlobalFunc.AddReverseFunctions();
 		InventoryLists_mc.ZoomButtonHolderInstance.gotoAndStop(1);
 		BottomBar_mc.SetButtonArt(ChargeButtonArt,3);
@@ -47,6 +47,7 @@ class InventoryMenu extends ItemMenu
 
 	function handleInput(details, pathToFocus)
 	{
+		_global.skse.Log("InventoryMenu handleInput()");
 		if (bFadedIn && !pathToFocus[0].handleInput(details, pathToFocus.slice(1)))
 		{
 			if (GlobalFunc.IsKeyPressed(details))
@@ -66,12 +67,14 @@ class InventoryMenu extends ItemMenu
 
 	function onExitMenuRectClick()
 	{
+		_global.skse.Log("InventoryMenu onExitMenuRectClick()");
 		StartMenuFade();
 		GameDelegate.call("ShowTweenMenu",[]);
 	}
 
 	function StartMenuFade()
 	{
+		_global.skse.Log("InventoryMenu StartMenuFade()");
 		InventoryLists_mc.HideCategoriesList();
 		ToggleMenuFade();
 		SaveIndices();
@@ -80,6 +83,7 @@ class InventoryMenu extends ItemMenu
 
 	function onFadeCompletion()
 	{
+		_global.skse.Log("InventoryMenu onFadeCompletion()");
 		if (bMenuClosing)
 		{
 			GameDelegate.call("CloseMenu",[]);
@@ -89,6 +93,7 @@ class InventoryMenu extends ItemMenu
 	function onShowItemsList(event)
 	{
 		super.onShowItemsList(event);
+		_global.skse.Log("InventoryMenu onShowItemsList()");
 		if (event.index != -1)
 		{
 			UpdateBottomBarButtons();
@@ -98,6 +103,7 @@ class InventoryMenu extends ItemMenu
 	function onItemHighlightChange(event)
 	{
 		super.onItemHighlightChange(event);
+		_global.skse.Log("InventoryMenu onItemHighlightChance()");
 		if (event.index != -1)
 		{
 			UpdateBottomBarButtons();
@@ -106,6 +112,7 @@ class InventoryMenu extends ItemMenu
 
 	function UpdateBottomBarButtons()
 	{
+		_global.skse.Log("InventoryMenu UpdateBottomBarButtons()");
 		BottomBar_mc.SetButtonArt(AltButtonArt,0);
 		switch (ItemCard_mc.itemInfo.type)
 		{
@@ -160,12 +167,14 @@ class InventoryMenu extends ItemMenu
 
 					function onHideItemsList(event)
 					{
+		_global.skse.Log("InventoryMenu onHideItemsList()");
 						super.onHideItemsList(event);
 						BottomBar_mc.UpdatePerItemInfo({type:InventoryDefines.ICT_NONE});
 					}
 
 					function onItemSelect(event)
 					{
+		_global.skse.Log("InventoryMenu onItemSelect()");
 						if (event.entry.enabled && event.keyboardOrMouse != 0)
 						{
 							GameDelegate.call("ItemSelect",[]);
@@ -174,9 +183,11 @@ class InventoryMenu extends ItemMenu
 
 					function AttemptEquip(aiSlot, abCheckOverList)
 					{
+		_global.skse.Log("InventoryMenu AttemptEquip()");
 						var _loc2 = abCheckOverList != undefined ? (abCheckOverList) : (true);
 						if (ShouldProcessItemsListInput(_loc2) && ConfirmSelectedEntry())
 						{
+							_global.skse.Log("InventoryMenu AttemptEquip() ItemSelect");
 							GameDelegate.call("ItemSelect",[aiSlot]);
 						}
 					}
@@ -211,29 +222,35 @@ class InventoryMenu extends ItemMenu
 
 					function AttemptChargeItem()
 					{
-						if (ShouldProcessItemsListInput(false) && ItemCard_mc.itemInfo.charge != undefined && ItemCard_mc.itemInfo.charge < 100)
+		_global.skse.Log("InventoryMenu AttemptChargeItem()");
+		if (ShouldProcessItemsListInput(false) && ItemCard_mc.itemInfo.charge != undefined && ItemCard_mc.itemInfo.charge < 100)
 						{
+			_global.skse.Log("InventoryMenu AttemtChargeItem() GameDelegate.call ShowSoulGemList");
 							GameDelegate.call("ShowSoulGemList",[]);
 						}
 					}
 
 					function onQuantityMenuSelect(event)
 					{
+		_global.skse.Log("InventoryMenu onQuantityMenuSelect()");
 						GameDelegate.call("ItemDrop",[event.amount]);
 					}
 
 					function onMouseRotationFastClick(aiMouseButton)
 					{
+		_global.skse.Log("InventoryMenu onMouseRotationFastClick()");
 						GameDelegate.call("CheckForMouseEquip",[aiMouseButton],this,"AttemptEquip");
 					}
 
 					function onItemCardListPress(event)
 					{
+		_global.skse.Log("InventoryMenu onItemCardListPress()");
 						GameDelegate.call("ItemCardListCallback",[event.index]);
 					}
 
 					function onItemCardSubMenuAction(event)
 					{
+		_global.skse.Log("InventoryMenu onItemCardSubMenuAction()");
 						super.onItemCardSubMenuAction(event);
 						GameDelegate.call("QuantitySliderOpen",[event.opening]);
 						if (event.menu == "list")
@@ -256,6 +273,7 @@ class InventoryMenu extends ItemMenu
 
 					function SetPlatform(aiPlatform, abPS3Switch)
 					{
+		_global.skse.Log("InventoryMenu SetPlatform()");
 						InventoryLists_mc.ZoomButtonHolderInstance.gotoAndStop(1);
 						InventoryLists_mc.ZoomButtonHolderInstance.ZoomButton._visible = aiPlatform != 0;
 						InventoryLists_mc.ZoomButtonHolderInstance.ZoomButton.SetPlatform(aiPlatform,abPS3Switch);
@@ -264,6 +282,7 @@ class InventoryMenu extends ItemMenu
 
 					function ItemRotating()
 					{
+		_global.skse.Log("InventoryMenu ItemRotating()");
 						InventoryLists_mc.ZoomButtonHolderInstance.PlayForward(InventoryLists_mc.ZoomButtonHolderInstance._currentframe);
 					}
 				}

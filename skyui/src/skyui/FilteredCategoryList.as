@@ -204,12 +204,13 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 			entryClip.buttonArea._width = w;
 			cw = cw + w;
 			_listIndex++;
-			var catInfo = _filteredList[i];
+			/*var catInfo = _filteredList[i];
 			_global.skse.Log("reading category info for " + _filteredList[i].text);
 			for(var key:String in catInfo);
 			{
 				_global.skse.Log(key + ": " + catInfo[key]);
-			}
+			}*/
+
 		}
 
 		_global.skse.Log("filteredList length = " + _filteredList.length + " , size = " + _listIndex);
