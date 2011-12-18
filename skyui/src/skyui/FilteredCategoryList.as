@@ -142,6 +142,13 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 		return entryClip;
 	}
 
+	function restoreSelectedEntry(a_newIndex:Number)
+	{
+		_global.skse.Log("restoreSelectedEntry " + a_newIndex);
+		doSetSelectedIndex(a_newIndex,0);
+		onItemPress(1);
+	}
+
 	function UpdateList()
 	{
 		_global.skse.Log("UpdateList()");
