@@ -17,11 +17,12 @@ class InventoryMenu extends ItemMenu
 	var InventoryLists_mc:MovieClip;
 	var BottomBar_mc:MovieClip;
 	var ItemCard_mc:MovieClip;
-
+	var processed;
 
 	function InventoryMenu()
 	{
 		super();
+		processed = false;
 		bMenuClosing = false;
 		EquipButtonArt = {PCArt:"M1M2", XBoxArt:"360_LTRT", PS3Art:"PS3_LBRB"};
 		AltButtonArt = {PCArt:"E", XBoxArt:"360_A", PS3Art:"PS3_A"};
@@ -47,7 +48,11 @@ class InventoryMenu extends ItemMenu
 
 	function handleInput(details, pathToFocus)
 	{
-		_global.skse.Log("InventoryMenu handleInput()");
+		_global.skse.Log("InventoryMenu handleInput() details = " + details.navEquivalent + ", object = " + details);
+		for (var key:String in details)
+		{	
+			_global.skse.Log("key : " + details[key]);
+		}
 		if (bFadedIn && !pathToFocus[0].handleInput(details, pathToFocus.slice(1)))
 		{
 			if (GlobalFunc.IsKeyPressed(details))
@@ -167,14 +172,14 @@ class InventoryMenu extends ItemMenu
 
 					function onHideItemsList(event)
 					{
-		_global.skse.Log("InventoryMenu onHideItemsList()");
+						_global.skse.Log("InventoryMenu onHideItemsList()");
 						super.onHideItemsList(event);
 						BottomBar_mc.UpdatePerItemInfo({type:InventoryDefines.ICT_NONE});
 					}
 
 					function onItemSelect(event)
 					{
-		_global.skse.Log("InventoryMenu onItemSelect()");
+						_global.skse.Log("InventoryMenu onItemSelect()");
 						if (event.entry.enabled && event.keyboardOrMouse != 0)
 						{
 							GameDelegate.call("ItemSelect",[]);
@@ -183,7 +188,7 @@ class InventoryMenu extends ItemMenu
 
 					function AttemptEquip(aiSlot, abCheckOverList)
 					{
-		_global.skse.Log("InventoryMenu AttemptEquip()");
+						_global.skse.Log("InventoryMenu AttemptEquip()");
 						var _loc2 = abCheckOverList != undefined ? (abCheckOverList) : (true);
 						if (ShouldProcessItemsListInput(_loc2) && ConfirmSelectedEntry())
 						{
@@ -195,6 +200,11 @@ class InventoryMenu extends ItemMenu
 					// Added to prevent clicks on the scrollbar from equipping/using stuff
 					function ConfirmSelectedEntry():Boolean
 					{
+						// only confirm when using mouse
+						if (iPlatform != 0)
+						{
+							return true;
+						}
 						for (var e = Mouse.getTopMostEntity(); e && e != undefined; e = e._parent)
 						{
 							if (e.itemIndex == InventoryLists_mc.ItemsList.selectedIndex)
@@ -222,35 +232,35 @@ class InventoryMenu extends ItemMenu
 
 					function AttemptChargeItem()
 					{
-		_global.skse.Log("InventoryMenu AttemptChargeItem()");
-		if (ShouldProcessItemsListInput(false) && ItemCard_mc.itemInfo.charge != undefined && ItemCard_mc.itemInfo.charge < 100)
+						_global.skse.Log("InventoryMenu AttemptChargeItem()");
+						if (ShouldProcessItemsListInput(false) && ItemCard_mc.itemInfo.charge != undefined && ItemCard_mc.itemInfo.charge < 100)
 						{
-			_global.skse.Log("InventoryMenu AttemtChargeItem() GameDelegate.call ShowSoulGemList");
+							_global.skse.Log("InventoryMenu AttemtChargeItem() GameDelegate.call ShowSoulGemList");
 							GameDelegate.call("ShowSoulGemList",[]);
 						}
 					}
 
 					function onQuantityMenuSelect(event)
 					{
-		_global.skse.Log("InventoryMenu onQuantityMenuSelect()");
+						_global.skse.Log("InventoryMenu onQuantityMenuSelect()");
 						GameDelegate.call("ItemDrop",[event.amount]);
 					}
 
 					function onMouseRotationFastClick(aiMouseButton)
 					{
-		_global.skse.Log("InventoryMenu onMouseRotationFastClick()");
+						_global.skse.Log("InventoryMenu onMouseRotationFastClick()");
 						GameDelegate.call("CheckForMouseEquip",[aiMouseButton],this,"AttemptEquip");
 					}
 
 					function onItemCardListPress(event)
 					{
-		_global.skse.Log("InventoryMenu onItemCardListPress()");
+						_global.skse.Log("InventoryMenu onItemCardListPress()");
 						GameDelegate.call("ItemCardListCallback",[event.index]);
 					}
 
 					function onItemCardSubMenuAction(event)
 					{
-		_global.skse.Log("InventoryMenu onItemCardSubMenuAction()");
+						_global.skse.Log("InventoryMenu onItemCardSubMenuAction()");
 						super.onItemCardSubMenuAction(event);
 						GameDelegate.call("QuantitySliderOpen",[event.opening]);
 						if (event.menu == "list")
@@ -273,7 +283,7 @@ class InventoryMenu extends ItemMenu
 
 					function SetPlatform(aiPlatform, abPS3Switch)
 					{
-		_global.skse.Log("InventoryMenu SetPlatform()");
+						_global.skse.Log("InventoryMenu SetPlatform()");
 						InventoryLists_mc.ZoomButtonHolderInstance.gotoAndStop(1);
 						InventoryLists_mc.ZoomButtonHolderInstance.ZoomButton._visible = aiPlatform != 0;
 						InventoryLists_mc.ZoomButtonHolderInstance.ZoomButton.SetPlatform(aiPlatform,abPS3Switch);
@@ -282,7 +292,7 @@ class InventoryMenu extends ItemMenu
 
 					function ItemRotating()
 					{
-		_global.skse.Log("InventoryMenu ItemRotating()");
+						_global.skse.Log("InventoryMenu ItemRotating()");
 						InventoryLists_mc.ZoomButtonHolderInstance.PlayForward(InventoryLists_mc.ZoomButtonHolderInstance._currentframe);
 					}
 				}

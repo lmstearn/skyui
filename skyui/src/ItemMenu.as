@@ -135,12 +135,12 @@ class ItemMenu extends MovieClip
 
 		skse.SetINISetting("fMagic3DItemPosScaleWide:Interface",(itemiconPosition.scale));
 		skse.SetINISetting("fMagic3DItemPosXWide:Interface",(iconX + itemiconPosition.xOffset));
-		skse.SetINISetting("fMagic3DItemPosYWide:Interface",-500);
+		//skse.SetINISetting("fMagic3DItemPosYWide:Interface",-500);
 		skse.SetINISetting("fMagic3DItemPosZWide:Interface",(12 + itemiconPosition.yOffset));
 
 		skse.SetINISetting("fMagic3DItemPosScale:Interface",(itemiconPosition.scale));
 		skse.SetINISetting("fMagic3DItemPosX:Interface",(iconX + itemiconPosition.xOffset));
-		skse.SetINISetting("fMagic3DItemPosY:Interface",-500);
+		//skse.SetINISetting("fMagic3DItemPosY:Interface",-500);
 		skse.SetINISetting("fMagic3DItemPosZ:Interface",(16 + itemiconPosition.yOffset));
 
 		if (MouseRotationRect != undefined)

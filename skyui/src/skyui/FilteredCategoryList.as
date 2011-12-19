@@ -4,7 +4,7 @@ import skyui.Defines;
 
 class skyui.FilteredCategoryList extends skyui.DynamicList
 {
-	private var _filteredList:Array;
+	var _filteredList:Array;
 	private var _filterChain:Array;
 	static var FILL_BORDER = 0;
 	static var FILL_PARENT = 1;
@@ -17,6 +17,7 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 	private var _bSetInitialIndex:Boolean;
 	private var _contentWidth:Number;
 	private var _totalWidth:Number;
+	private var _prevListIndex;
 
 	function FilteredCategoryList()
 	{
@@ -84,7 +85,7 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 		{
 			return entryClip;
 		}
-		// Create on-demand      
+		// Create on-demand       
 		entryClip = attachMovie(_entryClassName, "Entry" + a_index, a_index);
 
 		entryClip.clipIndex = a_index;
@@ -208,7 +209,7 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 			_global.skse.Log("reading category info for " + _filteredList[i].text);
 			for(var key:String in catInfo);
 			{
-				_global.skse.Log(key + ": " + catInfo[key]);
+			_global.skse.Log(key + ": " + catInfo[key]);
 			}*/
 
 		}
@@ -234,6 +235,14 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 
 		}
 
+		// hide any clips that have been filtered out
+		// we check our previous category list size since we are adding clips dynamically
+		for (var i = _listIndex; i < _prevListIndex; ++i)
+		{
+			getClipByIndex(i)._visible = false;
+			getClipByIndex(i).itemIndex = undefined;
+		}
+		_prevListIndex = _listIndex;
 
 	}
 

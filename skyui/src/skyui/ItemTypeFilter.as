@@ -45,8 +45,14 @@ class skyui.ItemTypeFilter implements skyui.IFilter
 		entryMatchesFunc = a_bPartition ? entryMatchesPartitionedFilter : entryMatchesFilter;
 	}
 
+/*
+	filterFlag = 0 , removes the entry from array
+	filterFlag = 1, ignores entry and keeps it in array
+
+*/
 	function entryMatchesFilter(a_entry)
 	{
+		//_global.skse.Log("entry = " + a_entry.text + ", filterFlag = " + a_entry.filterFlag + ", _itemFilter = " + _itemFilter + ", flag = " + a_entry.flag);
 		return (a_entry != undefined && (a_entry.filterFlag == undefined || (a_entry.filterFlag & _itemFilter) != 0));
 	}
 
@@ -78,6 +84,7 @@ class skyui.ItemTypeFilter implements skyui.IFilter
 		{
 			if (!entryMatchesFunc(a_filteredList[i]))
 			{
+				//_global.skse.Log("Filtering out " + a_filteredList[i].text);
 				a_filteredList.splice(i,1);
 				i--;
 			}
