@@ -144,13 +144,27 @@ class skyui.HorizontalList extends skyui.FilteredCategoryList
 		return entryClip;
 	}
 
+	function UpdateList()
+	{
+		super.UpdateList();
+		updateSelector();
+	}
+
 	function onEnterFrame()
 	{
 		if (_selectedIndex == -1)
 		{
 			// Set initial category to first entry when opening menu
 			_global.skse.Log("Current category selected index = " + _selectedIndex);
-			restoreSelectedEntry(_filteredList[0].unfilteredIndex);
+			//if (_prevSelectedIndex != undefined)
+				//restoreSelectedEntry(_prevSelectedIndex);
+			//else restoreSelectedEntry(_filteredList[0].unfilteredIndex);
+			if (_prevFilteredIndex != undefined)
+			{
+				if (_filteredList[_prevFilteredIndex] != undefined)
+					restoreSelectedEntry(_filteredList[_prevFilteredIndex].unfilteredIndex);
+				else restoreSelectedEntry(_filteredList[_prevFilteredIndex - 1].unfilteredIndex);
+			}
 			_global.skse.Log("category selected index now = " + _selectedIndex);
 		}
 		if (_selectorPos < _targetSelectorPos)

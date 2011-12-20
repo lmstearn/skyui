@@ -12,7 +12,8 @@ class skyui.InventoryItemList extends skyui.ConfigurableList
 	{
 		for (var i = 0; i < _entryList.length; i++) {
 			requestItemInfo(i);
-
+			_entryList[i].infoArmor = "-";
+			_entryList[i].infoDamage = "-";
 			switch (_itemInfo.type) {
 				case InventoryDefines.ICT_ARMOR :
 					_entryList[i].infoArmor = _itemInfo.armor;
@@ -39,7 +40,6 @@ class skyui.InventoryItemList extends skyui.ConfigurableList
 			_entryList[i].infoIsEnchanted = (_itemInfo.charge != undefined);
 			_entryList[i].infoIsEquipped = (_entryList[i].equipState > 0);
 		}
-
 		super.InvalidateData();
 	}
 

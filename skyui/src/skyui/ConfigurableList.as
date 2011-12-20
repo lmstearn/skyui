@@ -84,6 +84,7 @@ class skyui.ConfigurableList extends skyui.FilteredList
 
 	function onConfigLoad(event)
 	{
+		_global.skse.Log("ConfigurableList onConfigLoad " + event.config);
 		_config = event.config;
 		_views = _config.ItemList.views;
 		_entryWidth = _config.ItemList.entry.width;
@@ -105,6 +106,7 @@ class skyui.ConfigurableList extends skyui.FilteredList
 
 	function createEntryClip(a_index:Number):MovieClip
 	{
+		_global.skse.Log("ConfigurableList createEntryClip " + a_index);
 		var entryClip = attachMovie(_entryClassName, "Entry" + a_index, getNextHighestDepth());
 
 		for (var i = 0; entryClip["textField" + i] != undefined; i++) {
@@ -118,6 +120,7 @@ class skyui.ConfigurableList extends skyui.FilteredList
 	
 	function setEntry(a_entryClip:MovieClip, a_entryObject:Object)
 	{
+		_global.skse.Log("ConfigurableList setEntry " + a_entryObject.text);
 		if (a_entryClip.viewIndex != _activeViewIndex) {
 			a_entryClip.viewIndex = _activeViewIndex;
 			
@@ -176,6 +179,7 @@ class skyui.ConfigurableList extends skyui.FilteredList
 
 	function changeFilterFlag(a_flag:Number)
 	{
+		_global.skse.Log("ConfigurableList changeFilterFlag " + a_flag);
 		var newIndex = -1;
 		
 		// Find a match, or use last index
@@ -193,7 +197,7 @@ class skyui.ConfigurableList extends skyui.FilteredList
 		_activeViewIndex = newIndex;
 		_activeColumnState = 1;
 		_activeColumnIndex = _views[_activeViewIndex].columns.indexOf(_views[_activeViewIndex].primaryColumn);
-					
+		_global.skse.Log("ConfigurableList changeFilterFlag " + a_flag + ", activeColumnIndex = " + _activeColumnIndex + ", activeColumnState = " + _activeColumnState + ", activeViewIndex = " + _activeViewIndex);
 		if (_activeColumnIndex == undefined) {
 			_activeColumnIndex = 0;
 		}
@@ -203,6 +207,7 @@ class skyui.ConfigurableList extends skyui.FilteredList
 	
 	function onColumnPress(event)
 	{
+		_global.skse.Log("ConfigurableList onColumnPress " + event.index);
 		if (event.index != undefined) {
 			
 			// Don't process for passive columns
@@ -228,6 +233,7 @@ class skyui.ConfigurableList extends skyui.FilteredList
 	/* Calculate new column positions and widths for current view */
 	function updateView()
 	{
+		_global.skse.Log("ConfigurableList updateView()");
 		_bEnableItemIcon = false;
 		_bEnableEquipIcon = false;
 		
@@ -249,9 +255,11 @@ class skyui.ConfigurableList extends skyui.FilteredList
 		// Set bit at position i if column is weighted
 		var weightedFlags = 0;
 		
+		_global.skse.Log("ConfigurableList columns length = " + columns.length);
 		// Move some data from current state to root of the column so we can access single- and multi-state columns in the same manner
 		for (var i = 0; i < columns.length; i++) {
 			
+			_global.skse.Log("ConfigurableList configuring states for column " + columns[i].text);
 			// Single-state
 			if (columns[i].states == undefined || columns[i].states < 2) {
 				continue;
@@ -283,6 +291,7 @@ class skyui.ConfigurableList extends skyui.FilteredList
 		// Subtract fixed widths to get weighted width & summ up weights & already set as much as possible
 		for (var i = 0; i < columns.length; i++) {
 			
+			_global.skse.Log("ConfigurableList configuring widths for column " + columns[i].text);
 			if (columns[i].weight != undefined) {
 				weightSum += columns[i].weight;
 				weightedFlags = (weightedFlags | 1) << 1;
@@ -474,15 +483,18 @@ class skyui.ConfigurableList extends skyui.FilteredList
 		_maxListIndex = Math.floor((_listHeight / _entryHeight) + 0.05);
 		
 		updateSortParams();
+		// We must update our entries on list for new columns if any
+		UpdateList();
 	}
 	
 	function updateSortParams()
 	{
-
+		_global.skse.Log("ConfigurableList updateSortParams()");
 		var columns = currentView.columns;
 		var sortAttributes = columns[_activeColumnIndex].sortAttributes;
 		var sortOptions = columns[_activeColumnIndex].sortOptions;
 		
+		_global.skse.Log("ConfigurableList updateSortParams(), columns length = " + columns.length + ", sortAttributes = " + sortAttributes + ", sortOptions = " + sortOptions + ", activeColumnIndex = " + _activeColumnIndex);
 		if (sortOptions == undefined) {
 			return;
 		}

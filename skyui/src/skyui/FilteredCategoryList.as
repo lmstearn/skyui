@@ -18,6 +18,7 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 	private var _contentWidth:Number;
 	private var _totalWidth:Number;
 	private var _prevListIndex;
+	private var _prevFilteredIndex;
 
 	function FilteredCategoryList()
 	{
@@ -46,6 +47,8 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 	function generateFilteredList()
 	{
 		_global.skse.Log("generateFilteredList()");
+		_prevFilteredIndex = selectedEntry.filteredIndex;
+		_global.skse.Log("prevFilteredIndex = " + _prevFilteredIndex + " preventry = " + selectedEntry.text);
 		_filteredList.splice(0);
 
 		_global.skse.Log("generateFilteredList() copy entrylist into filteredlist");
@@ -234,7 +237,6 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 			entryClip._visible = true;
 
 		}
-
 		// hide any clips that have been filtered out
 		// we check our previous category list size since we are adding clips dynamically
 		for (var i = _listIndex; i < _prevListIndex; ++i)
@@ -363,7 +365,7 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 	function moveSelectionRight()
 	{
 		_global.skse.Log("FilteredCategoryList moveSelectionRight()");
-		_global.skse.Log("current selectedindex = " + selectedIndex);
+		_global.skse.Log("current selectedindex = " + _selectedIndex);
 		if (!_bDisableSelection)
 		{
 			if (isDivider(_filteredList[selectedEntry.filteredIndex + 1]))
@@ -377,6 +379,7 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 				_global.skse.Log("move right to selectedIndex " + selectedIndex);
 				onItemPress(0);
 			}
+			//else if (
 		}
 	}
 
@@ -385,13 +388,13 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 		_global.skse.Log("doSetSelectedIndex a_newIndex = " + a_newIndex);
 		if (!_bDisableSelection && a_newIndex != _selectedIndex)
 		{
-			var oldIndex = _selectedIndex;
+			var _oldIndex = _selectedIndex;
 			_selectedIndex = a_newIndex;
 
-			if (oldIndex != -1)
+			if (_oldIndex != -1)
 			{
-				_global.skse.Log("old getClipByIndex(" + oldIndex + ") = " + getClipByIndex(_entryList[oldIndex].filteredIndex) + " , entry = " + _entryList[oldIndex].text);
-				setEntry(getClipByIndex(_entryList[oldIndex].filteredIndex),_entryList[oldIndex]);
+				_global.skse.Log("_oldIndex getClipByIndex(" + _oldIndex + ") = " + getClipByIndex(_entryList[_oldIndex].filteredIndex) + " , entry = " + _entryList[_oldIndex].text);
+				setEntry(getClipByIndex(_entryList[_oldIndex].filteredIndex),_entryList[_oldIndex]);
 			}
 
 			if (_selectedIndex != -1)
