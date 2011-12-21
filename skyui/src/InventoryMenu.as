@@ -274,6 +274,9 @@ class InventoryMenu extends ItemMenu
 	{
 		_global.skse.Log("InventoryMenu onQuantityMenuSelect()");
 		GameDelegate.call("ItemDrop",[event.amount]);
+		// Bug Fix: ItemCard does not update when attempting to drop quest items through the quantity menu
+		//			so let's request an update even though it may be redundant.
+		GameDelegate.call("RequestItemCardInfo",[],this,"UpdateItemCardInfo");
 	}
 
 	function onMouseRotationFastClick(aiMouseButton)
