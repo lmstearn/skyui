@@ -17,12 +17,10 @@ class InventoryMenu extends ItemMenu
 	var InventoryLists_mc:MovieClip;
 	var BottomBar_mc:MovieClip;
 	var ItemCard_mc:MovieClip;
-	var processed;
 
 	function InventoryMenu()
 	{
 		super();
-		processed = false;
 		bMenuClosing = false;
 		EquipButtonArt = {PCArt:"M1M2", XBoxArt:"360_LTRT", PS3Art:"PS3_LBRB"};
 		AltButtonArt = {PCArt:"E", XBoxArt:"360_A", PS3Art:"PS3_A"};
@@ -53,9 +51,6 @@ class InventoryMenu extends ItemMenu
 		{
 			if (GlobalFunc.IsKeyPressed(details))
 			{
-				//if (InventoryLists_mc.currentState == InventoryLists.SHOW_PANEL && details.navEquivalent == NavigationCode.LEFT && InventoryLists_mc.CategoriesList.selectedIndex == 0) {
-				//StartMenuFade();
-				//GameDelegate.call("ShowTweenMenu",[]);
 				if (details.navEquivalent == NavigationCode.TAB)
 				{
 					StartMenuFade();
@@ -197,14 +192,12 @@ class InventoryMenu extends ItemMenu
 	function ConfirmSelectedEntry():Boolean
 	{
 		// only confirm when using mouse
-		if (iPlatform != 0)
-		{
+		if (iPlatform != 0) {
 			return true;
 		}
-		for (var e = Mouse.getTopMostEntity(); e && e != undefined; e = e._parent)
-		{
-			if (e.itemIndex == InventoryLists_mc.ItemsList.selectedIndex)
-			{
+		
+		for (var e = Mouse.getTopMostEntity(); e && e != undefined; e = e._parent) {
+			if (e.itemIndex == InventoryLists_mc.ItemsList.selectedIndex) {
 				return true;
 			}
 		}

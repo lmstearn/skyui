@@ -1,5 +1,7 @@
 ﻿import skyui.Config;
 import skyui.Util;
+import Shared.GlobalFunc;
+import gfx.ui.NavigationCode;
 
 class skyui.ConfigurableList extends skyui.FilteredList
 {
@@ -209,14 +211,24 @@ class skyui.ConfigurableList extends skyui.FilteredList
 	{
 		_global.skse.Log("ConfigurableList onColumnPress " + event.index);
 		if (event.index != undefined) {
+			selectColumn(event.index);
+		}
+	}
+	
+	function selectColumn(a_index:Number)
+	{
+		// Invalid column
+		if (currentView.columns[a_index] == undefined) {
+			return;
+		}
 			
 			// Don't process for passive columns
-			if (currentView.columns[event.index].passive) {
+		if (currentView.columns[a_index].passive) {
 				return;
 			}
 			
-			if (_activeColumnIndex != event.index) {
-				_activeColumnIndex = event.index;
+		if (_activeColumnIndex != a_index) {
+			_activeColumnIndex = a_index;
 				_activeColumnState = 1;
 			} else {
 				if (_activeColumnState < currentView.columns[_activeColumnIndex].states) {
@@ -228,6 +240,27 @@ class skyui.ConfigurableList extends skyui.FilteredList
 			
 			updateView();
 		}
+	
+	function handleInput(details, pathToFocus):Boolean
+	{
+		var processed = super.handleInput(details, pathToFocus);;
+
+		if (!_bDisableInput && !processed && _platform != 0) {
+
+			if (GlobalFunc.IsKeyPressed(details)) {
+				if (details.navEquivalent == NavigationCode.GAMEPAD_L1) {
+					selectColumn(_activeColumnIndex - 1);
+					processed = true;					
+				} else if (details.navEquivalent == NavigationCode.GAMEPAD_R1) {
+					selectColumn(_activeColumnIndex + 1);
+					processed = true;
+				} else if (details.navEquivalent == NavigationCode.GAMEPAD_L3) {
+					selectColumn(_activeColumnIndex);
+					processed = true;
+				}
+			}
+		}
+		return processed;
 	}
 
 	/* Calculate new column positions and widths for current view */

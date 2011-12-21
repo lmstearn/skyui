@@ -38,7 +38,6 @@ class InventoryLists extends MovieClip
 	private var _sortFilter:ItemSortingFilter;
 
 	private var _currCategoryIndex:Number;
-	private var _bFirstSelectionFlag:Boolean;
 
 	private var _searchKey:Number;
 
@@ -255,17 +254,16 @@ class InventoryLists extends MovieClip
 
 		_CategoryLabel.textField.SetText(_CategoriesList.selectedEntry.text);
 
-		_bFirstSelectionFlag = true;
-
 		// Let's do this more elegant at some point.. :)
 		// Changing the sort filter might already trigger an update, so the final UpdateList is redudant
 
 		// Start with no selection
 		_ItemsList.selectedIndex = -1;
-
+		_global.skse.Log("Category selectedEntry = " + _CategoriesList.selectedEntry.text);
 		if (_CategoriesList.selectedEntry != undefined)
 		{
 			// Set filter type before update
+			_global.skse.Log("CHANGE DETECTED! Setting filter flags to sort");
 			_typeFilter.itemFilter = _CategoriesList.selectedEntry.flag;
 
 			//_ItemsList.statType = _CategoriesList.selectedEntry.flag;
@@ -367,22 +365,9 @@ class InventoryLists extends MovieClip
 		_global.skse.Log("InventoryLists onItemsSelectionChange()");
 		_CategoriesList.selectedEntry.savedItemIndex = _ItemsList.scrollPosition;
 
-		if (_bFirstSelectionFlag)
-		{
-			_bFirstSelectionFlag = false;
-			dispatchEvent({type:"showItemsList", index:event.index});
-		}
-		else
-		{
-			if (event.index == -1)
-			{
-				_bFirstSelectionFlag = true;
-			}
 			dispatchEvent({type:"itemHighlightChange", index:event.index});
-		}
 
-		if (event.index != -1)
-		{
+		if (event.index != -1) {
 			GameDelegate.call("PlaySound",["UIMenuFocus"]);
 		}
 	}
@@ -473,7 +458,6 @@ class InventoryLists extends MovieClip
 		{
 			// Triggers an update if filter flag changed
 			_typeFilter.itemFilter = _CategoriesList.selectedEntry.flag;
-			_catTypeFilter.categoryFilterChange();
 			dispatchEvent({type:"categoryChange", index:_CategoriesList.selectedIndex});
 		}
 		// This is called when an ItemCard list closes(ex. ShowSoulGemList) to refresh ItemCard data 
@@ -481,7 +465,6 @@ class InventoryLists extends MovieClip
 		_ItemsList.selectedIndex = -1;
 		} else {
 		dispatchEvent({type:"itemHighlightChange", index:_ItemsList.selectedIndex});
-		//dispatchEvent({type: "showItemsList", index:_ItemsList.selectedIndex});
 		}
 	}
 }

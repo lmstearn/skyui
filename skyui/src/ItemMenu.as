@@ -6,6 +6,8 @@ import skyui.Config;
 
 class ItemMenu extends MovieClip
 {
+	private var _bItemCardFadedIn:Boolean;
+	
 	var InventoryLists_mc:MovieClip;
 	var ItemCardFadeHolder_mc:MovieClip;
 	var ItemCard_mc:MovieClip;
@@ -15,6 +17,8 @@ class ItemMenu extends MovieClip
 	var MouseRotationRect:MovieClip;
 	var iPlatform:Number;
 
+	var skseWarningMsg:MovieClip;
+	
 	private var _config;
 
 	function ItemMenu()
@@ -26,6 +30,8 @@ class ItemMenu extends MovieClip
 		bFadedIn = true;
 		Mouse.addListener(this);
 		Config.instance.addEventListener("configLoad",this,"onConfigLoad");
+		
+		_bItemCardFadedIn = false;
 	}
 
 	function InitExtensions(abPlayBladeSound)
@@ -47,14 +53,6 @@ class ItemMenu extends MovieClip
 		InventoryLists_mc.ShowCategoriesList(abPlayBladeSound);
 		ItemCard_mc._visible = false;
 		BottomBar_mc.HideButtons();
-
-		// TODO: aha! might be why that wasn't working
-		//RestoreCategoryRect.onRollOver = function()
-		//{
-		//if (_parent.bFadedIn == true && _parent.InventoryLists_mc.currentState == InventoryLists.TWO_PANELS) {
-		//_parent.InventoryLists_mc.RestoreCategoryIndex();
-		//}
-		//};
 
 		ExitMenuRect.onMouseDown = function()
 		{
@@ -150,6 +148,8 @@ class ItemMenu extends MovieClip
 			MouseRotationRect._width = ItemCard_mc._parent._width;
 			MouseRotationRect._height = 0.550000 * Stage.visibleRect.height;
 		}
+		
+		skseWarningMsg.Lock("TR");
 	}
 
 	function SetPlatform(aiPlatform, abPS3Switch)
@@ -209,28 +209,28 @@ class ItemMenu extends MovieClip
 
 	function onItemHighlightChange(event)
 	{
-		_global.skse.Log("ItemMenu onItemHighlightChange()");
-		if (event.index != -1)
-		{
+                _global.skse.Log("ItemMenu onItemHighlightChange()");
+		if (event.index != -1) {
+			
+			if (!_bItemCardFadedIn) {
+				_bItemCardFadedIn = true;
+				ItemCard_mc.FadeInCard();
+				BottomBar_mc.ShowButtons();
+			}
+			
 			GameDelegate.call("UpdateItem3D",[true]);
 			GameDelegate.call("RequestItemCardInfo",[],this,"UpdateItemCardInfo");
-		}
-		else
-		{
+			
+		} else if (_bItemCardFadedIn) {
+			_bItemCardFadedIn = false;
 			onHideItemsList();
 		}
 	}
 
+	// Might event might still be sent from somewhere else, so keep this for now.
 	function onShowItemsList(event)
 	{
-		_global.skse.Log("ItemMenu onShowItemsList()");
-		if (event.index != -1)
-		{
-			GameDelegate.call("UpdateItem3D",[true]);
-			GameDelegate.call("RequestItemCardInfo",[],this,"UpdateItemCardInfo");
-			ItemCard_mc.FadeInCard();
-			BottomBar_mc.ShowButtons();
-		}
+		onItemHighlightChange(event);
 	}
 
 	function onHideItemsList(event)
@@ -388,10 +388,24 @@ _global.skse.Log("ItemMenu RestoreIndices() argument[0] = " + arguments[0]);
 			InventoryLists_mc.CategoriesList.restoreSelectedEntry(1);
 		}
 
-		for (var i = 1; i < arguments.length; i++)
-		{
-			InventoryLists_mc.CategoriesList.entryList[i - 1].savedItemIndex = arguments[i];
+		var index;
+
+		// Saved category indices
+		for (index = 1; index < arguments.length && index < InventoryLists_mc.CategoriesList.entryList.length; index++) {
+			InventoryLists_mc.CategoriesList.entryList[index - 1].savedItemIndex = arguments[index];
 		}
+		
+		// Extra state information. Cleared after game restart.
+		var bRestarted = arguments[index] == undefined;
+		
+		if (bRestarted) {
+			// Display SKSE warning if necessary after restart
+			if (_global.skse == undefined) {
+				skseWarningMsg.gotoAndStop("show");
+			}			
+		}
+		
+		
 		InventoryLists_mc.CategoriesList.UpdateList();
 	}
 
@@ -406,6 +420,10 @@ _global.skse.Log("ItemMenu RestoreIndices() argument[0] = " + arguments[0]);
 		{
 			a.push(InventoryLists_mc.CategoriesList.entryList[i].savedItemIndex);
 		}
+		
+		// Restarted == false
+		a.push(1);
+		
 		GameDelegate.call("SaveIndices",[a]);
 
 		// TODO: Gets called when the menu closes, so I put that icon reset here. Still would be nice to find something more appropriate.

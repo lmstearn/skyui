@@ -37,7 +37,6 @@ class skyui.DynamicList extends MovieClip
 	var dispatchEvent:Function;
 	var addEventListener:Function;
 
-	var debug;
 
 	// Constructor
 	function DynamicList()
@@ -134,6 +133,7 @@ class skyui.DynamicList extends MovieClip
 
 	function doSetSelectedIndex(a_newIndex:Number, a_keyboardOrMouse:Number)
 	{
+		_global.skse.Log("DynamicList doSetSelectedIndex " + a_newIndex);
 		if (!_bDisableSelection && a_newIndex != _selectedIndex) {
 			var oldIndex = _selectedIndex;
 			_selectedIndex = a_newIndex;
