@@ -18,11 +18,16 @@ class skyui.HorizontalList extends skyui.FilteredCategoryList
 	var selectorCenter:MovieClip;
 	var selectorLeft:MovieClip;
 	var selectorRight:MovieClip;
+	
+	var _bMagic:Boolean;
+	var _reverseMagicIndex:Number;
 
 	function HorizontalList()
 	{
 		super();
 
+		_bMagic = false;
+		_reverseMagicIndex = 10;
 		_selectorPos = 0;
 		_targetSelectorPos = 0;
 
@@ -226,6 +231,8 @@ class skyui.HorizontalList extends skyui.FilteredCategoryList
 		if (DEBUG_LEVEL > 1)
 			_global.skse.Log("updateSelector() selectedIndex = " + _selectedIndex);
 		var selectedClip = getClipByIndex(_entryList[_selectedIndex].filteredIndex);
+		if (selectedClip.divider)
+			return;
 		if (DEBUG_LEVEL > 1)
 			_global.skse.Log("updateSelector() selectedClip = " + selectedClip + " name = " + selectedClip.text + " selectedIndex = " + _selectedIndex);
 		_targetSelectorPos = selectedClip._x + (selectedClip.buttonArea._width - selectorCenter._width) / 2;

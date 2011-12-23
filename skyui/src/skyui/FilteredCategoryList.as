@@ -19,12 +19,14 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 	private var _totalWidth:Number;
 	private var _prevListIndex;
 	private var _prevFilteredIndex;
+	private var _dividerIndex:Number;
 
 	function FilteredCategoryList()
 	{
 		super();
 		_filteredList = new Array();
 		_filterChain = new Array();
+		_dividerIndex = -1;
 	}
 
 	function addFilter(a_filter:IFilter)
@@ -164,6 +166,16 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 		doSetSelectedIndex(a_newIndex,0);
 		onItemPress(1);
 	}
+	
+	function isSelectionAboveDivider()
+	{
+		return (_dividerIndex == -1 || selectedIndex < _dividerIndex);
+	}
+
+	function get dividerIndex()
+	{
+		return _dividerIndex;
+	}
 
 	function UpdateList()
 	{
@@ -173,6 +185,15 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 		var tw = 0;
 		var xOffset = 0;
 		var _listIndex = 0;
+		// used by containers to determine which category side player is on
+		_dividerIndex = -1;
+		for (var i = 0; i < _filteredList.length; i++)
+		{
+			if (isDivider(_filteredList[i]))
+			{
+				_dividerIndex = i;
+			} 
+		}
 
 		if (_fillType == FILL_PARENT)
 		{
@@ -202,6 +223,8 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 				_global.skse.Log("getClipByIndex " + _listIndex + " for entry " + _filteredList[i]);
 			
 			var entryClip = getClipByIndex(_listIndex);
+			if (_filteredList[i].divider)
+				entryClip.divider = true;
 			setCategoryIcons(entryClip,_filteredList[i]);
 			
 			if (DEBUG_LEVEL > 1)
@@ -513,23 +536,30 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 	{
 		if (DEBUG_LEVEL > 0)
 			_global.skse.Log("FilteredCategoryList doSetSelectedIndex()");
-		if (DEBUG_LEVEL > 1)
+		if (DEBUG_LEVEL > 0)
 			_global.skse.Log("doSetSelectedIndex a_newIndex = " + a_newIndex);
 		if (!_bDisableSelection && a_newIndex != _selectedIndex)
 		{
 			var _oldIndex = _selectedIndex;
 			_selectedIndex = a_newIndex;
 
+			// check for divider, return if found
+			if (isDivider(_entryList[_selectedIndex]))
+			{
+				if (DEBUG_LEVEL > 0)
+					_global.skse.Log("DIVIDER FOUND");
+				return;
+			}
 			if (_oldIndex != -1)
 			{
-				if (DEBUG_LEVEL > 1)
+				if (DEBUG_LEVEL > 0)
 					_global.skse.Log("_oldIndex getClipByIndex(" + _oldIndex + ") = " + getClipByIndex(_entryList[_oldIndex].filteredIndex) + " , entry = " + _entryList[_oldIndex].text);
 				setEntry(getClipByIndex(_entryList[_oldIndex].filteredIndex),_entryList[_oldIndex]);
 			}
 
 			if (_selectedIndex != -1)
 			{
-				if (DEBUG_LEVEL > 1)
+				if (DEBUG_LEVEL > 0)
 					_global.skse.Log("new getClipByIndex(" + _selectedIndex + ") = " + getClipByIndex(_entryList[_selectedIndex].filteredIndex) + " , entry = " + _entryList[_selectedIndex].text);
 				setEntry(getClipByIndex(_entryList[_selectedIndex].filteredIndex),_entryList[_selectedIndex]);
 			}
@@ -557,12 +587,6 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 
 			setEntryText(a_entryClip,a_entryObject);
 		}
-	}
-
-
-	function isDivider(a_entryObject)
-	{
-		return (a_entryObject.divider == true || a_entryObject.entry.flag == 0);
 	}
 
 	function onFilterChange()

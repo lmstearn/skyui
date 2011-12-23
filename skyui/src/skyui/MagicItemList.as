@@ -54,9 +54,10 @@ class skyui.MagicItemList extends skyui.ConfigurableList
 					*/
 					break;
 				case InventoryDefines.ICT_SHOUT :
-					_entryList[i].infoSpellCost = _itemInfo["spellCost"];
+					_entryList[i].infoSpellCost = "-";
+					_entryList[i].infoRecharge = _itemInfo["spellCost"];
 					_entryList[i].infoCastTime = "-";
-					_entryList[i].infoUnlocked = _itemInfo["unlocked0"];
+					//_entryList[i].infoUnlocked = _itemInfo["unlocked0"];
 					_entryList[i].infoType = _itemInfo["type"];
 					_entryList[i].infoShoutType = Defines.SHOUT_TYPES.indexOf(_itemInfo["word0"]);
 					break;

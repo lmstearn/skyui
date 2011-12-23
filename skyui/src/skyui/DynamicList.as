@@ -204,6 +204,11 @@ class skyui.DynamicList extends MovieClip
 		_bDisableInput = a_bFlag;
 	}
 
+	function isDivider(a_entryObject)
+	{
+		return (a_entryObject.divider == true || a_entryObject.entry.flag == 0);
+	}
+
 	function get textOption():Number
 	{
 		return _textOption;

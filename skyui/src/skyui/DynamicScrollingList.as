@@ -63,7 +63,10 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 
 		if (!_bDisableInput) {
 			var entry = getClipByIndex(selectedIndex - scrollPosition);
-
+			// if divider , ignore
+			if (isDivider(entry))
+				return;
+			
 			processed = entry != undefined && entry.handleInput != undefined && entry.handleInput(details, pathToFocus.slice(1));
 
 			if (!processed && GlobalFunc.IsKeyPressed(details)) {
