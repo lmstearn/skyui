@@ -46,6 +46,8 @@ class MagicMenu extends ItemMenu
 	
 	function handleInput(details, pathToFocus)
 	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("MagicMenu handleInput()");
 		if (bFadedIn && !pathToFocus[0].handleInput(details, pathToFocus.slice(1)))
 		{
 			if (Shared.GlobalFunc.IsKeyPressed(details))
@@ -63,17 +65,21 @@ class MagicMenu extends ItemMenu
 				}
 			} 
 		}
-		return (true);
+		return true;
 	}
 	
 	function onExitMenuRectClick()
 	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("MagicMenu onExitMenuClick()");
 		StartMenuFade();
 		GameDelegate.call("ShowTweenMenu", []);
 	}
 	
 	function StartMenuFade()
 	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("MagicMenu StartMenuFade()");
 		InventoryLists_mc.HideCategoriesList();
 		ToggleMenuFade();
 		SaveIndices();
@@ -82,6 +88,8 @@ class MagicMenu extends ItemMenu
 	
 	function onFadeCompletion()
 	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("MagicMenu onFadeCompletion()");
 		if (bMenuClosing)
 		{
 			GameDelegate.call("CloseMenu", []);
@@ -91,7 +99,8 @@ class MagicMenu extends ItemMenu
 	function onShowItemsList(event)
 	{
 		super.onShowItemsList(event);
-		
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("MagicMenu onShowItemsList()");
 		if (event.index != -1)
 		{
 			UpdateButtonText();
@@ -100,6 +109,8 @@ class MagicMenu extends ItemMenu
 	
 	function onItemHighlightChange(event)
 	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("MagicMenu onItemHighlightChange()");
 		super.onItemHighlightChange(event);
 		
 		if (event.index != -1)
@@ -110,6 +121,8 @@ class MagicMenu extends ItemMenu
 	
 	function DragonSoulSpent()
 	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("MagicMenu DragonSoulSpent()");
 		ItemCard_mc.itemInfo.soulSpent = true;
 		UpdateButtonText();
 	}
@@ -126,6 +139,8 @@ class MagicMenu extends ItemMenu
 	
 	function UpdateButtonText()
 	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("MagicMenu UpdateButtonText()");
 		if (InventoryLists_mc.ItemsList.selectedEntry != undefined)
 		{
 			var _loc3 = (InventoryLists_mc.ItemsList.selectedEntry.filterFlag & InventoryLists_mc.CategoriesList.entryList[0].flag) != 0 ? ("$Unfavorite") : ("$Favorite");
@@ -144,11 +159,15 @@ class MagicMenu extends ItemMenu
 	function onHideItemsList(event)
 	{
 		super.onHideItemsList(event);
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("MagicMenu onHideItemsList()");
 		BottomBar_mc.UpdatePerItemInfo({type: InventoryDefines.ICT_SPELL_DEFAULT});
 	}
 	
 	function AttemptEquip(aiSlot)
 	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("MagicMenu AttemptEquip()");
 		if (ShouldProcessItemsListInput(true))
 		{
 			GameDelegate.call("ItemSelect", [aiSlot]);
@@ -157,6 +176,8 @@ class MagicMenu extends ItemMenu
 	
 	function onItemSelect(event)
 	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("MagicMenu onItemSelect()");
 		if (event.entry.enabled)
 		{
 			if (event.keyboardOrMouse != 0)

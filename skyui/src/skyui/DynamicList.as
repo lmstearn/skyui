@@ -10,7 +10,7 @@ class skyui.DynamicList extends MovieClip
 	static var TEXT_OPTION_SHRINK_TO_FIT = 1;
 	static var TEXT_OPTION_MULTILINE = 2;
 
-	private var _entryList:Array;
+	 var _entryList:Array;
 
 	private var _platform:Number;
 	private var _bDisableSelection:Boolean;
@@ -27,7 +27,6 @@ class skyui.DynamicList extends MovieClip
 	private var _entryClassName:String;
 	private var _textOption:Number;
 
-
 	// Children
 	var border:MovieClip;
 
@@ -37,6 +36,9 @@ class skyui.DynamicList extends MovieClip
 	var dispatchEvent:Function;
 	var addEventListener:Function;
 
+	// Debug
+	// 0 = off, 1 = show method entries only, 2 = show everything
+	static var DEBUG_LEVEL = 1;
 
 	// Constructor
 	function DynamicList()
@@ -77,12 +79,15 @@ class skyui.DynamicList extends MovieClip
 
 	function getClipByIndex(a_index:Number)
 	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("DynamicList getClipByIndex()");
+		_global.skse.Log("index = " + a_index);
 		if (a_index < 0) {
 			return undefined;
 		}
 		
 		var entryClip = this["Entry" + a_index];
-
+		_global.skse.Log("entryClip = " + entryClip);
 		if (entryClip != undefined) {
 			return entryClip;
 		}
@@ -95,6 +100,7 @@ class skyui.DynamicList extends MovieClip
 		entryClip.onRollOver = function()
 		{
 			if (!_parent.listAnimating && !_parent._bDisableInput && this.itemIndex != undefined) {
+				_global.skse.Log("onRollOver itemIndex = " + this.itemIndex);
 				_parent.doSetSelectedIndex(this.itemIndex, 0);
 				_parent._bMouseDrivenNav = true;
 			}
@@ -133,7 +139,10 @@ class skyui.DynamicList extends MovieClip
 
 	function doSetSelectedIndex(a_newIndex:Number, a_keyboardOrMouse:Number)
 	{
-		_global.skse.Log("DynamicList doSetSelectedIndex " + a_newIndex);
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("DynamicList doSetSelectedIndex()");
+		if (DEBUG_LEVEL > 1)
+			_global.skse.Log("DynamicList doSetSelectedIndex " + a_newIndex);
 		if (!_bDisableSelection && a_newIndex != _selectedIndex) {
 			var oldIndex = _selectedIndex;
 			_selectedIndex = a_newIndex;
@@ -213,6 +222,8 @@ class skyui.DynamicList extends MovieClip
 
 	function InvalidateData()
 	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("DynamicList InvalidateData()");
 		if (_selectedIndex >= _entryList.length) {
 			_selectedIndex = _entryList.length - 1;
 		}
@@ -222,6 +233,8 @@ class skyui.DynamicList extends MovieClip
 
 	function UpdateList()
 	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("DynamicList UpdateList()");
 		var yStart = _indent;
 		var yOffset = 0;
 
@@ -241,6 +254,8 @@ class skyui.DynamicList extends MovieClip
 
 	function onItemPress(a_keyboardOrMouse)
 	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("DynamicList onItemPress()");
 		if (!_bDisableInput && !_bDisableSelection && _selectedIndex != -1) {
 			dispatchEvent({type:"itemPress", index:_selectedIndex, entry:_entryList[_selectedIndex], keyboardOrMouse:a_keyboardOrMouse});
 		}
@@ -248,6 +263,8 @@ class skyui.DynamicList extends MovieClip
 
 	function onItemPressAux(a_keyboardOrMouse, a_buttonIndex)
 	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("DynamicList onItemPressAux()");
 		if (!_bDisableInput && !_bDisableSelection && _selectedIndex != -1 && a_buttonIndex == 1) {
 			dispatchEvent({type:"itemPressAux", index:_selectedIndex, entry:_entryList[_selectedIndex], keyboardOrMouse:a_keyboardOrMouse});
 		}
@@ -255,6 +272,8 @@ class skyui.DynamicList extends MovieClip
 
 	function setEntry(a_entryClip:MovieClip, a_entryObject:Object)
 	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("DynamicList setEntry()");
 		if (a_entryClip != undefined) {
 			if (a_entryObject == selectedEntry) {
 				
@@ -269,6 +288,8 @@ class skyui.DynamicList extends MovieClip
 
 	function setEntryText(a_entryClip:MovieClip, a_entryObject:Object)
 	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("DynamicList setEntryText()");
 		if (a_entryClip.textField != undefined) {
 			if (textOption == TEXT_OPTION_SHRINK_TO_FIT) {
 				a_entryClip.textField.textAutoSize = "shrink";
@@ -294,6 +315,8 @@ class skyui.DynamicList extends MovieClip
 
 	function setPlatform(a_platform:Number, a_bPS3Switch:Boolean)
 	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("DynamicList setPlatform()");
 		_platform = a_platform;
 		_bMouseDrivenNav = _platform == 0;
 	}

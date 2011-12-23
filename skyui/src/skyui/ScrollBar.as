@@ -12,6 +12,8 @@
 	var back:MovieClip;
 	var fill:MovieClip;
 	
+	static var debugLevel = 1;
+	
 	function ScrollBar()
 	{
 		
@@ -19,6 +21,8 @@
 	
 	function setParameters(a_height:Number, a_entryCount:Number, a_currentIndex:Number, a_maxIndex:Number)
 	{
+		if (debugLevel > 0)
+			_global.skse.Log("ScrollBar setParameters()");
 		if (a_maxIndex <= 0 || a_height <= 0 || a_maxIndex <= 0) {
 			return;
 		}

@@ -11,6 +11,8 @@ class skyui.ItemTypeFilter implements skyui.IFilter
 	var dispatchEvent:Function;
 	var addEventListener:Function;
 
+	static var DEBUG_LEVEL = 1;
+
 	function ItemTypeFilter()
 	{
 		_itemFilter = 4294967295;
@@ -37,11 +39,15 @@ class skyui.ItemTypeFilter implements skyui.IFilter
 
 	function categoryFilterChange()
 	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("ItemTypeFilter categoryFilterChange()");
 		dispatchEvent({type:"filterChange"});
 	}
 
 	function setPartitionedFilterMode(a_bPartition)
 	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("ItemTypeFilter setPartitionFilterMode()");
 		entryMatchesFunc = a_bPartition ? entryMatchesPartitionedFilter : entryMatchesFilter;
 	}
 
@@ -52,12 +58,16 @@ class skyui.ItemTypeFilter implements skyui.IFilter
 */
 	function entryMatchesFilter(a_entry)
 	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("ItemTypeFilter entryMatchesFilter()");
 		//_global.skse.Log("entry = " + a_entry.text + ", filterFlag = " + a_entry.filterFlag + ", _itemFilter = " + _itemFilter + ", flag = " + a_entry.flag);
 		return (a_entry != undefined && (a_entry.filterFlag == undefined || (a_entry.filterFlag & _itemFilter) != 0));
 	}
 
 	function entryMatchesPartitionedFilter(a_entry)
 	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("ItemTypeFilter entryMatchesPartitionedFilter()");
 		var _loc3 = false;
 		if (a_entry != undefined)
 		{
@@ -80,6 +90,8 @@ class skyui.ItemTypeFilter implements skyui.IFilter
 
 	function process(a_filteredList:Array)
 	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("ItemTypeFilter process()");
 		for (var i = 0; i < a_filteredList.length; i++)
 		{
 			if (!entryMatchesFunc(a_filteredList[i]))

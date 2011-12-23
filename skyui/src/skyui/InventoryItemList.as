@@ -7,9 +7,11 @@ import gfx.io.GameDelegate;
 class skyui.InventoryItemList extends skyui.ConfigurableList
 {
 	private var _itemInfo:Object;
-
+	
 	function InvalidateData()
 	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("InventoryItemList InvalidateData()");
 		for (var i = 0; i < _entryList.length; i++) {
 			requestItemInfo(i);
 			_entryList[i].infoArmor = "-";
@@ -21,6 +23,13 @@ class skyui.InventoryItemList extends skyui.ConfigurableList
 				case InventoryDefines.ICT_WEAPON :
 					_entryList[i].infoDamage = _itemInfo.damage;
 					break;
+				case InventoryDefines.ICT_POTION :
+					 // if potion item has spellCost then it is a scroll
+					 if (_itemInfo.spellCost) 
+						 _itemInfo.type = InventoryDefines.ICT_SPELL;
+					 if (_itemInfo.skillName)
+					 	_itemInfo.type = InventoryDefines.ICT_BOOK; 	
+					 break;
 				case InventoryDefines.ICT_SPELL :
 				case InventoryDefines.ICT_SHOUT :
 					_entryList[i].infoSpellCost = _itemInfo.spellCost.toString();
@@ -58,6 +67,17 @@ class skyui.InventoryItemList extends skyui.ConfigurableList
 
 	function setEntryText(a_entryClip:MovieClip, a_entryObject:Object)
 	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("InventoryItemList setEntryText()");
+		
+		/*for (var key:String in a_entryObject)
+		{
+			_global.skse.Log(key + " : " + a_entryObject[key]);
+		}
+		for (var key:String in a_entryClip)
+		{
+			_global.skse.Log(key + " : " + a_entryClip[key]);
+		}*/
 		var columns = currentView.columns;
 		
 		var states = ["None", "Equipped", "LeftEquip", "RightEquip", "LeftAndRightEquip"];
@@ -118,7 +138,13 @@ class skyui.InventoryItemList extends skyui.ConfigurableList
 								e.gotoAndStop("default_misc");
 						}
 					} else {
-						
+						if (DEBUG_LEVEL > 1)
+						{
+							for (var key:String in a_entryObject)
+							{
+								_global.skse.Log(key + " : " + a_entryObject[key]);
+							}
+						}
 						// With plugin-extended attributes
 						switch (a_entryObject.infoType) {
 							case InventoryDefines.ICT_WEAPON :

@@ -6,7 +6,9 @@ class skyui.FilteredList extends skyui.DynamicScrollingList
 	private var _maxTextLength:Number;
 	private var _filteredList:Array;
 	private var _filterChain:Array;
-	var _nextSelectedIndex;
+
+	private var _curClipIndex:Number;
+	
 
 	function FilteredList()
 	{
@@ -14,10 +16,13 @@ class skyui.FilteredList extends skyui.DynamicScrollingList
 		_filteredList = new Array();
 		_filterChain = new Array();
 		_maxTextLength = 512;
+		_curClipIndex = -1;
 	}
 
 	function addFilter(a_filter:IFilter)
 	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("FilteredList addFilter()");		
 		_filterChain.push(a_filter);
 	}
 	
@@ -30,6 +35,8 @@ class skyui.FilteredList extends skyui.DynamicScrollingList
 
 	function getFilteredEntry(a_index:Number):Object
 	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("FilteredList getFilteredEntry()");
 		return _filteredList[a_index];
 	}
 
@@ -46,6 +53,8 @@ class skyui.FilteredList extends skyui.DynamicScrollingList
 
 	function generateFilteredList()
 	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("FilteredList generateFilteredList()");
 		_filteredList.splice(0);
 
 		for (var i = 0; i < _entryList.length; i++) {
@@ -69,7 +78,8 @@ class skyui.FilteredList extends skyui.DynamicScrollingList
 
 	function UpdateList()
 	{
-		_global.skse.Log("FilteredList UpdateList()");
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("FilteredList UpdateList()");
 		var yStart = _indent;
 		var h = 0;
 
@@ -81,7 +91,8 @@ class skyui.FilteredList extends skyui.DynamicScrollingList
 
 		for (var i = _scrollPosition; i < _filteredList.length && _listIndex < _maxListIndex; i++) {
 			var entryClip = getClipByIndex(_listIndex);
-			_global.skse.Log("FilteredList UpdateList() setEntry " + _filteredList[i].text + " unfilteredIndex = " + _filteredList[i].unfilteredIndex);
+			if (DEBUG_LEVEL > 1)
+				_global.skse.Log("FilteredList UpdateList() setEntry " + _filteredList[i].text + " unfilteredIndex = " + _filteredList[i].unfilteredIndex);
 			setEntry(entryClip,_filteredList[i]);
 			entryClip.itemIndex = _filteredList[i].unfilteredIndex;
 			_filteredList[i].clipIndex = _listIndex;
@@ -103,7 +114,8 @@ class skyui.FilteredList extends skyui.DynamicScrollingList
 		if (_bMouseDrivenNav) {
 			for (var e = Mouse.getTopMostEntity(); e != undefined; e = e._parent) {
 				if (e._parent == this && e._visible && e.itemIndex != undefined) {
-					_global.skse.Log("FilteredList UpdateList() doSetSelectedIndex " + e.itemIndex + " for entry " + e.text);
+					if (DEBUG_LEVEL > 1)
+						_global.skse.Log("FilteredList UpdateList() doSetSelectedIndex " + e.itemIndex + " for entry " + e.text);
 					doSetSelectedIndex(e.itemIndex,0);
 				}
 			}
@@ -112,18 +124,28 @@ class skyui.FilteredList extends skyui.DynamicScrollingList
 
 	function InvalidateData()
 	{
-		_global.skse.Log("FilteredList InvalidateData() selectedEntry count = " + selectedEntry.count + " selected Entry = " + selectedEntry.text + ", nextSelectedIndex = " + _nextSelectedIndex);
-		// if we dropped an item, select next selected index on list.
-		if (_nextSelectedIndex != undefined && _nextSelectedIndex != -1)
-			doSetSelectedIndex(_nextSelectedIndex,1);
+            	if (DEBUG_LEVEL > 0)
+			_global.skse.Log("FilteredList InvalidateData()");
 		generateFilteredList();
-		// reset next selected index
-		_nextSelectedIndex = undefined;
 		super.InvalidateData();
+		
+		// Restore selection
+		if (_curClipIndex != undefined && _curClipIndex != -1 && _listIndex > 0) {
+			
+			if (_curClipIndex >= _listIndex) {
+				_curClipIndex = _listIndex - 1;
+			}
+			
+			var entryClip = getClipByIndex(_curClipIndex);
+			
+			doSetSelectedIndex(entryClip.itemIndex, 1);
+		}
 	}
 
 	function calculateMaxScrollPosition()
 	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("FilteredList calculateMaxScrollPosition");
 		var t = _filteredList.length - _maxListIndex;
 		_maxScrollPosition = (t > 0) ? t : 0;
 
@@ -136,7 +158,8 @@ class skyui.FilteredList extends skyui.DynamicScrollingList
 
 	function moveSelectionUp(a_bScrollPage:Boolean)
 	{
-		_global.skse.Log("FilteredList moveSelectionUp()");
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("FilteredList moveSelectionUp()");
 		if (!_bDisableSelection && !a_bScrollPage) {
 			if (_selectedIndex == -1) {
 				selectDefaultIndex(false);
@@ -156,7 +179,8 @@ class skyui.FilteredList extends skyui.DynamicScrollingList
 
 	function moveSelectionDown(a_bScrollPage:Boolean)
 	{
-		_global.skse.Log("FilteredList moveSelectionDown()");
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("FilteredList moveSelectionDown()");
 		if (!_bDisableSelection && !a_bScrollPage) {
 			if (_selectedIndex == -1) {
 				selectDefaultIndex(true);
@@ -176,11 +200,16 @@ class skyui.FilteredList extends skyui.DynamicScrollingList
 
 	function doSetSelectedIndex(a_newIndex:Number, a_keyboardOrMouse:Number)
 	{
-		_global.skse.Log("FilteredList doSetSelectedIndex " + a_newIndex + " , selectedIndex = " + _selectedIndex + " , bDisableSelection = " + _bDisableSelection);
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("FilteredList doSetSelectedIndex()");
+		//if (DEBUG_LEVEL > 1)
+			_global.skse.Log("FilteredList doSetSelectedIndex " + a_newIndex + " , selectedIndex = " + _selectedIndex + " , bDisableSelection = " + _bDisableSelection);
+		// if new selected index is the same , ignore
 		if (!_bDisableSelection && a_newIndex != _selectedIndex) {
 			var oldIndex = _selectedIndex;
 			_selectedIndex = a_newIndex;
-			_global.skse.Log("doSetSelectedIndex oldIndex = " + oldIndex + ", selectedIndex = " + _selectedIndex);
+			//if (DEBUG_LEVEL > 1)
+				_global.skse.Log("doSetSelectedIndex oldIndex = " + oldIndex + ", selectedIndex = " + _selectedIndex);
 			if (oldIndex != -1) {
 				setEntry(getClipByIndex(_entryList[oldIndex].clipIndex),_entryList[oldIndex]);
 			}
@@ -191,9 +220,14 @@ class skyui.FilteredList extends skyui.DynamicScrollingList
 				} else if (selectedEntry.filteredIndex >= _scrollPosition + _listIndex) {
 					scrollPosition = Math.min(selectedEntry.filteredIndex - _listIndex + 1, _maxScrollPosition);
 				} else {
-					_global.skse.Log("doSelectedIndex setting entry " + _entryList[_selectedIndex].text);
+					//if (DEBUG_LEVEL > 1)
+						_global.skse.Log("doSelectedIndex setting entry " + _entryList[_selectedIndex].text);
 					setEntry(getClipByIndex(_entryList[_selectedIndex].clipIndex),_entryList[_selectedIndex]);
 				}
+				
+				_curClipIndex = _entryList[_selectedIndex].clipIndex;
+			} else {
+				_curClipIndex = -1;
 			}
 
 			dispatchEvent({type:"selectionChange", index:_selectedIndex, keyboardOrMouse:a_keyboardOrMouse});
@@ -202,6 +236,8 @@ class skyui.FilteredList extends skyui.DynamicScrollingList
 
 	function onFilterChange()
 	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("FilteredList onFilterChange()");
 		generateFilteredList();
 		calculateMaxScrollPosition();
 		UpdateList();

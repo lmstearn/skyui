@@ -29,7 +29,10 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 
 	function addFilter(a_filter:IFilter)
 	{
-		_global.skse.Log("addFilter " + a_filter);
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("FilteredCategoryList addFilter()");
+		if (DEBUG_LEVEL > 1)
+			_global.skse.Log("addFilter " + a_filter);
 		_filterChain.push(a_filter);
 	}
 
@@ -46,26 +49,29 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 
 	function generateFilteredList()
 	{
-		_global.skse.Log("generateFilteredList()");
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("FilteredCategoryList generateFilteredList()");
 		_prevFilteredIndex = selectedEntry.filteredIndex;
-		_global.skse.Log("prevFilteredIndex = " + _prevFilteredIndex + " preventry = " + selectedEntry.text);
+		if (DEBUG_LEVEL > 1)
+			_global.skse.Log("prevFilteredIndex = " + _prevFilteredIndex + " preventry = " + selectedEntry.text);
 		_filteredList.splice(0);
-
-		_global.skse.Log("generateFilteredList() copy entrylist into filteredlist");
+		
+		if (DEBUG_LEVEL > 1)
+			_global.skse.Log("generateFilteredList() copy entrylist into filteredlist");
 		for (var i = 0; i < _entryList.length; i++)
 		{
 			_entryList[i].unfilteredIndex = i;
 			_entryList[i].filteredIndex = undefined;
 			_filteredList[i] = _entryList[i];
 		}
-
-		_global.skse.Log("generateFilteredList() process");
+		if (DEBUG_LEVEL > 1)
+			_global.skse.Log("generateFilteredList() process");
 		for (var i = 0; i < _filterChain.length; i++)
 		{
 			_filterChain[i].process(_filteredList);
 		}
-
-		_global.skse.Log("generateFilteredList() set filtered indexes");
+		if (DEBUG_LEVEL > 1)
+			_global.skse.Log("generateFilteredList() set filtered indexes");
 		for (var i = 0; i < _filteredList.length; i++)
 		{
 			_filteredList[i].filteredIndex = i;
@@ -81,7 +87,10 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 	// Gets a clip, or if it doesn't exist, creates it.
 	function getClipByIndex(a_index):MovieClip
 	{
-		_global.skse.Log("getClipByIndex " + a_index);
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("FilteredCategoryList getClipByIndex()");
+		if (DEBUG_LEVEL > 1)
+			_global.skse.Log("getClipByIndex " + a_index);
 		var entryClip = this["Entry" + a_index];
 
 		if (entryClip != undefined)
@@ -148,14 +157,18 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 
 	function restoreSelectedEntry(a_newIndex:Number)
 	{
-		_global.skse.Log("restoreSelectedEntry " + a_newIndex);
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("FilteredCategoryList restoreSelectedEntry()");
+		if (DEBUG_LEVEL > 1)
+			_global.skse.Log("restoreSelectedEntry " + a_newIndex);
 		doSetSelectedIndex(a_newIndex,0);
 		onItemPress(1);
 	}
 
 	function UpdateList()
 	{
-		_global.skse.Log("UpdateList()");
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("FilteredCategoryList UpdateList()");
 		var cw = _indent * 2;
 		var tw = 0;
 		var xOffset = 0;
@@ -181,21 +194,29 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 		{
 			_filteredList[i].clipIndex = undefined;
 		}
-
-		_global.skse.Log("filteredList length = " + _filteredList.length);
+		if (DEBUG_LEVEL > 1)
+			_global.skse.Log("filteredList length = " + _filteredList.length);
 		for (var i = 0; i < _filteredList.length; i++)
 		{
-			_global.skse.Log("UpdateList() getClipByIndex " + _listIndex + " for entry " + _filteredList[i]);
+			if (DEBUG_LEVEL > 1)
+				_global.skse.Log("getClipByIndex " + _listIndex + " for entry " + _filteredList[i]);
+			
 			var entryClip = getClipByIndex(_listIndex);
 			setCategoryIcons(entryClip,_filteredList[i]);
-			_global.skse.Log("Setting entry " + _filteredList[i].text);
+			
+			if (DEBUG_LEVEL > 1)
+				_global.skse.Log("Setting entry " + _filteredList[i].text);
+			
 			setEntry(entryClip,_filteredList[i]);
-			_global.skse.Log("Setting clip " + entryClip + " itemIndex = " + _filteredList[i].unfilteredIndex);
+			
+			if (DEBUG_LEVEL > 1)
+				_global.skse.Log("Setting clip " + entryClip + " itemIndex = " + _filteredList[i].unfilteredIndex);
+			
 			entryClip.itemIndex = _filteredList[i].unfilteredIndex;
 			_filteredList[i].clipIndex = _listIndex;
 
 			entryClip.textField.autoSize = "left";
-
+			
 			var w = 0;
 			if (entryClip.icon._visible)
 			{
@@ -214,10 +235,10 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 			{
 			_global.skse.Log(key + ": " + catInfo[key]);
 			}*/
-
 		}
-
-		_global.skse.Log("filteredList length = " + _filteredList.length + " , size = " + _listIndex);
+		if (DEBUG_LEVEL > 1)
+			_global.skse.Log("FilteredCategoryList filteredList length = " + _filteredList.length + " , size = " + _listIndex);
+		
 		_contentWidth = cw;
 		_totalWidth = tw;
 
@@ -245,11 +266,15 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 			getClipByIndex(i).itemIndex = undefined;
 		}
 		_prevListIndex = _listIndex;
-
+		if (DEBUG_LEVEL > 1)
+			_global.skse.Log("EXITING FilteredCategoryList UpdateList()");
 	}
 
 	function setCategoryIcons(entryClip, entry)
 	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("FilteredCategoryList setCategoryIcons()");
+		if (DEBUG_LEVEL > 1)
 		_global.skse.Log("flag = " + entry.flag + " , Setting category icon for clip " + entryClip);
 		if (_bNoText || entry.flag == 0)
 		{
@@ -259,40 +284,75 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 		{
 			switch (entry.flag)
 			{
-				case Defines.FLAG_ITEM_FAVORITES :
+				case Defines.FLAG_CATEGORY_DIVIDER :	// 0
+					entryClip.icon.gotoAndStop("category_divider");
+					break;
+				case Defines.FLAG_ITEM_FAVORITES :	// 1
 					entryClip.icon.gotoAndStop(this["icon0"]);
 					break;
-				case Defines.FLAG_BARTER_ALL :
-				case Defines.FLAG_ITEM_ALL :
-					entryClip.icon.gotoAndStop(this["icon1"]);
+				case Defines.FLAG_CRAFTING_HIDE :
+				case Defines.FLAG_ITEM_WEAPONS :	// 2
+					if (entry.text == "HIDE")
+					{
+						entryClip.icon.gotoAndStop("category_hide");
+					}
+					else {
+						entryClip.icon.gotoAndStop(this["icon2"]);
+					}
 					break;
-				case Defines.FLAG_BARTER_WEAPONS :
-				case Defines.FLAG_ITEM_WEAPONS :
-					entryClip.icon.gotoAndStop(this["icon2"]);
-					break;
-				case Defines.FLAG_BARTER_ARMOR :
-				case Defines.FLAG_ITEM_ARMOR :
+				case Defines.FLAG_ITEM_ARMOR :	// 4
 					entryClip.icon.gotoAndStop(this["icon3"]);
 					break;
-				case Defines.FLAG_BARTER_POTIONS :
-				case Defines.FLAG_ITEM_POTIONS :
-					entryClip.icon.gotoAndStop(this["icon4"]);
+				case Defines.FLAG_ENCHANTING_ITEM :	// 5
+					entryClip.icon.gotoAndStop("category_item");
 					break;
-				case Defines.FLAG_BARTER_SCROLLS :
-				case Defines.FLAG_ITEM_SCROLLS :
-					entryClip.icon.gotoAndStop(this["icon5"]);
+				case Defines.FLAG_CRAFTING_IRON :
+				case Defines.FLAG_ITEM_POTIONS :	// 8
+					if (entry.text == "IRON")
+					{
+						entryClip.icon.gotoAndStop("category_iron");
+					}
+					else {
+						entryClip.icon.gotoAndStop(this["icon4"]);
+					}
 					break;
-				case Defines.FLAG_BARTER_FOOD :
-				case Defines.FLAG_ITEM_FOOD :
-					entryClip.icon.gotoAndStop(this["icon6"]);
+				case Defines.FLAG_ENCHANTING_DISENCHANT :	// 10
+					entryClip.icon.gotoAndStop("category_disenchant");
 					break;
+				case Defines.FLAG_CRAFTING_STUDDED :
+				case Defines.FLAG_ITEM_SCROLLS :	// 16
+					if (entry.text == "STUDDED")
+					{
+						entryClip.icon.gotoAndStop("category_iron");
+					}
+					else {
+						entryClip.icon.gotoAndStop(this["icon5"]);
+					}
+					break;
+				case Defines.FLAG_CRAFTING_IMPERIAL :
+				case Defines.FLAG_ITEM_FOOD :	// 32
+					if (entry.text == "IMPERIAL")
+					{
+						entryClip.icon.gotoAndStop("category_imperial");
+					}
+					else {
+						entryClip.icon.gotoAndStop(this["icon6"]);
+					}
+					break;
+				case Defines.FLAG_ENCHANTING_ENCHANTMENT :	// 48
+					entryClip.icon.gotoAndStop("category_enchantment");
+					break;
+				case Defines.FLAG_CRAFTING_STEEL :
 				case Defines.FLAG_ENCHANTING_SOULGEM :
-				case Defines.FLAG_BARTER_INGREDIENTS :
-				case Defines.FLAG_ITEM_INGREDIENTS :
+				case Defines.FLAG_ITEM_INGREDIENTS :	// 64
 					if (entry.text == "Soul Gem")
 					{
-						entryClip.icon._visible = false;// temp until we get icon
-						entryClip.textField._visible = true;
+						entryClip.icon.gotoAndStop("category_soulgem");
+						break;
+					}
+					else if (entry.text == "STEEL")
+					{
+						entryClip.icon.gotoAndStop("category_steel");
 						break;
 					}
 					else
@@ -300,32 +360,92 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 						entryClip.icon.gotoAndStop(this["icon7"]);
 						break;
 					}
-				case Defines.FLAG_BARTER_BOOKS :
-				case Defines.FLAG_ITEM_BOOKS :
+				case Defines.FLAG_CRAFTING_LEATHER :
+				case Defines.FLAG_ITEM_BOOKS :	// 128
+					if (entry.text == "LEATHER")
+					{
+						entryClip.icon.gotoAndStop("category_leather");
+					}
+					else {
+						entryClip.icon.gotoAndStop(this["icon8"]);
+					}
+					break;
+				case Defines.FLAG_CRAFTING_DWARVEN :
+				case Defines.FLAG_ITEM_KEYS :	// 256
+					if (entry.text == "DWARVEN")
+					{
+						entryClip.icon.gotoAndStop("category_dwarven");
+					}
+					else {
+						entryClip.icon.gotoAndStop(this["icon9"]);
+					}
+					break;
+				case Defines.FLAG_ITEM_MISC :	// 512
+					entryClip.icon.gotoAndStop(this["icon10"]);
+					break;
+				case Defines.FLAG_ITEM_ALL :	// 1023
+					entryClip.icon.gotoAndStop(this["icon1"]);
+					break;
+				case Defines.FLAG_BARTER_WEAPONS :
+				case Defines.FLAG_CRAFTING_ORCISH :	/// 2048
+					if (entry.text == "ORCISH")
+					{
+						entryClip.icon.gotoAndStop("category_orcish");
+					}
+					else {
+						entryClip.icon.gotoAndStop(this["icon2"]);
+					}
+					break;
+				case Defines.FLAG_BARTER_ARMOR :
+				case Defines.FLAG_CRAFTING_EBONY :	// 4096
+					if (entry.text == "EBONY")
+					{
+						entryClip.icon.gotoAndStop("category_ebony");
+					}
+					else {
+						entryClip.icon.gotoAndStop(this["icon3"]);
+					}
+					break;
+				case Defines.FLAG_BARTER_POTIONS :	// 8192
+					entryClip.icon.gotoAndStop(this["icon4"]);
+					break;
+				case Defines.FLAG_BARTER_SCROLLS :
+				case Defines.FLAG_CRAFTING_DRAGON :	// 16384
+					if (entry.text == "DRAGON")
+					{
+						entryClip.icon.gotoAndStop("category_dragonplate");
+					}
+					else {
+						entryClip.icon.gotoAndStop(this["icon5"]);
+					}
+					break;
+				case Defines.FLAG_BARTER_FOOD :
+				case Defines.FLAG_CRAFTING_DAEDRIC :	// 32768
+					if (entry.text == "DAEDRIC")
+					{
+						entryClip.icon.gotoAndStop("category_daedric");
+					}
+					else {
+						entryClip.icon.gotoAndStop(this["icon6"]);
+					}
+					break;
+				case Defines.FLAG_BARTER_INGREDIENTS :	// 65536
+					entryClip.icon.gotoAndStop(this["icon7"]);
+					break;
+				case Defines.FLAG_BARTER_BOOKS :	// 131072
 					entryClip.icon.gotoAndStop(this["icon8"]);
 					break;
-				case Defines.FLAG_BARTER_KEYS :
-				case Defines.FLAG_ITEM_KEYS :
+				case Defines.FLAG_BARTER_KEYS :	   // 262144
 					entryClip.icon.gotoAndStop(this["icon9"]);
 					break;
-				case Defines.FLAG_BARTER_MISC :
-				case Defines.FLAG_ITEM_MISC :
+				case Defines.FLAG_BARTER_MISC :	   // 524288
 					entryClip.icon.gotoAndStop(this["icon10"]);
 					break;
-				case Defines.FLAG_ENCHANTING_DISENCHANT :
-					entryClip.icon._visible = false;// temp until we get icon
-					entryClip.textField._visible = true;
-					break;
-				case Defines.FLAG_ENCHANTING_ITEM :
-					entryClip.icon._visible = false;// temp until we get icon
-					entryClip.textField._visible = true;
-					break;
-				case Defines.FLAG_ENCHANTING_ENCHANTMENT :
-					entryClip.icon._visible = false;// temp until we get icon
-					entryClip.textField._visible = true;
+				case Defines.FLAG_BARTER_ALL :	   // 1047552
+					entryClip.icon.gotoAndStop(this["icon1"]);
 					break;
 				default :
-					entryClip.icon.gotoAndStop(this["icon10"]);
+					entryClip.icon.gotoAndStop("category_misc");
 					break;
 			}
 		}
@@ -338,15 +458,18 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 
 	function InvalidateData()
 	{
-		_global.skse.Log("FilteredCategoryList InvalidateData() calling generateFilteredList()");
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("FilteredCategoryList InvalidateData()");
 		generateFilteredList();
 		super.InvalidateData();
 	}
 
 	function moveSelectionLeft()
 	{
-		_global.skse.Log("FilteredCategoryList moveSelectionLeft()");
-		_global.skse.Log("current selectedindex = " + selectedIndex);
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("FilteredCategoryList moveSelectionLeft()");
+		if (DEBUG_LEVEL > 1)
+			_global.skse.Log("current selectedindex = " + selectedIndex);
 		if (!_bDisableSelection)
 		{
 			if (isDivider(_filteredList[selectedEntry.filteredIndex - 1]))
@@ -364,8 +487,10 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 	}
 	function moveSelectionRight()
 	{
-		_global.skse.Log("FilteredCategoryList moveSelectionRight()");
-		_global.skse.Log("current selectedindex = " + _selectedIndex);
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("FilteredCategoryList moveSelectionRight()");
+		if (DEBUG_LEVEL > 1)
+			_global.skse.Log("current selectedindex = " + _selectedIndex);
 		if (!_bDisableSelection)
 		{
 			if (isDivider(_filteredList[selectedEntry.filteredIndex + 1]))
@@ -376,7 +501,8 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 			else if (selectedEntry.filteredIndex < _filteredList.length - 1 && !isDivider(selectedEntry))
 			{
 				doSetSelectedIndex(_filteredList[selectedEntry.filteredIndex + 1].unfilteredIndex,1);
-				_global.skse.Log("move right to selectedIndex " + selectedIndex);
+				if (DEBUG_LEVEL > 1)
+					_global.skse.Log("move right to selectedIndex " + selectedIndex);
 				onItemPress(0);
 			}
 			//else if (
@@ -385,7 +511,10 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 
 	function doSetSelectedIndex(a_newIndex:Number, a_keyboardOrMouse:Number)
 	{
-		_global.skse.Log("doSetSelectedIndex a_newIndex = " + a_newIndex);
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("FilteredCategoryList doSetSelectedIndex()");
+		if (DEBUG_LEVEL > 1)
+			_global.skse.Log("doSetSelectedIndex a_newIndex = " + a_newIndex);
 		if (!_bDisableSelection && a_newIndex != _selectedIndex)
 		{
 			var _oldIndex = _selectedIndex;
@@ -393,13 +522,15 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 
 			if (_oldIndex != -1)
 			{
-				_global.skse.Log("_oldIndex getClipByIndex(" + _oldIndex + ") = " + getClipByIndex(_entryList[_oldIndex].filteredIndex) + " , entry = " + _entryList[_oldIndex].text);
+				if (DEBUG_LEVEL > 1)
+					_global.skse.Log("_oldIndex getClipByIndex(" + _oldIndex + ") = " + getClipByIndex(_entryList[_oldIndex].filteredIndex) + " , entry = " + _entryList[_oldIndex].text);
 				setEntry(getClipByIndex(_entryList[_oldIndex].filteredIndex),_entryList[_oldIndex]);
 			}
 
 			if (_selectedIndex != -1)
 			{
-				_global.skse.Log("new getClipByIndex(" + _selectedIndex + ") = " + getClipByIndex(_entryList[_selectedIndex].filteredIndex) + " , entry = " + _entryList[_selectedIndex].text);
+				if (DEBUG_LEVEL > 1)
+					_global.skse.Log("new getClipByIndex(" + _selectedIndex + ") = " + getClipByIndex(_entryList[_selectedIndex].filteredIndex) + " , entry = " + _entryList[_selectedIndex].text);
 				setEntry(getClipByIndex(_entryList[_selectedIndex].filteredIndex),_entryList[_selectedIndex]);
 			}
 
@@ -409,7 +540,10 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 
 	function setEntry(a_entryClip:MovieClip, a_entryObject:Object)
 	{
-		_global.skse.Log("setEntry " + a_entryObject.text);
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("FilteredCategoryList setEntry()");
+		if (DEBUG_LEVEL > 1)
+			_global.skse.Log("setEntry " + a_entryObject.text);
 		if (a_entryClip != undefined)
 		{
 			if (a_entryObject == selectedEntry)
@@ -433,7 +567,8 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 
 	function onFilterChange()
 	{
-		_global.skse.Log("onFilterChange()");
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("FilteredCategoryList onFilterChange()");
 		generateFilteredList();
 		UpdateList();
 	}

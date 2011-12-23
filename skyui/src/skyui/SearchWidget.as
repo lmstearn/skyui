@@ -28,6 +28,8 @@ class skyui.SearchWidget extends MovieClip
 	var dispatchEvent:Function;
 	var addEventListener:Function;
 	
+	static var debugLevel = 1;
+	
 	function SearchWidget()
 	{
 		super();
@@ -56,11 +58,15 @@ class skyui.SearchWidget extends MovieClip
 	
 	function onPress(a_mouseIndex, a_keyboardOrMouse)
 	{
+		if (debugLevel > 0)
+			_global.skse.Log("SearchWidget onPress()");
 		startInput();
 	}
 
 	function startInput()
 	{
+		if (debugLevel > 0)
+			_global.skse.Log("SearchWidget startInput()");
 		if (_bActive) {
 			return;
 		}
@@ -101,6 +107,8 @@ class skyui.SearchWidget extends MovieClip
 	
 	function updateInput()
 	{
+		if (debugLevel > 0)
+			_global.skse.Log("SearchWidget updateInput()");
 		if (_updateTimerId != undefined) {
 			clearInterval(_updateTimerId);
 			_updateTimerId = undefined;
@@ -115,6 +123,8 @@ class skyui.SearchWidget extends MovieClip
 
 	function endInput()
 	{
+		if (debugLevel > 0)
+			_global.skse.Log("SearchWidget endInput()");
 		if (!_bActive) {
 			return;
 		}
@@ -146,6 +156,8 @@ class skyui.SearchWidget extends MovieClip
 
 	function handleInput(details, pathToFocus)
 	{
+		if (debugLevel > 0)
+			_global.skse.Log("SearchWidget handleInput()");
 		var bCaught = false;
 
 		if (GlobalFunc.IsKeyPressed(details)) {
@@ -168,11 +180,15 @@ class skyui.SearchWidget extends MovieClip
 	
 	function clearText()
 	{
+		if (debugLevel > 0)
+			_global.skse.Log("SearchWidget clearText()");
 		textField.SetText("");
 	}
 	
 	function refreshInput()
 	{
+		if (debugLevel > 0)
+			_global.skse.Log("SearchWidget refreshInput()");
 		var t =  GlobalFunc.StringTrim(textField.text);
 		
 		if (t != undefined && t != "" && t != _filterString) {

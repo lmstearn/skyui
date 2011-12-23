@@ -15,6 +15,8 @@ dynamic class skyui.Config
 	static private var _initialized:Boolean = initialize();
 	static private var _loaded:Boolean = false;
 	
+	static var DEBUG_LEVEL = 1;
+	
 	static private var _constantTable:Object = {
 		ASCENDING: 0,
 		DESCENDING: Array.DESCENDING,
@@ -49,6 +51,8 @@ dynamic class skyui.Config
 	// Just hope that loading is done once you need the values :)
 	public static function initialize():Boolean
 	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("Config initialize()");
 		if (_initialized) {
 			return;
 		}
@@ -78,6 +82,7 @@ dynamic class skyui.Config
 
 	static function parseData(a_data:Array)
 	{
+		_global.skse.Log("Config parseData()");
 		var lines = a_data.split("\r\n");
 		if (lines.length == 1) {
 			lines = a_data.split("\n");
@@ -141,6 +146,8 @@ dynamic class skyui.Config
 	
 	static function parseValueString(a_str:String, a_constantTable:Object, a_root:Object):Object
 	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("Config parseValueString()");
 		if (a_str == undefined) {
 			return undefined;
 		}

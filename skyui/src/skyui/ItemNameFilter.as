@@ -1,6 +1,5 @@
 ﻿import gfx.events.EventDispatcher;
 
-
 class skyui.ItemNameFilter implements skyui.IFilter
 {
 	private var _filterText:String;
@@ -9,7 +8,8 @@ class skyui.ItemNameFilter implements skyui.IFilter
 	var dispatchEvent:Function;
 	var addEventListener:Function;
 
-
+	static var DEBUG_LEVEL = 1;
+	
 	function ItemNameFilter()
 	{
 		EventDispatcher.initialize(this);
@@ -18,6 +18,8 @@ class skyui.ItemNameFilter implements skyui.IFilter
 
 	function EntryMatchesFunc(a_entry):Boolean
 	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("ItemNameFilter EntryMatchesFunc()");
 		var searchStr = a_entry.text.toLowerCase();
 
 		var seekIndex = 0;
@@ -61,6 +63,8 @@ class skyui.ItemNameFilter implements skyui.IFilter
 
 	function process(a_filteredList:Array)
 	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("ItemNameFilter process()");
 		if (_filterText == undefined || _filterText == "") {
 			return;
 		}

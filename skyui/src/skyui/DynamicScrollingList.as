@@ -46,6 +46,8 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 
 	function getClipByIndex(a_index:Number)
 	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("DynamicScrollingList getClipByIndex()");
 		if (a_index < 0 || a_index >= _maxListIndex) {
 			return undefined;
 		}
@@ -55,6 +57,8 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 
 	function handleInput(details, pathToFocus):Boolean
 	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("DynamicScrollingList handleInput()");
 		var processed = false;
 
 		if (!_bDisableInput) {
@@ -80,6 +84,8 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 
 	function onMouseWheel(delta)
 	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("DynamicScrollingList onMouseWheel()");
 		if (!_bDisableInput) {
 			for (var target = Mouse.getTopMostEntity(); target && target != undefined; target = target._parent) {
 				if (target == this) {
@@ -96,6 +102,8 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 
 	function doSetSelectedIndex(a_newIndex:Number, a_keyboardOrMouse:Number)
 	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("DynamicScrollingList doSetSelectedIndex()");
 		if (!_bDisableSelection && a_newIndex != _selectedIndex) {
 			var oldIndex = _selectedIndex;
 			_selectedIndex = a_newIndex;
@@ -145,12 +153,16 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 
 	function updateScrollPosition(a_position:Number)
 	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("DynamicScrollingList updateScrollPosition()");
 		_scrollPosition = a_position;
 		UpdateList();
 	}
 
 	function updateScrollbar()
 	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("DynamicScrollingList updateScrollbar()");
 		if (scrollbar != undefined) {
 			scrollbar._visible = _maxScrollPosition > 0;
 			scrollbar.setScrollProperties(_maxListIndex,0,_maxScrollPosition);
@@ -159,6 +171,8 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 
 	function UpdateList()
 	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("DynamicScrollingList UpdateList()");
 		var yStart = _indent;
 		var h = 0;
 
@@ -191,6 +205,8 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 
 	function InvalidateData()
 	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("DynamicScrollingList InvalidateData()");
 		calculateMaxScrollPosition();
 
 		super.InvalidateData();
@@ -198,6 +214,8 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 
 	function calculateMaxScrollPosition()
 	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("DynamicScrollingList calculateMaxScrollPosition()");
 		var t = _entryList.length - _maxListIndex;
 
 		_maxScrollPosition = t > 0 ? t : 0;
@@ -211,6 +229,8 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 
 	function moveSelectionUp(a_bNextPage:Boolean)
 	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("DynamicScrollingList moveSelecttionUp()");		
 		var lastPosition = _scrollPosition;
 		var d = a_bNextPage? _listIndex : 1;
 
@@ -229,6 +249,8 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 
 	function moveSelectionDown(a_bNextPage:Boolean)
 	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("DynamicScrollingList moveSelectionDown()");
 		var lastPosition = _scrollPosition;
 
 		if (!_bDisableSelection) {
@@ -246,6 +268,8 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 
 	function selectDefaultIndex(a_bBottom:Boolean)
 	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("DynamicScrollingList selectDefaultIndex()");
 		if (_listIndex > 0) {
 			if (a_bBottom) {
 				var firstClip = getClipByIndex(0);
@@ -263,6 +287,8 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 
 	function setEntryText(a_entryClip:MovieClip, a_entryObject:Object)
 	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("DynamicScrollingList setEntryText()");
 		if (a_entryClip.textField != undefined) {
 			if (textOption == TEXT_OPTION_SHRINK_TO_FIT) {
 				a_entryClip.textField.textAutoSize = "shrink";
@@ -287,6 +313,8 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 
 	function RestoreScrollPosition(a_newPosition)
 	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("DynamicScrollingList RestoreScrollPosition()");
 		scrollPosition = 0;
 //		if (a_newPosition < 0) {
 //			a_newPosition = 0;

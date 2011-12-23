@@ -20,6 +20,7 @@ class ItemMenu extends MovieClip
 	var skseWarningMsg:MovieClip;
 	
 	private var _config;
+	static var DEBUG_LEVEL = 1;
 
 	function ItemMenu()
 	{
@@ -36,7 +37,8 @@ class ItemMenu extends MovieClip
 
 	function InitExtensions(abPlayBladeSound)
 	{
-		_global.skse.Log("ItemMenu InitExtensions()");
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("ItemMenu InitExtensions()");
 		GameDelegate.addCallBack("UpdatePlayerInfo",this,"UpdatePlayerInfo");
 		GameDelegate.addCallBack("UpdateItemCardInfo",this,"UpdateItemCardInfo");
 		GameDelegate.addCallBack("ToggleMenuFade",this,"ToggleMenuFade");
@@ -65,12 +67,15 @@ class ItemMenu extends MovieClip
 
 	function onConfigLoad(event)
 	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("ItemMenu onConfigLoad()");
 		_config = event.config;
 	}
 
 	function PositionElements()
 	{
-                _global.skse.Log("ItemMenu PositionElements()");
+		if (DEBUG_LEVEL > 0)
+        	_global.skse.Log("ItemMenu PositionElements()");
 		GlobalFunc.SetLockFunction();
 
 		InventoryLists_mc.Lock("L");
@@ -154,7 +159,8 @@ class ItemMenu extends MovieClip
 
 	function SetPlatform(aiPlatform, abPS3Switch)
 	{
-		_global.skse.Log("ItemMenu SetPlatform()");
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("ItemMenu SetPlatform()");
 		iPlatform = aiPlatform;
 		InventoryLists_mc.SetPlatform(aiPlatform,abPS3Switch);
 		ItemCard_mc.SetPlatform(aiPlatform,abPS3Switch);
@@ -163,13 +169,15 @@ class ItemMenu extends MovieClip
 
 	function GetInventoryItemList()
 	{
-		_global.skse.Log("ItemMenu GetInventoryItemList()");
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("ItemMenu GetInventoryItemList()");
 		return InventoryLists_mc.ItemsList;
 	}
 
 	function handleInput(details, pathToFocus)
 	{
-		_global.skse.Log("ItemMenu handleInput()");
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("ItemMenu handleInput()");
 		if (bFadedIn)
 		{
 			if (!pathToFocus[0].handleInput(details, pathToFocus.slice(1)))
@@ -186,7 +194,8 @@ class ItemMenu extends MovieClip
 
 	function onMouseWheel(delta)
 	{
-                _global.skse.Log("ItemMenu onMouseWheel()");
+        if (DEBUG_LEVEL > 0)
+			_global.skse.Log("ItemMenu onMouseWheel()");
 		for (var e = Mouse.getTopMostEntity(); e != undefined; e = e._parent)
 		{
 			if (e == MouseRotationRect && ShouldProcessItemsListInput(false) || !bFadedIn && delta == -1)
@@ -199,17 +208,27 @@ class ItemMenu extends MovieClip
 
 	function onExitMenuRectClick()
 	{
-		_global.skse.Log("ItemMenu onExitMenuRectClick()");
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("ItemMenu onExitMenuRectClick()");
 		GameDelegate.call("CloseMenu",[]);
 	}
 
 	function onCategoryChange(event)
 	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("ItemMenu onCategoryChange()");
 	}
 
 	function onItemHighlightChange(event)
 	{
-                _global.skse.Log("ItemMenu onItemHighlightChange()");
+        if (DEBUG_LEVEL > 0)
+		{
+			_global.skse.Log("ItemMenu onItemHighlightChange()");
+			for (var key:String in event)
+			{
+				_global.skse.Log(key + " : " + event[key]);
+			}
+		}
 		if (event.index != -1) {
 			
 			if (!_bItemCardFadedIn) {
@@ -227,15 +246,25 @@ class ItemMenu extends MovieClip
 		}
 	}
 
+	// Barter menu calls this
 	// Might event might still be sent from somewhere else, so keep this for now.
 	function onShowItemsList(event)
 	{
+		if (DEBUG_LEVEL > 0)
+		{
+			_global.skse.Log("ItemMenu onShowItemsList()");
+			for (var key:String in event)
+			{
+				_global.skse.Log(key + " : " + event[key]);
+			}
+		}
 		onItemHighlightChange(event);
 	}
 
 	function onHideItemsList(event)
 	{
-		_global.skse.Log("ItemMenu onHideItemsList()");
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("ItemMenu onHideItemsList()");
 		GameDelegate.call("UpdateItem3D",[false]);
 		ItemCard_mc.FadeOutCard();
 		BottomBar_mc.HideButtons();
@@ -243,7 +272,8 @@ class ItemMenu extends MovieClip
 
 	function onItemSelect(event)
 	{
-		_global.skse.Log("ItemMenu onItemSelect()");
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("ItemMenu onItemSelect()");
 		if (event.entry.enabled)
 		{
 			if (event.entry.count > InventoryDefines.QUANTITY_MENU_COUNT_LIMIT)
@@ -263,26 +293,30 @@ class ItemMenu extends MovieClip
 
 	function onQuantityMenuSelect(event)
 	{
-		_global.skse.Log("ItemMenu onQuantityMenuSelect()");
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("ItemMenu onQuantityMenuSelect()");
 		GameDelegate.call("ItemSelect",[event.amount]);
 	}
 
 	function UpdatePlayerInfo(aUpdateObj)
 	{
-		_global.skse.Log("ItemMenu UpdatePlayerInfo()");
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("ItemMenu UpdatePlayerInfo()");
 		BottomBar_mc.UpdatePlayerInfo(aUpdateObj,ItemCard_mc.itemInfo);
 	}
 
 	function UpdateItemCardInfo(aUpdateObj)
 	{
-		_global.skse.Log("ItemMenu UpdateItemCardInfo()");
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("ItemMenu UpdateItemCardInfo()");
 		ItemCard_mc.itemInfo = aUpdateObj;
 		BottomBar_mc.UpdatePerItemInfo(aUpdateObj);
 	}
 
 	function onItemCardSubMenuAction(event)
 	{
-		_global.skse.Log("ItemMenu onItemCardSubMenuAction()");
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("ItemMenu onItemCardSubMenuAction()");
 		if (event.opening == true)
 		{
 			InventoryLists_mc.ItemsList.disableSelection = true;
@@ -301,7 +335,8 @@ class ItemMenu extends MovieClip
 
 	function ShouldProcessItemsListInput(abCheckIfOverRect)
 	{
-	_global.skse.Log("ItemMenu ShouldProcessItemsListInput()");
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("ItemMenu ShouldProcessItemsListInput()");
 		var process = bFadedIn == true && InventoryLists_mc.currentState == InventoryLists.SHOW_PANEL && InventoryLists_mc.ItemsList.numUnfilteredItems > 0 && !InventoryLists_mc.ItemsList.disableSelection && !InventoryLists_mc.ItemsList.disableInput;
 
 		if (process && iPlatform == 0 && abCheckIfOverRect)
@@ -317,14 +352,16 @@ class ItemMenu extends MovieClip
 				e = e._parent;
 			}
 			process = process && found;
-			_global.skse.Log("ItemMenu ShouldProcessItemsListInput() process =  " + process + ", found = " + found);
+			if (DEBUG_LEVEL > 1)
+				_global.skse.Log("ItemMenu ShouldProcessItemsListInput() process =  " + process + ", found = " + found);
 		}
 		return process;
 	}
 
 	function onMouseRotationStart()
 	{
-		_global.skse.Log("ItemMenu onMouseRotationStart()");
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("ItemMenu onMouseRotationStart()");
 		GameDelegate.call("StartMouseRotation",[]);
 		InventoryLists_mc.CategoriesList.disableSelection = true;
 		InventoryLists_mc.ItemsList.disableSelection = true;
@@ -332,7 +369,8 @@ class ItemMenu extends MovieClip
 
 	function onMouseRotationStop()
 	{
-		_global.skse.Log("ItemMenu onMouseRotationStop()");
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("ItemMenu onMouseRotationStop()");
 		GameDelegate.call("StopMouseRotation",[]);
 		InventoryLists_mc.CategoriesList.disableSelection = false;
 		InventoryLists_mc.ItemsList.disableSelection = false;
@@ -340,7 +378,8 @@ class ItemMenu extends MovieClip
 
 	function onMouseRotationFastClick()
 	{
-	_global.skse.Log("ItemMenu onMouseRotationFastClick()");
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("ItemMenu onMouseRotationFastClick()");
 		if (ShouldProcessItemsListInput(false))
 		{
 			onItemSelect({entry:InventoryLists_mc.ItemsList.selectedEntry, keyboardOrMouse:0});
@@ -349,7 +388,8 @@ class ItemMenu extends MovieClip
 
 	function ToggleMenuFade()
 	{
-		_global.skse.Log("ItemMenu ToggleMenuFade()");
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("ItemMenu ToggleMenuFade()");
 		if (bFadedIn)
 		{
 			_parent.gotoAndPlay("fadeOut");
@@ -367,7 +407,8 @@ class ItemMenu extends MovieClip
 
 	function SetFadedIn()
 	{
-		_global.skse.Log("ItemMenu SetFadedIn()");
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("ItemMenu SetFadedIn()");
 		bFadedIn = true;
 		InventoryLists_mc.ItemsList.disableSelection = false;
 		InventoryLists_mc.ItemsList.disableInput = false;
@@ -377,7 +418,10 @@ class ItemMenu extends MovieClip
 
 	function RestoreIndices()
 	{
-_global.skse.Log("ItemMenu RestoreIndices() argument[0] = " + arguments[0]);
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("ItemMenu RestoreIndices()");
+		if (DEBUG_LEVEL > 1)
+			_global.skse.Log("ItemMenu RestoreIndices() argument[0] = " + arguments[0]);
 		if (arguments[0] != undefined && arguments[0] != -1)
 		{
 			InventoryLists_mc.CategoriesList.restoreSelectedEntry(arguments[0]);
@@ -411,7 +455,8 @@ _global.skse.Log("ItemMenu RestoreIndices() argument[0] = " + arguments[0]);
 
 	function SaveIndices()
 	{
-	_global.skse.Log("ItemMenu SaveIndices()");
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("ItemMenu SaveIndices()");
 		var a = new Array();
 
 		a.push(InventoryLists_mc.CategoriesList.selectedIndex);

@@ -11,6 +11,8 @@ class skyui.MagicItemList extends skyui.ConfigurableList
 	// override onConfigLoad to use config.MagicItemList
 	function onConfigLoad(event)
 	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("MagicItemList onConfigLoad()");
 		_config = event.config;
 		_views = _config.MagicItemList.views;
 		_entryWidth = _config.MagicItemList.entry.width;
@@ -31,6 +33,8 @@ class skyui.MagicItemList extends skyui.ConfigurableList
 	
 	function InvalidateData()
 	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("MagicItemList InvalidateData()");
 		for (var i = 0; i < _entryList.length; i++) {
 			requestItemInfo(i);
 			switch (_itemInfo.type) {
@@ -83,6 +87,8 @@ class skyui.MagicItemList extends skyui.ConfigurableList
 
 	function setEntryText(a_entryClip:MovieClip, a_entryObject:Object)
 	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("MagicItemList setEntryText)");
 		var columns = currentView.columns;
 		
 		var states = ["None", "Equipped", "LeftEquip", "RightEquip", "LeftAndRightEquip"];

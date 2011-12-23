@@ -65,6 +65,8 @@ class skyui.HorizontalList extends skyui.FilteredCategoryList
 	// Gets a clip, or if it doesn't exist, creates it.
 	function getClipByIndex(a_index):MovieClip
 	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("HorizontalList getClipByIndex()");
 		var entryClip = this["Entry" + a_index];
 
 		if (entryClip != undefined)
@@ -146,6 +148,8 @@ class skyui.HorizontalList extends skyui.FilteredCategoryList
 
 	function UpdateList()
 	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("HorizontalList UpdateList()");
 		super.UpdateList();
 		updateSelector();
 	}
@@ -155,7 +159,8 @@ class skyui.HorizontalList extends skyui.FilteredCategoryList
 		if (_selectedIndex == -1)
 		{
 			// Set initial category to first entry when opening menu
-			_global.skse.Log("Current category selected index = " + _selectedIndex);
+			if (DEBUG_LEVEL > 1)
+				_global.skse.Log("Current category selected index = " + _selectedIndex);
 			//if (_prevSelectedIndex != undefined)
 				//restoreSelectedEntry(_prevSelectedIndex);
 			//else restoreSelectedEntry(_filteredList[0].unfilteredIndex);
@@ -165,7 +170,9 @@ class skyui.HorizontalList extends skyui.FilteredCategoryList
 					restoreSelectedEntry(_filteredList[_prevFilteredIndex].unfilteredIndex);
 				else restoreSelectedEntry(_filteredList[_prevFilteredIndex - 1].unfilteredIndex);
 			}
-			_global.skse.Log("category selected index now = " + _selectedIndex);
+			else restoreSelectedEntry(0);
+			if (DEBUG_LEVEL > 1)
+				_global.skse.Log("category selected index now = " + _selectedIndex);
 		}
 		if (_selectorPos < _targetSelectorPos)
 		{
@@ -194,6 +201,8 @@ class skyui.HorizontalList extends skyui.FilteredCategoryList
 
 	function updateSelector()
 	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("HorizontalList updateSelector()");
 		if (selectorCenter == undefined)
 		{
 			return;
@@ -214,9 +223,11 @@ class skyui.HorizontalList extends skyui.FilteredCategoryList
 
 			return;
 		}
-		_global.skse.Log("updateSelector() selectedIndex = " + _selectedIndex);
+		if (DEBUG_LEVEL > 1)
+			_global.skse.Log("updateSelector() selectedIndex = " + _selectedIndex);
 		var selectedClip = getClipByIndex(_entryList[_selectedIndex].filteredIndex);
-		_global.skse.Log("updateSelector() selectedClip = " + selectedClip + " name = " + selectedClip.text + " selectedIndex = " + _selectedIndex);
+		if (DEBUG_LEVEL > 1)
+			_global.skse.Log("updateSelector() selectedClip = " + selectedClip + " name = " + selectedClip.text + " selectedIndex = " + _selectedIndex);
 		_targetSelectorPos = selectedClip._x + (selectedClip.buttonArea._width - selectorCenter._width) / 2;
 
 		selectorCenter._visible = true;
@@ -239,9 +250,12 @@ class skyui.HorizontalList extends skyui.FilteredCategoryList
 
 	function refreshSelector()
 	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("HorizontalList refreshSelector()");
 		selectorCenter._visible = true;
 		var selectedClip = getClipByIndex(_entryList[_selectedIndex].filteredIndex);
-		_global.skse.Log("refreshSelector() selectedClip = " + selectedClip + " name = " + selectedClip.text);
+		if (DEBUG_LEVEL > 1)
+			_global.skse.Log("refreshSelector() selectedClip = " + selectedClip + " name = " + selectedClip.text);
 		selectorCenter._x = _selectorPos;
 
 		if (selectorLeft != undefined)
@@ -258,7 +272,8 @@ class skyui.HorizontalList extends skyui.FilteredCategoryList
 
 	function onItemPress(a_keyboardOrMouse)
 	{
-
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("HorizontalList onItemPress()");
 		if (!_bDisableInput && !_bDisableSelection && _selectedIndex != -1)
 		{
 
@@ -270,6 +285,8 @@ class skyui.HorizontalList extends skyui.FilteredCategoryList
 
 	function handleInput(details, pathToFocus):Boolean
 	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("HorizontalList handleInput()");
 		var processed = false;
 
 		if (!_bDisableInput)

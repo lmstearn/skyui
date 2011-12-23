@@ -4,6 +4,8 @@
 	
 	private var _processRotationDelayTimerID;
 	
+	static var DEBUG_LEVEL = 1;
+	
 	function MouseRotationInputCatcher()
 	{
 		super();
@@ -26,12 +28,16 @@
 	
 	function onProcessDelayElapsed()
 	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("MouseRotationInputCatcher onProcessDelayElapsed()");
 		clearInterval(_processRotationDelayTimerID);
 		_processRotationDelayTimerID = undefined;
 	}
 	
 	function onMouseUp()
 	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("MouseRotationInputCatcher onMouseUp()");
 		_parent.onMouseRotationStop();
 		clearInterval(_processRotationDelayTimerID);
 		
@@ -44,6 +50,8 @@
 	
 	function onPressAux()
 	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("MouseRotationInputCatcher onPressAux()");
 		_parent.onMouseRotationFastClick(1);
 	}
 }

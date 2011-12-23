@@ -25,6 +25,18 @@
 	static var FLAG_ITEM_KEYS = 256;
 	static var FLAG_ITEM_MISC = 512;
 
+	static var FLAG_CRAFTING_HIDE = 2;
+	static var FLAG_CRAFTING_IRON = 8;
+	static var FLAG_CRAFTING_STUDDED = 16;
+	static var FLAG_CRAFTING_IMPERIAL = 32;
+	static var FLAG_CRAFTING_STEEL = 64;
+	static var FLAG_CRAFTING_LEATHER = 128;
+	static var FLAG_CRAFTING_DWARVEN = 256;
+	static var FLAG_CRAFTING_ORCISH = 2048;
+	static var FLAG_CRAFTING_EBONY = 4096;
+	static var FLAG_CRAFTING_DRAGON = 16384;
+	static var FLAG_CRAFTING_DAEDRIC = 32768;
+
 	static var FLAG_MAGIC_FAVORITES = 1;
 	static var FLAG_MAGIC_ALL = 1023;
 	static var FLAG_MAGIC_ALTERATION = 2;
