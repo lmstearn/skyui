@@ -91,23 +91,26 @@ class skyui.ConfigurableList extends skyui.FilteredList
 		if (DEBUG_LEVEL > 0)
 			_global.skse.Log("ConfigurableList onConfigLoad " + event.config);
 		_config = event.config;
-		_views = _config.ItemList.views;
-		_entryWidth = _config.ItemList.entry.width;
+	}
+	
+	// Has to be called before the list can be used
+	function setConfigSection(a_section:String)
+	{
+		_views = _config[a_section].views;
+		_entryWidth = _config[a_section].entry.width;
 
 		// Create default formats
-		for (var prop in _config.ItemList.entry.format) {
+		for (var prop in _config[a_section].entry.format) {
 			if (_defaultEntryFormat.hasOwnProperty(prop)) {
-				_defaultEntryFormat[prop] = _config.ItemList.entry.format[prop];
+				_defaultEntryFormat[prop] = _config[a_section].entry.format[prop];
 			}
 		}
 		
-		for (var prop in _config.ItemList.label.format) {
+		for (var prop in _config[a_section].label.format) {
 			if (_defaultLabelFormat.hasOwnProperty(prop)) {
-				_defaultLabelFormat[prop] = _config.ItemList.label.format[prop];
+				_defaultLabelFormat[prop] = _config[a_section].label.format[prop];
 			}
 		}
-
-		updateView();
 	}
 
 	function createEntryClip(a_index:Number):MovieClip
@@ -189,8 +192,6 @@ class skyui.ConfigurableList extends skyui.FilteredList
 	{
 		if (DEBUG_LEVEL > 0)
 			_global.skse.Log("ConfigurableList changeFilterFlag " + a_flag);
-		var newIndex = -1;
-		
 		// Find a match, or use last index
 		for (var i = 0; i < _views.length; i++) {
 			if (_views[i].category == a_flag || i == _views.length-1) {

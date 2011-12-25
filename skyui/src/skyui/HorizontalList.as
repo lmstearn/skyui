@@ -1,7 +1,6 @@
 ﻿import gfx.events.EventDispatcher;
 import gfx.ui.NavigationCode;
 import Shared.GlobalFunc;
-import skyui.Defines;
 
 class skyui.HorizontalList extends skyui.FilteredCategoryList
 {
@@ -18,16 +17,11 @@ class skyui.HorizontalList extends skyui.FilteredCategoryList
 	var selectorCenter:MovieClip;
 	var selectorLeft:MovieClip;
 	var selectorRight:MovieClip;
-	
-	var _bMagic:Boolean;
-	var _reverseMagicIndex:Number;
 
 	function HorizontalList()
 	{
 		super();
 
-		_bMagic = false;
-		_reverseMagicIndex = 10;
 		_selectorPos = 0;
 		_targetSelectorPos = 0;
 
@@ -53,102 +47,19 @@ class skyui.HorizontalList extends skyui.FilteredCategoryList
 			_bNoText = false;
 		}
 
-		if (fillOption == "parent")
-		{
+		if (fillOption == "parent") {
 			_fillType = FILL_PARENT;
-		}
-		else if (fillOption == "stage")
-		{
+		} else if (fillOption == "stage") {
 			_fillType = FILL_STAGE;
-		}
-		else
-		{
+		} else {
 			_fillType = FILL_BORDER;
 		}
 	}
 
-	// Gets a clip, or if it doesn't exist, creates it.
-	function getClipByIndex(a_index):MovieClip
+	function setIconArt(a_iconArt:Array)
 	{
-		if (DEBUG_LEVEL > 0)
-			_global.skse.Log("HorizontalList getClipByIndex()");
-		var entryClip = this["Entry" + a_index];
-
-		if (entryClip != undefined)
-		{
-			return entryClip;
-		}
-		// Create on-demand  
-		entryClip = attachMovie(_entryClassName, "Entry" + a_index, a_index);
-
-		entryClip.clipIndex = a_index;
-
-		// How about proper closures? :(
-		entryClip.buttonArea.onRollOver = function()
-		{
-			if (!_parent._parent.listAnimating && !_parent._parent._bDisableInput && _parent.itemIndex != undefined)
-			{
-
-				if (_parent.itemIndex != _parent._parent._selectedIndex)
-				{
-					_parent._alpha = 75;
-				}
-				_parent._parent._bMouseDrivenNav = true;
-			}
-		};
-
-		entryClip.buttonArea.onRollOut = function()
-		{
-			if (!_parent._parent.listAnimating && !_parent._parent._bDisableInput && _parent.itemIndex != undefined)
-			{
-
-				if (_parent.itemIndex != _parent._parent._selectedIndex)
-				{
-					_parent._alpha = 50;
-				}
-				_parent._parent._bMouseDrivenNav = true;
-			}
-		};
-
-		entryClip.buttonArea.onPress = function(aiMouseIndex, aiKeyboardOrMouse)
-		{
-			if (_parent.itemIndex != undefined && !_parent._parent.listAnimating && !_parent._parent._bDisableInput)
-			{
-
-				_parent._parent.doSetSelectedIndex(_parent.itemIndex,0);
-				_parent._parent.onItemPress(aiKeyboardOrMouse);
-
-				if (!_parent._parent._bDisableInput && _parent.onMousePress != undefined)
-				{
-					_parent.onMousePress();
-				}
-			}
-		};
-
-		entryClip.buttonArea.onPressAux = function(aiMouseIndex, aiKeyboardOrMouse, aiButtonIndex)
-		{
-			if (_parent.itemIndex != undefined)
-			{
-				_parent._parent.onItemPressAux(aiKeyboardOrMouse,aiButtonIndex);
-			}
-		};
-
-		if (!_bNoIcons && this["icon" + a_index] != undefined)
-		{
-			entryClip.icon.gotoAndStop(this["icon" + a_index]);
-
-			if (_bNoText)
-			{
-				entryClip.textField._visible = false;
-			}
-		}
-		else
-		{
-			entryClip.icon._visible = false;
-			entryClip.textField._x = 0;
-		}
-
-		return entryClip;
+		if (DEBUG_LEVEL > 0) _global.skse.Log("HorizontalList setIconArt()");
+		_iconArt = a_iconArt;
 	}
 
 	function UpdateList()

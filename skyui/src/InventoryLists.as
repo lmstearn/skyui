@@ -6,7 +6,7 @@ import gfx.managers.FocusHandler;
 import Shared.GlobalFunc;
 
 import skyui.HorizontalList;
-import skyui.InventoryItemList;
+import skyui.FormattedItemList;
 import skyui.ItemTypeFilter;
 import skyui.ItemNameFilter;
 import skyui.ItemSortingFilter;
@@ -22,11 +22,11 @@ class InventoryLists extends MovieClip
 	static var TRANSITIONING_TO_HIDE_PANEL = 2;
 	static var TRANSITIONING_TO_SHOW_PANEL = 3;
 
-	private var _config;
+	private var _config:Config;
 
 	private var _CategoriesList:HorizontalList;
 	private var _CategoryLabel:MovieClip;
-	private var _ItemsList:InventoryItemList;
+	private var _ItemsList:FormattedItemList;
 	private var _SearchWidget:SearchWidget;
 
 	private var _platform:Number;
@@ -53,6 +53,7 @@ class InventoryLists extends MovieClip
 	function InventoryLists()
 	{
 		super();
+
 		Util.addArrayFunctions();
 
 		_CategoriesList = panelContainer.categoriesList;
@@ -97,7 +98,6 @@ class InventoryLists extends MovieClip
 		_CategoriesList.addEventListener("listMovedDown",this,"onCategoriesListMoveDown");
 		_CategoriesList.addEventListener("selectionChange",this,"onCategoriesListMouseSelectionChange");
 
-		_ItemsList.maxTextLength = 100;
 		_ItemsList.disableInput = false;
 
 		_ItemsList.addEventListener("listMovedUp",this,"onItemsListMoveUp");
@@ -286,15 +286,12 @@ class InventoryLists extends MovieClip
 				_global.skse.Log("CHANGE DETECTED! Setting filter flags to sort");
 			_typeFilter.itemFilter = _CategoriesList.selectedEntry.flag;
 
-			//_ItemsList.statType = _CategoriesList.selectedEntry.flag;
 			_currCategoryIndex = _CategoriesList.selectedIndex;
 			_ItemsList.changeFilterFlag(_CategoriesList.selectedEntry.flag);
 
 
-			_ItemsList.RestoreScrollPosition(_CategoriesList.selectedEntry.savedItemIndex);
-		}
-		else
-		{
+			//  _ItemsList.RestoreScrollPosition(_CategoriesList.selectedEntry.savedItemIndex);
+		} else {
 			_ItemsList.UpdateList();
 		}
 

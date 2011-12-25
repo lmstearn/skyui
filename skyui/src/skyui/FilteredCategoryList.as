@@ -20,6 +20,8 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 	private var _prevListIndex;
 	private var _prevFilteredIndex;
 	private var _dividerIndex:Number;
+	
+	private var _iconArt:Array;
 
 	function FilteredCategoryList()
 	{
@@ -99,9 +101,9 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 		{
 			return entryClip;
 		}
+
 		// Create on-demand       
 		entryClip = attachMovie(_entryClassName, "Entry" + a_index, a_index);
-
 		entryClip.clipIndex = a_index;
 
 		// How about proper closures? :(
@@ -305,61 +307,62 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 		}
 		if (!_bNoIcons)
 		{
+			var a_index = entryClip.clipIndex;
 			switch (entry.flag)
 			{
 				case Defines.FLAG_CATEGORY_DIVIDER :	// 0
 					entryClip.icon.gotoAndStop("category_divider");
 					break;
-				case Defines.FLAG_ITEM_FAVORITES :	// 1
-					entryClip.icon.gotoAndStop(this["icon0"]);
+				case Defines.FLAG_INV_FAVORITES :	// 1
+					entryClip.icon.gotoAndStop(_iconArt[a_index]);
 					break;
 				case Defines.FLAG_CRAFTING_HIDE :
-				case Defines.FLAG_ITEM_WEAPONS :	// 2
+				case Defines.FLAG_INV_WEAPONS :	// 2
 					if (entry.text == "HIDE")
 					{
 						entryClip.icon.gotoAndStop("category_hide");
 					}
 					else {
-						entryClip.icon.gotoAndStop(this["icon2"]);
+						entryClip.icon.gotoAndStop(_iconArt[a_index]);
 					}
 					break;
-				case Defines.FLAG_ITEM_ARMOR :	// 4
-					entryClip.icon.gotoAndStop(this["icon3"]);
+				case Defines.FLAG_INV_ARMOR :	// 4
+					entryClip.icon.gotoAndStop(_iconArt[a_index]);
 					break;
 				case Defines.FLAG_ENCHANTING_ITEM :	// 5
 					entryClip.icon.gotoAndStop("category_item");
 					break;
 				case Defines.FLAG_CRAFTING_IRON :
-				case Defines.FLAG_ITEM_POTIONS :	// 8
+				case Defines.FLAG_INV_POTIONS :	// 8
 					if (entry.text == "IRON")
 					{
 						entryClip.icon.gotoAndStop("category_iron");
 					}
 					else {
-						entryClip.icon.gotoAndStop(this["icon4"]);
+						entryClip.icon.gotoAndStop(_iconArt[a_index]);
 					}
 					break;
 				case Defines.FLAG_ENCHANTING_DISENCHANT :	// 10
 					entryClip.icon.gotoAndStop("category_disenchant");
 					break;
 				case Defines.FLAG_CRAFTING_STUDDED :
-				case Defines.FLAG_ITEM_SCROLLS :	// 16
+				case Defines.FLAG_INV_SCROLLS :	// 16
 					if (entry.text == "STUDDED")
 					{
 						entryClip.icon.gotoAndStop("category_iron");
 					}
 					else {
-						entryClip.icon.gotoAndStop(this["icon5"]);
+						entryClip.icon.gotoAndStop(_iconArt[a_index]);;
 					}
 					break;
 				case Defines.FLAG_CRAFTING_IMPERIAL :
-				case Defines.FLAG_ITEM_FOOD :	// 32
+				case Defines.FLAG_INV_FOOD :	// 32
 					if (entry.text == "IMPERIAL")
 					{
 						entryClip.icon.gotoAndStop("category_imperial");
 					}
 					else {
-						entryClip.icon.gotoAndStop(this["icon6"]);
+						entryClip.icon.gotoAndStop(_iconArt[a_index]);
 					}
 					break;
 				case Defines.FLAG_ENCHANTING_ENCHANTMENT :	// 48
@@ -367,7 +370,7 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 					break;
 				case Defines.FLAG_CRAFTING_STEEL :
 				case Defines.FLAG_ENCHANTING_SOULGEM :
-				case Defines.FLAG_ITEM_INGREDIENTS :	// 64
+				case Defines.FLAG_INV_INGREDIENTS :	// 64
 					if (entry.text == "Soul Gem")
 					{
 						entryClip.icon.gotoAndStop("category_soulgem");
@@ -380,34 +383,34 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 					}
 					else
 					{
-						entryClip.icon.gotoAndStop(this["icon7"]);
+						entryClip.icon.gotoAndStop(_iconArt[a_index]);
 						break;
 					}
 				case Defines.FLAG_CRAFTING_LEATHER :
-				case Defines.FLAG_ITEM_BOOKS :	// 128
+				case Defines.FLAG_INV_BOOKS :	// 128
 					if (entry.text == "LEATHER")
 					{
 						entryClip.icon.gotoAndStop("category_leather");
 					}
 					else {
-						entryClip.icon.gotoAndStop(this["icon8"]);
+						entryClip.icon.gotoAndStop(_iconArt[a_index]);
 					}
 					break;
 				case Defines.FLAG_CRAFTING_DWARVEN :
-				case Defines.FLAG_ITEM_KEYS :	// 256
+				case Defines.FLAG_INV_KEYS :	// 256
 					if (entry.text == "DWARVEN")
 					{
 						entryClip.icon.gotoAndStop("category_dwarven");
 					}
 					else {
-						entryClip.icon.gotoAndStop(this["icon9"]);
+						entryClip.icon.gotoAndStop(_iconArt[a_index]);
 					}
 					break;
-				case Defines.FLAG_ITEM_MISC :	// 512
-					entryClip.icon.gotoAndStop(this["icon10"]);
+				case Defines.FLAG_INV_MISC :	// 512
+					entryClip.icon.gotoAndStop(_iconArt[a_index]);
 					break;
-				case Defines.FLAG_ITEM_ALL :	// 1023
-					entryClip.icon.gotoAndStop(this["icon1"]);
+				case Defines.FLAG_INV_ALL :	// 1023
+					entryClip.icon.gotoAndStop(_iconArt[a_index]);
 					break;
 				case Defines.FLAG_BARTER_WEAPONS :
 				case Defines.FLAG_CRAFTING_ORCISH :	/// 2048
@@ -416,7 +419,7 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 						entryClip.icon.gotoAndStop("category_orcish");
 					}
 					else {
-						entryClip.icon.gotoAndStop(this["icon2"]);
+						entryClip.icon.gotoAndStop(_iconArt[a_index]);
 					}
 					break;
 				case Defines.FLAG_BARTER_ARMOR :
@@ -426,11 +429,11 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 						entryClip.icon.gotoAndStop("category_ebony");
 					}
 					else {
-						entryClip.icon.gotoAndStop(this["icon3"]);
+						entryClip.icon.gotoAndStop(_iconArt[a_index]);
 					}
 					break;
 				case Defines.FLAG_BARTER_POTIONS :	// 8192
-					entryClip.icon.gotoAndStop(this["icon4"]);
+					entryClip.icon.gotoAndStop(_iconArt[a_index]);
 					break;
 				case Defines.FLAG_BARTER_SCROLLS :
 				case Defines.FLAG_CRAFTING_DRAGON :	// 16384
@@ -439,7 +442,7 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 						entryClip.icon.gotoAndStop("category_dragonplate");
 					}
 					else {
-						entryClip.icon.gotoAndStop(this["icon5"]);
+						entryClip.icon.gotoAndStop(_iconArt[a_index]);
 					}
 					break;
 				case Defines.FLAG_BARTER_FOOD :
@@ -449,23 +452,23 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 						entryClip.icon.gotoAndStop("category_daedric");
 					}
 					else {
-						entryClip.icon.gotoAndStop(this["icon6"]);
+						entryClip.icon.gotoAndStop(_iconArt[a_index]);
 					}
 					break;
 				case Defines.FLAG_BARTER_INGREDIENTS :	// 65536
-					entryClip.icon.gotoAndStop(this["icon7"]);
+					entryClip.icon.gotoAndStop(_iconArt[a_index]);
 					break;
 				case Defines.FLAG_BARTER_BOOKS :	// 131072
-					entryClip.icon.gotoAndStop(this["icon8"]);
+					entryClip.icon.gotoAndStop(_iconArt[a_index]);
 					break;
 				case Defines.FLAG_BARTER_KEYS :	   // 262144
-					entryClip.icon.gotoAndStop(this["icon9"]);
+					entryClip.icon.gotoAndStop(_iconArt[a_index]);
 					break;
 				case Defines.FLAG_BARTER_MISC :	   // 524288
-					entryClip.icon.gotoAndStop(this["icon10"]);
+					entryClip.icon.gotoAndStop(_iconArt[a_index]);
 					break;
 				case Defines.FLAG_BARTER_ALL :	   // 1047552
-					entryClip.icon.gotoAndStop(this["icon1"]);
+					entryClip.icon.gotoAndStop(_iconArt[a_index]);
 					break;
 				default :
 					entryClip.icon.gotoAndStop("category_misc");

@@ -1,6 +1,19 @@
 ﻿class skyui.Defines
 {
+	// Category filterflags
 	static var FLAG_CATEGORY_DIVIDER = 0;
+
+	static var FLAG_INV_ALL = 1023;
+	static var FLAG_INV_FAVORITES = 1;
+	static var FLAG_INV_WEAPONS = 2;
+	static var FLAG_INV_ARMOR = 4;
+	static var FLAG_INV_POTIONS = 8;
+	static var FLAG_INV_SCROLLS = 16;
+	static var FLAG_INV_FOOD = 32;
+	static var FLAG_INV_INGREDIENTS = 64;
+	static var FLAG_INV_BOOKS = 128;
+	static var FLAG_INV_KEYS = 256;
+	static var FLAG_INV_MISC = 512;
 
 	static var FLAG_BARTER_ALL = 1047552;
 	static var FLAG_BARTER_WEAPONS = 2048;
@@ -12,20 +25,8 @@
 	static var FLAG_BARTER_BOOKS = 131072;
 	static var FLAG_BARTER_KEYS = 262144;
 	static var FLAG_BARTER_MISC = 524288;
-
-	static var FLAG_ITEM_FAVORITES = 1;
-	static var FLAG_ITEM_ALL = 1023;
-	static var FLAG_ITEM_WEAPONS = 2;
-	static var FLAG_ITEM_ARMOR = 4;
-	static var FLAG_ITEM_POTIONS = 8;
-	static var FLAG_ITEM_SCROLLS = 16;
-	static var FLAG_ITEM_FOOD = 32;
-	static var FLAG_ITEM_INGREDIENTS = 64;
-	static var FLAG_ITEM_BOOKS = 128;
-	static var FLAG_ITEM_KEYS = 256;
-	static var FLAG_ITEM_MISC = 512;
-
-	static var FLAG_CRAFTING_HIDE = 2;
+	
+        static var FLAG_CRAFTING_HIDE = 2;
 	static var FLAG_CRAFTING_IRON = 8;
 	static var FLAG_CRAFTING_STUDDED = 16;
 	static var FLAG_CRAFTING_IMPERIAL = 32;
@@ -37,8 +38,8 @@
 	static var FLAG_CRAFTING_DRAGON = 16384;
 	static var FLAG_CRAFTING_DAEDRIC = 32768;
 
-	static var FLAG_MAGIC_FAVORITES = 1;
 	static var FLAG_MAGIC_ALL = 1023;
+	static var FLAG_MAGIC_FAVORITES = 1;
 	static var FLAG_MAGIC_ALTERATION = 2;
 	static var FLAG_MAGIC_ILLUSION = 4;
 	static var FLAG_MAGIC_DESTRUCTION = 8;
@@ -53,11 +54,15 @@
 	static var FLAG_ENCHANTING_ENCHANTMENT = 48;
 	static var FLAG_ENCHANTING_SOULGEM = 64;
 
+
+	// Form types
 	static var FORMTYPE_SOULGEM = 52;
 	static var FORMTYPE_MISC = 33;
 	static var FORMTYPE_ARROW = 42;
 	static var FORMTYPE_WEAPON = 43;
 
+
+	// Weapon types
 	static var WEAPON_TYPE_LONGSWORD = 1;
 	static var WEAPON_TYPE_DAGGER = 2;
 	static var WEAPON_TYPE_WARAXE = 3;
@@ -67,12 +72,11 @@
 	static var WEAPON_TYPE_BOW = 7;
 	static var WEAPON_TYPE_STAFF = 8;
 
+
+	// Magic types
 	static var MAGIC_ALTERATION = 0;
 	static var MAGIC_ILLUSION = 1;
 	static var MAGIC_DESTRUCTION = 2;
 	static var MAGIC_CONJURATION = 3;
 	static var MAGIC_RESTORATION = 4;
-
-	static var MAGIC_TYPES:Array = ["Alteration", "Illusion", "Destruction", "Conjuration", "Restoration"];
-	static var SHOUT_TYPES:Array = ["Ice", "Fire", "Force", "Whirlwind"];
 }

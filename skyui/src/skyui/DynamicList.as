@@ -10,7 +10,7 @@ class skyui.DynamicList extends MovieClip
 	static var TEXT_OPTION_SHRINK_TO_FIT = 1;
 	static var TEXT_OPTION_MULTILINE = 2;
 
-	 var _entryList:Array;
+	private var _entryList:Array;
 
 	private var _platform:Number;
 	private var _bDisableSelection:Boolean;
@@ -26,6 +26,7 @@ class skyui.DynamicList extends MovieClip
 	// Component settings
 	private var _entryClassName:String;
 	private var _textOption:Number;
+
 
 	// Children
 	var border:MovieClip;
@@ -74,6 +75,7 @@ class skyui.DynamicList extends MovieClip
 	
 	function createEntryClip(a_index:Number):MovieClip
 	{
+		trace(_entryClassName);
 		return attachMovie(_entryClassName, "Entry" + a_index, getNextHighestDepth());
 	}
 
