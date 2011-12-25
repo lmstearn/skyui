@@ -1,12 +1,13 @@
 ﻿import skyui.IColumnFormatter;
 import skyui.Defines;
 
-
 class skyui.InventoryColumnFormatter implements IColumnFormatter
 {
 	private static var STATES = ["None", "Equipped", "LeftEquip", "RightEquip", "LeftAndRightEquip"];
 
 	private var _maxTextLength:Number;
+	
+	static var DEBUG_LEVEL = 1;
 	
 	function InventoryColumnFormatter()
 	{

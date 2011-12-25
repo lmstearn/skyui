@@ -1,5 +1,8 @@
 ﻿class skyui.InventoryDataFetcher implements skyui.IDataFetcher
 {
+	
+	static var DEBUG_LEVEL = 1;
+	
 	function processEntry(a_entryObject:Object, a_itemInfo:Object)
 	{
 		if (DEBUG_LEVEL > 0) _global.skse.Log("InventoryDataFetcher processEntry()");

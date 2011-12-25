@@ -1,4 +1,7 @@
-﻿dynamic class BarterMenu extends ItemMenu
+﻿import skyui.InventoryColumnFormatter;
+import skyui.InventoryDataFetcher;
+
+dynamic class BarterMenu extends ItemMenu
 {
 	var bPCControlsReady: Boolean = true;
 	var BottomBar_mc;
@@ -11,6 +14,11 @@
 	var iPlayerGold;
 	var iSelectedCategory;
 	var iVendorGold;
+	
+	var CategoryListIconArt:Array;
+	
+	var ColumnFormatter:InventoryColumnFormatter;
+	var DataFetcher:InventoryDataFetcher;
 
 	function BarterMenu()
 	{
@@ -20,6 +28,15 @@
 		this.iVendorGold = 0;
 		this.iPlayerGold = 0;
 		this.iConfirmAmount = 0;
+		
+		CategoryListIconArt = ["cat_favorites", "inv_all", "inv_weapons", "inv_armor",
+							   "inv_potions", "inv_scrolls", "inv_food", "inv_ingredients",
+							   "inv_books", "inv_keys", "inv_misc"];
+		
+		ColumnFormatter = new InventoryColumnFormatter();
+		ColumnFormatter.maxTextLength = 80;
+		
+		DataFetcher = new InventoryDataFetcher();
 	}
 
 	function InitExtensions()
@@ -32,6 +49,11 @@
 		this.BottomBar_mc.SetButtonArt({PCArt: "Tab", XBoxArt: "360_B", PS3Art: "PS3_B"}, 1);
 		this.BottomBar_mc.Button1.addEventListener("click", this, "onExitButtonPress");
 		this.BottomBar_mc.Button1.disabled = false;
+		
+		InventoryLists_mc.ItemsList.entryClassName = "ItemsListEntryInv";
+		InventoryLists_mc.ItemsList.columnFormatter = ColumnFormatter;
+		InventoryLists_mc.ItemsList.dataFetcher = DataFetcher;
+		InventoryLists_mc.ItemsList.setConfigSection("ItemList");
 	}
 
 	function onExitButtonPress()
