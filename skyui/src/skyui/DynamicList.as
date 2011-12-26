@@ -83,13 +83,12 @@ class skyui.DynamicList extends MovieClip
 	{
 		if (DEBUG_LEVEL > 0)
 			_global.skse.Log("DynamicList getClipByIndex()");
-		_global.skse.Log("index = " + a_index);
+
 		if (a_index < 0) {
 			return undefined;
 		}
 		
 		var entryClip = this["Entry" + a_index];
-		_global.skse.Log("entryClip = " + entryClip);
 		if (entryClip != undefined) {
 			return entryClip;
 		}

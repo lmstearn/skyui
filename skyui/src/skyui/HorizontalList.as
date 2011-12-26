@@ -75,11 +75,8 @@ class skyui.HorizontalList extends skyui.FilteredCategoryList
 		if (_selectedIndex == -1)
 		{
 			// Set initial category to first entry when opening menu
-			if (DEBUG_LEVEL > 1)
+			if (DEBUG_LEVEL > 0)
 				_global.skse.Log("Current category selected index = " + _selectedIndex);
-			//if (_prevSelectedIndex != undefined)
-				//restoreSelectedEntry(_prevSelectedIndex);
-			//else restoreSelectedEntry(_filteredList[0].unfilteredIndex);
 			if (_prevFilteredIndex != undefined)
 			{
 				if (_filteredList[_prevFilteredIndex] != undefined)
@@ -87,7 +84,7 @@ class skyui.HorizontalList extends skyui.FilteredCategoryList
 				else restoreSelectedEntry(_filteredList[_prevFilteredIndex - 1].unfilteredIndex);
 			}
 			else restoreSelectedEntry(0);
-			if (DEBUG_LEVEL > 1)
+			if (DEBUG_LEVEL > 0)
 				_global.skse.Log("category selected index now = " + _selectedIndex);
 		}
 		if (_selectorPos < _targetSelectorPos)
@@ -139,12 +136,10 @@ class skyui.HorizontalList extends skyui.FilteredCategoryList
 
 			return;
 		}
-		if (DEBUG_LEVEL > 1)
+		if (DEBUG_LEVEL > 0)
 			_global.skse.Log("updateSelector() selectedIndex = " + _selectedIndex);
 		var selectedClip = getClipByIndex(_entryList[_selectedIndex].filteredIndex);
-		if (selectedClip.divider)
-			return;
-		if (DEBUG_LEVEL > 1)
+		if (DEBUG_LEVEL > 0)
 			_global.skse.Log("updateSelector() selectedClip = " + selectedClip + " name = " + selectedClip.text + " selectedIndex = " + _selectedIndex);
 		_targetSelectorPos = selectedClip._x + (selectedClip.buttonArea._width - selectorCenter._width) / 2;
 
@@ -172,7 +167,7 @@ class skyui.HorizontalList extends skyui.FilteredCategoryList
 			_global.skse.Log("HorizontalList refreshSelector()");
 		selectorCenter._visible = true;
 		var selectedClip = getClipByIndex(_entryList[_selectedIndex].filteredIndex);
-		if (DEBUG_LEVEL > 1)
+		if (DEBUG_LEVEL > 0)
 			_global.skse.Log("refreshSelector() selectedClip = " + selectedClip + " name = " + selectedClip.text);
 		selectorCenter._x = _selectorPos;
 
@@ -194,8 +189,6 @@ class skyui.HorizontalList extends skyui.FilteredCategoryList
 			_global.skse.Log("HorizontalList onItemPress()");
 		if (!_bDisableInput && !_bDisableSelection && _selectedIndex != -1)
 		{
-
-			//_parent._parent.debug.textField.SetText("ItemPress true" + counter);
 			updateSelector();
 			dispatchEvent({type:"itemPress", index:_selectedIndex, entry:_entryList[_selectedIndex], keyboardOrMouse:a_keyboardOrMouse});
 		}

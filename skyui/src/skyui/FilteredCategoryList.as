@@ -193,7 +193,8 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 		{
 			if (isDivider(_filteredList[i]))
 			{
-				_dividerIndex = i;
+				_dividerIndex = _filteredList[i].unfilteredIndex;
+				if (DEBUG_LEVEL > 0) _global.skse.Log("FilteredCategoryList UpdateList(), _dividerIndex = " + _dividerIndex);
 			} 
 		}
 
@@ -308,13 +309,15 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 		if (!_bNoIcons)
 		{
 			var a_index = entryClip.clipIndex;
+			if (DEBUG_LEVEL > 0)
+				_global.skse.Log("setCategoryIcons() entry = " + entry.text + " , flag = " + entry.flag);
 			switch (entry.flag)
 			{
 				case Defines.FLAG_CATEGORY_DIVIDER :	// 0
-					entryClip.icon.gotoAndStop("category_divider");
+					entryClip.icon.gotoAndStop("cat_divider");
 					break;
 				case Defines.FLAG_INV_FAVORITES :	// 1
-					entryClip.icon.gotoAndStop(_iconArt[a_index]);
+					entryClip.icon.gotoAndStop("cat_favorites");
 					break;
 				case Defines.FLAG_CRAFTING_HIDE :
 				case Defines.FLAG_INV_WEAPONS :	// 2
@@ -323,11 +326,11 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 						entryClip.icon.gotoAndStop("category_hide");
 					}
 					else {
-						entryClip.icon.gotoAndStop(_iconArt[a_index]);
+						entryClip.icon.gotoAndStop("inv_weapons");
 					}
 					break;
 				case Defines.FLAG_INV_ARMOR :	// 4
-					entryClip.icon.gotoAndStop(_iconArt[a_index]);
+					entryClip.icon.gotoAndStop("inv_armor");
 					break;
 				case Defines.FLAG_ENCHANTING_ITEM :	// 5
 					entryClip.icon.gotoAndStop("category_item");
@@ -339,7 +342,7 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 						entryClip.icon.gotoAndStop("category_iron");
 					}
 					else {
-						entryClip.icon.gotoAndStop(_iconArt[a_index]);
+						entryClip.icon.gotoAndStop("inv_potions");
 					}
 					break;
 				case Defines.FLAG_ENCHANTING_DISENCHANT :	// 10
@@ -352,7 +355,7 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 						entryClip.icon.gotoAndStop("category_iron");
 					}
 					else {
-						entryClip.icon.gotoAndStop(_iconArt[a_index]);;
+						entryClip.icon.gotoAndStop("inv_scrolls");
 					}
 					break;
 				case Defines.FLAG_CRAFTING_IMPERIAL :
@@ -362,7 +365,7 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 						entryClip.icon.gotoAndStop("category_imperial");
 					}
 					else {
-						entryClip.icon.gotoAndStop(_iconArt[a_index]);
+						entryClip.icon.gotoAndStop("inv_food");
 					}
 					break;
 				case Defines.FLAG_ENCHANTING_ENCHANTMENT :	// 48
@@ -383,7 +386,7 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 					}
 					else
 					{
-						entryClip.icon.gotoAndStop(_iconArt[a_index]);
+						entryClip.icon.gotoAndStop("inv_ingredients");
 						break;
 					}
 				case Defines.FLAG_CRAFTING_LEATHER :
@@ -393,7 +396,7 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 						entryClip.icon.gotoAndStop("category_leather");
 					}
 					else {
-						entryClip.icon.gotoAndStop(_iconArt[a_index]);
+						entryClip.icon.gotoAndStop("inv_books");
 					}
 					break;
 				case Defines.FLAG_CRAFTING_DWARVEN :
@@ -403,14 +406,14 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 						entryClip.icon.gotoAndStop("category_dwarven");
 					}
 					else {
-						entryClip.icon.gotoAndStop(_iconArt[a_index]);
+						entryClip.icon.gotoAndStop("inv_keys");
 					}
 					break;
 				case Defines.FLAG_INV_MISC :	// 512
-					entryClip.icon.gotoAndStop(_iconArt[a_index]);
+					entryClip.icon.gotoAndStop("inv_misc");
 					break;
 				case Defines.FLAG_INV_ALL :	// 1023
-					entryClip.icon.gotoAndStop(_iconArt[a_index]);
+					entryClip.icon.gotoAndStop("inv_all");
 					break;
 				case Defines.FLAG_BARTER_WEAPONS :
 				case Defines.FLAG_CRAFTING_ORCISH :	/// 2048
@@ -419,7 +422,7 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 						entryClip.icon.gotoAndStop("category_orcish");
 					}
 					else {
-						entryClip.icon.gotoAndStop(_iconArt[a_index]);
+						entryClip.icon.gotoAndStop("inv_weapons");
 					}
 					break;
 				case Defines.FLAG_BARTER_ARMOR :
@@ -429,11 +432,11 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 						entryClip.icon.gotoAndStop("category_ebony");
 					}
 					else {
-						entryClip.icon.gotoAndStop(_iconArt[a_index]);
+						entryClip.icon.gotoAndStop("inv_armor");
 					}
 					break;
 				case Defines.FLAG_BARTER_POTIONS :	// 8192
-					entryClip.icon.gotoAndStop(_iconArt[a_index]);
+					entryClip.icon.gotoAndStop("inv_potions");
 					break;
 				case Defines.FLAG_BARTER_SCROLLS :
 				case Defines.FLAG_CRAFTING_DRAGON :	// 16384
@@ -442,7 +445,7 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 						entryClip.icon.gotoAndStop("category_dragonplate");
 					}
 					else {
-						entryClip.icon.gotoAndStop(_iconArt[a_index]);
+						entryClip.icon.gotoAndStop("inv_scrolls");
 					}
 					break;
 				case Defines.FLAG_BARTER_FOOD :
@@ -452,26 +455,26 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 						entryClip.icon.gotoAndStop("category_daedric");
 					}
 					else {
-						entryClip.icon.gotoAndStop(_iconArt[a_index]);
+						entryClip.icon.gotoAndStop("inv_food");
 					}
 					break;
 				case Defines.FLAG_BARTER_INGREDIENTS :	// 65536
-					entryClip.icon.gotoAndStop(_iconArt[a_index]);
+					entryClip.icon.gotoAndStop("inv_ingredients");
 					break;
 				case Defines.FLAG_BARTER_BOOKS :	// 131072
-					entryClip.icon.gotoAndStop(_iconArt[a_index]);
+					entryClip.icon.gotoAndStop("inv_books");
 					break;
 				case Defines.FLAG_BARTER_KEYS :	   // 262144
-					entryClip.icon.gotoAndStop(_iconArt[a_index]);
+					entryClip.icon.gotoAndStop("inv_keys");
 					break;
 				case Defines.FLAG_BARTER_MISC :	   // 524288
-					entryClip.icon.gotoAndStop(_iconArt[a_index]);
+					entryClip.icon.gotoAndStop("inv_misc");
 					break;
 				case Defines.FLAG_BARTER_ALL :	   // 1047552
-					entryClip.icon.gotoAndStop(_iconArt[a_index]);
+					entryClip.icon.gotoAndStop("inv_all");
 					break;
 				default :
-					entryClip.icon.gotoAndStop("category_misc");
+					entryClip.icon.gotoAndStop("inv_misc");
 					break;
 			}
 		}
@@ -506,7 +509,6 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 			else if (selectedEntry.filteredIndex > 0)
 			{
 				doSetSelectedIndex(_filteredList[selectedEntry.filteredIndex - 1].unfilteredIndex,1);
-				_global.skse.Log("move left to selectedIndex " + selectedIndex);
 				onItemPress(0);
 			}
 		}
@@ -528,10 +530,9 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 			{
 				doSetSelectedIndex(_filteredList[selectedEntry.filteredIndex + 1].unfilteredIndex,1);
 				if (DEBUG_LEVEL > 1)
-					_global.skse.Log("move right to selectedIndex " + selectedIndex);
+					_global.skse.Log("move right to selectedIndex " + _selectedIndex + " to entry " + _filteredList[selectedEntry.filteredIndex +1].text);
 				onItemPress(0);
 			}
-			//else if (
 		}
 	}
 

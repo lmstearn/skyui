@@ -26,7 +26,7 @@
 	static var FLAG_BARTER_KEYS = 262144;
 	static var FLAG_BARTER_MISC = 524288;
 	
-        static var FLAG_CRAFTING_HIDE = 2;
+    static var FLAG_CRAFTING_HIDE = 2;
 	static var FLAG_CRAFTING_IRON = 8;
 	static var FLAG_CRAFTING_STUDDED = 16;
 	static var FLAG_CRAFTING_IMPERIAL = 32;
