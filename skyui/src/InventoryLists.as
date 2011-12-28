@@ -109,7 +109,7 @@ class InventoryLists extends MovieClip
 		_SearchWidget.addEventListener("inputEnd",this,"onSearchInputEnd");
 		_SearchWidget.addEventListener("inputChange",this,"onSearchInputChange");
 	}
-
+	
 	function onConfigLoad(event)
 	{
 		if (DEBUG_LEVEL > 0)
@@ -134,53 +134,25 @@ class InventoryLists extends MovieClip
 			_global.skse.Log("InventoryLists handleInput()");
 		var bCaught = false;
 
-		if (_currentState == SHOW_PANEL)
-		{
-			if (GlobalFunc.IsKeyPressed(details))
-			{
-				if (details.navEquivalent == NavigationCode.LEFT)
-				{
-					//if (_CategoriesList.selectedIndex == 0 && _CategoriesList.selectedEntry.flag != 1047552 && _CategoriesList.selectedEntry.flag != 10)
-					if (_CategoriesList.selectedIndex > 0)
-					{
-						if (DEBUG_LEVEL > 1)
-							_global.skse.Log("InventoryLists handleInput() navigation LWDR");
+		if (_currentState == SHOW_PANEL) {
+			if (GlobalFunc.IsKeyPressed(details)) {
+				if (details.navEquivalent == NavigationCode.LEFT) {
 						_CategoriesList.moveSelectionLeft();
 						bCaught = true;
-					}
-					else
-					{
-						if (DEBUG_LEVEL > 1)
-							_global.skse.Log("InventoryLists handleInput() exitMenuRect");
-						_parent.onExitMenuRectClick();
-					}
 
-				}
-				else if (details.navEquivalent == NavigationCode.RIGHT)
-				{
-					if (DEBUG_LEVEL > 1)
-						_global.skse.Log("InventoryLists handleInput() navigation RIGHT");
+				} else if (details.navEquivalent == NavigationCode.RIGHT) {
 					_CategoriesList.moveSelectionRight();
 					bCaught = true;
 
 					// Search hotkey (default space)
-				}
-				else if (details.code == _searchKey)
-				{
-					if (DEBUG_LEVEL > 1)
-						_global.skse.Log("InventoryLists handleInput() details.code = " + details.code + " , searchKey = " + _searchKey);
+				} else if (details.code == _searchKey) {
 					bCaught = true;
 					_SearchWidget.startInput();
 				}
 			}
-			if (!bCaught)
-			{
+			if (!bCaught) {
 				bCaught = pathToFocus[0].handleInput(details, pathToFocus.slice(1));
-				if (DEBUG_LEVEL > 1)
-					_global.skse.Log("InventoryLists handleInput() bCaught = " + bCaught);
 			}
-
-
 		}
 		return bCaught;
 	}

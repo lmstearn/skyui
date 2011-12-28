@@ -22,6 +22,9 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 	private var _dividerIndex:Number;
 	
 	private var _iconArt:Array;
+	private var _bFastSwitch:Boolean;
+	
+	private var _bViewingVendorItems:Boolean;
 
 	function FilteredCategoryList()
 	{
@@ -64,10 +67,40 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 			_global.skse.Log("generateFilteredList() copy entrylist into filteredlist");
 		for (var i = 0; i < _entryList.length; i++)
 		{
+			if (DEBUG_LEVEL > 1)
+				_global.skse.Log("reading entry " + _entryList[i].text);
 			_entryList[i].unfilteredIndex = i;
 			_entryList[i].filteredIndex = undefined;
 			_filteredList[i] = _entryList[i];
+			if (_entryList[i].divider)
+				_dividerIndex = i;
+			_filteredList[i].barterFlag = undefined;
 		}
+		
+		// filter out barter/player categories
+		if (_bViewingVendorItems)
+		{
+			if (DEBUG_LEVEL > 1)
+				_global.skse.Log("Setting Barter Categories... DIVIDERINDEX = " + _dividerIndex);
+			for (var i = _dividerIndex; i < _filteredList.length; i++)
+			{
+				if (DEBUG_LEVEL > 1)
+					_global.skse.Log("Filtering out Player category " + _filteredList[i].text + " filterFlag = " + _filteredList[i].filterFlag);
+				_filteredList[i].barterFlag = 1;
+			}
+		}
+		else if (!_bViewingVendorItems)
+		{
+			if (DEBUG_LEVEL > 1)
+				_global.skse.Log("Setting Player Categories... DIVIDERINDEX = " + _dividerIndex);
+			for (var i = 0; i <= _dividerIndex; i++)
+			{
+				if (DEBUG_LEVEL > 1)
+					_global.skse.Log("Filtering out Barter category " + _filteredList[i].text + " filterFlag = " + _filteredList[i].filterFlag);
+				_filteredList[i].barterFlag = 1;
+			}			
+		}
+		
 		if (DEBUG_LEVEL > 1)
 			_global.skse.Log("generateFilteredList() process");
 		for (var i = 0; i < _filterChain.length; i++)
@@ -194,7 +227,7 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 			if (isDivider(_filteredList[i]))
 			{
 				_dividerIndex = _filteredList[i].unfilteredIndex;
-				if (DEBUG_LEVEL > 0) _global.skse.Log("FilteredCategoryList UpdateList(), _dividerIndex = " + _dividerIndex);
+				if (DEBUG_LEVEL > 1) _global.skse.Log("FilteredCategoryList UpdateList(), _dividerIndex = " + _dividerIndex);
 			} 
 		}
 
@@ -226,8 +259,11 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 				_global.skse.Log("getClipByIndex " + _listIndex + " for entry " + _filteredList[i]);
 			
 			var entryClip = getClipByIndex(_listIndex);
-			if (_filteredList[i].divider)
+			
+			if (_filteredList[i].divider) {
 				entryClip.divider = true;
+			}
+			
 			setCategoryIcons(entryClip,_filteredList[i]);
 			
 			if (DEBUG_LEVEL > 1)
@@ -255,12 +291,6 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 			entryClip.buttonArea._width = w;
 			cw = cw + w;
 			_listIndex++;
-			/*var catInfo = _filteredList[i];
-			_global.skse.Log("reading category info for " + _filteredList[i].text);
-			for(var key:String in catInfo);
-			{
-			_global.skse.Log(key + ": " + catInfo[key]);
-			}*/
 		}
 		if (DEBUG_LEVEL > 1)
 			_global.skse.Log("FilteredCategoryList filteredList length = " + _filteredList.length + " , size = " + _listIndex);
@@ -272,15 +302,17 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 		var spacing = (_totalWidth - _contentWidth) / (_filteredList.length + 1);
 
 		var xPos = xOffset + _indent + spacing;
-
+		
+		
 		for (var i = 0; i < _filteredList.length; i++)
 		{
-			_global.skse.Log("_filteredList[i] = " + _filteredList[i]);
+			if (DEBUG_LEVEL > 1)
+				_global.skse.Log("_filteredList[i] = " + _filteredList[i]);
 			var entryClip = getClipByIndex(i);
 			entryClip._x = xPos;
-			_global.skse.Log("clip index in pos " + i + " = " + entryClip.itemIndex);
+			if (DEBUG_LEVEL > 1)
+				_global.skse.Log("clip index in pos " + i + " = " + entryClip.itemIndex);
 			xPos = xPos + entryClip.buttonArea._width + spacing;
-			//_global.skse.Log("setting clip " + entryList[_indexMap[i]] + " visible to true");
 			entryClip._visible = true;
 
 		}
@@ -291,9 +323,8 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 			getClipByIndex(i)._visible = false;
 			getClipByIndex(i).itemIndex = undefined;
 		}
+		
 		_prevListIndex = _listIndex;
-		if (DEBUG_LEVEL > 1)
-			_global.skse.Log("EXITING FilteredCategoryList UpdateList()");
 	}
 
 	function setCategoryIcons(entryClip, entry)
@@ -509,8 +540,12 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 			else if (selectedEntry.filteredIndex > 0)
 			{
 				doSetSelectedIndex(_filteredList[selectedEntry.filteredIndex - 1].unfilteredIndex,1);
-				onItemPress(0);
 			}
+            else {
+				_bFastSwitch = true;
+				doSetSelectedIndex(_filteredList[_filteredList.length - 1].unfilteredIndex,1);
+			}
+            onItemPress(0);
 		}
 	}
 	function moveSelectionRight()
@@ -531,8 +566,12 @@ class skyui.FilteredCategoryList extends skyui.DynamicList
 				doSetSelectedIndex(_filteredList[selectedEntry.filteredIndex + 1].unfilteredIndex,1);
 				if (DEBUG_LEVEL > 1)
 					_global.skse.Log("move right to selectedIndex " + _selectedIndex + " to entry " + _filteredList[selectedEntry.filteredIndex +1].text);
-				onItemPress(0);
 			}
+            else {
+                _bFastSwitch = true;
+                doSetSelectedIndex(_filteredList[0].unfilteredIndex,1);
+            }
+            onItemPress(0);
 		}
 	}
 

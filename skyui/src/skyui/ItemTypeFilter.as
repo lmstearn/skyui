@@ -58,7 +58,7 @@ class skyui.ItemTypeFilter implements skyui.IFilter
 */
 	function entryMatchesFilter(a_entry)
 	{
-		if (DEBUG_LEVEL > 0)
+		if (DEBUG_LEVEL > 1)
 			_global.skse.Log("ItemTypeFilter entryMatchesFilter()");
 		//_global.skse.Log("entry = " + a_entry.text + ", filterFlag = " + a_entry.filterFlag + ", _itemFilter = " + _itemFilter + ", flag = " + a_entry.flag);
 		return (a_entry != undefined && (a_entry.filterFlag == undefined || (a_entry.filterFlag & _itemFilter) != 0));
@@ -66,7 +66,7 @@ class skyui.ItemTypeFilter implements skyui.IFilter
 
 	function entryMatchesPartitionedFilter(a_entry)
 	{
-		if (DEBUG_LEVEL > 0)
+		if (DEBUG_LEVEL > 1)
 			_global.skse.Log("ItemTypeFilter entryMatchesPartitionedFilter()");
 		var _loc3 = false;
 		if (a_entry != undefined)
@@ -94,9 +94,9 @@ class skyui.ItemTypeFilter implements skyui.IFilter
 			_global.skse.Log("ItemTypeFilter process()");
 		for (var i = 0; i < a_filteredList.length; i++)
 		{
-			if (!entryMatchesFunc(a_filteredList[i]))
+			if (!entryMatchesFunc(a_filteredList[i]) || a_filteredList[i].barterFlag)
 			{
-				//_global.skse.Log("Filtering out " + a_filteredList[i].text);
+				_global.skse.Log("Filtering out " + a_filteredList[i].text);
 				a_filteredList.splice(i,1);
 				i--;
 			}

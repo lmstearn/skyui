@@ -24,6 +24,7 @@ class skyui.HorizontalList extends skyui.FilteredCategoryList
 
 		_selectorPos = 0;
 		_targetSelectorPos = 0;
+		_bFastSwitch = false;
 
 		if (borderWidth != undefined)
 		{
@@ -87,7 +88,12 @@ class skyui.HorizontalList extends skyui.FilteredCategoryList
 			if (DEBUG_LEVEL > 0)
 				_global.skse.Log("category selected index now = " + _selectedIndex);
 		}
-		if (_selectorPos < _targetSelectorPos)
+		if (_bFastSwitch && _selectorPos != _targetSelectorPos) {
+			_selectorPos = _targetSelectorPos;
+			_bFastSwitch = false;
+			refreshSelector();
+			
+		} else	if (_selectorPos < _targetSelectorPos)
 		{
 			_selectorPos = _selectorPos + (_targetSelectorPos - _selectorPos) * 0.2 + 1;
 
@@ -183,7 +189,7 @@ class skyui.HorizontalList extends skyui.FilteredCategoryList
 		}
 	}
 
-	function onItemPress(a_keyboardOrMouse)
+	function onItemPress(a_keyboardOrMouse:Number)
 	{
 		if (DEBUG_LEVEL > 0)
 			_global.skse.Log("HorizontalList onItemPress()");
@@ -228,5 +234,10 @@ class skyui.HorizontalList extends skyui.FilteredCategoryList
 		return processed;
 	}
 
+	function isViewingVendorItems(a_view)
+	{
+		_bViewingVendorItems = a_view;
+		InvalidateData();
+	}
 
 }
