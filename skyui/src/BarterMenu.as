@@ -1,24 +1,26 @@
 ﻿import skyui.InventoryColumnFormatter;
 import skyui.BarterDataFetcher;
 import skyui.TabBar;
+import gfx.ui.NavigationCode;
 
 dynamic class BarterMenu extends ItemMenu
 {
-	var bPCControlsReady: Boolean = true;
-	var BottomBar_mc;
-	var InventoryLists_mc;
-	var ItemCard_mc;
-	var PlayerInfoObj;
-	var fBuyMult;
-	var fSellMult;
-	var iConfirmAmount;
-	var iPlayerGold;
-	var iSelectedCategory;
-	var iVendorGold;
+	private var bPCControlsReady: Boolean = true;
+	private var BottomBar_mc:MovieClip;
+	private var InventoryLists_mc:MovieClip;
+	private var ItemCard_mc:MovieClip;
+	private var PlayerInfoObj;
+	private var fBuyMult:Number;
+	private var fSellMult:Number;
+	private var iConfirmAmount;
+	private var iPlayerGold:Number;
+	private var iSelectedCategory;
+	private var iVendorGold:Number;
 	private var _CategoriesList;
 	private var _tabBar:TabBar;
 	private var _viewingVendorItems:Boolean;
 	private var _prevSelectedTab:Number;
+	private var _bAllowTabs:Boolean;
 	
 	//var CategoryListIconArt:Array;
 	
@@ -28,12 +30,13 @@ dynamic class BarterMenu extends ItemMenu
 	function BarterMenu()
 	{
 		super();
-		this.fBuyMult = 1;
-		this.fSellMult = 1;
-		this.iVendorGold = 0;
-		this.iPlayerGold = 0;
-		this.iConfirmAmount = 0;
-		this._viewingVendorItems = true;
+		fBuyMult = 1;
+		fSellMult = 1;
+		iVendorGold = 0;
+		iPlayerGold = 0;
+		iConfirmAmount = 0;
+		_viewingVendorItems = true;
+		_bAllowTabs = true;
 		
 		/*CategoryListIconArt = ["cat_favorites", "inv_all", "inv_weapons", "inv_armor",
 							   "inv_potions", "inv_scrolls", "inv_food", "inv_ingredients",
@@ -70,29 +73,49 @@ dynamic class BarterMenu extends ItemMenu
 	
 		_tabBar.addEventListener("tabPress",this,"onTabPress");
 	}
+	
+	function handleInput(details, pathToFocus)
+	{
+		if (DEBUG_LEVEL > 0) _global.skse.Log("BarterMenu handleInput()");
+		if (_bFadedIn) {
+			if (!pathToFocus[0].handleInput(details, pathToFocus.slice(1))) {
+				if (GlobalFunc.IsKeyPressed(details) && details.navEquivalent == NavigationCode.TAB) {
+					GameDelegate.call("CloseMenu",[]);
+				}
+			}
+			else if (details.navEquivalent == NavigationCode.TAB) {
+					GameDelegate.call("CloseMenu",[]);
+					// Allow tab selection, fixes quantity menu bug
+					_bAllowTabs = true;
+			}
+		} 
+		return true;
+	}
 
 	function onTabPress(event)
 	{
 		if (DEBUG_LEVEL > 0)
 			_global.skse.Log("BarterMenu onTabChange()");
-		
-		if (event.index == 1 && event.index != _prevSelectedTab) // buy
+		if (_bAllowTabs)
 		{
-			InventoryLists_mc.ItemsList.dataFetcher._barterMult = this.fBuyMult;
-			_CategoriesList.isViewingVendorItems(true);
-			InventoryLists_mc.ItemsList.InvalidateData();
-			_viewingVendorItems = true;
-			this.BottomBar_mc.SetButtonsText("$Buy", "$Exit");
+			if (event.index == 1 && event.index != _prevSelectedTab) // buy
+			{
+				InventoryLists_mc.ItemsList.dataFetcher._barterMult = this.fBuyMult;
+				_CategoriesList.isViewingVendorItems(true);
+				InventoryLists_mc.ItemsList.InvalidateData();
+				_viewingVendorItems = true;
+				this.BottomBar_mc.SetButtonsText("$Buy", "$Exit");
+			}
+			else if (event.index == 2 && event.index != _prevSelectedTab) // sell
+			{
+				InventoryLists_mc.ItemsList.dataFetcher._barterMult = this.fSellMult;
+				_CategoriesList.isViewingVendorItems(false);
+				InventoryLists_mc.ItemsList.InvalidateData();
+				_viewingVendorItems = false;
+				this.BottomBar_mc.SetButtonsText("$Sell", "$Exit");
+			}
+			_prevSelectedTab = event.index;
 		}
-		else if (event.index == 2 && event.index != _prevSelectedTab) // sell
-		{
-			InventoryLists_mc.ItemsList.dataFetcher._barterMult = this.fSellMult;
-			_CategoriesList.isViewingVendorItems(false);
-			InventoryLists_mc.ItemsList.InvalidateData();
-			_viewingVendorItems = false;
-			this.BottomBar_mc.SetButtonsText("$Sell", "$Exit");
-		}
-		_prevSelectedTab = event.index;
 	}
 
 	function onExitButtonPress()
@@ -150,6 +173,8 @@ dynamic class BarterMenu extends ItemMenu
 			return;
 		}
 		this.doTransaction(event.amount);
+		// allow tabs after transaction
+		_bAllowTabs = true;
 	}
 
 	function ShowRawDealWarning(strWarning)
@@ -217,6 +242,8 @@ dynamic class BarterMenu extends ItemMenu
 			if (event.opening) 
 			{
 				this.onQuantitySliderChange({value: this.ItemCard_mc.itemInfo.count});
+				// disable tabs while quantity menu is open
+				_bAllowTabs = false;
 				return;
 			}
 			this.BottomBar_mc.SetBarterInfo(this.iPlayerGold, this.iVendorGold);
