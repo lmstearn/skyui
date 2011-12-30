@@ -1,6 +1,7 @@
 ﻿import skyui.IColumnFormatter;
 import skyui.Defines;
 
+
 class skyui.InventoryColumnFormatter implements IColumnFormatter
 {
 	private static var STATES = ["None", "Equipped", "LeftEquip", "RightEquip", "LeftAndRightEquip"];
@@ -162,7 +163,7 @@ class skyui.InventoryColumnFormatter implements IColumnFormatter
 			a_entryField.textAutoSize = "shrink";
 			a_entryField.SetText(text);
 
-			if (a_entryObject.negativeEffect == true || a_entryObject.isStealing == true) {
+			if (a_entryObject.negativeEffect == true) {
 				a_entryField.textColor = a_entryObject.enabled == false ? (8388608) : (16711680);
 			} else {
 				a_entryField.textColor = a_entryObject.enabled == false ? (5000268) : (16777215);
@@ -202,7 +203,7 @@ class skyui.InventoryColumnFormatter implements IColumnFormatter
 			}
 
 			// Stolen Icon
-			if (a_entryObject.infoIsStolen == true) {
+			if (a_entryObject.infoIsStolen == true || a_entryObject.isStealing) {
 				a_entryClip.stolenIcon._x = iconPos;
 				iconPos = iconPos + iconSpace;
 				a_entryClip.stolenIcon.gotoAndStop("show");
@@ -226,13 +227,11 @@ class skyui.InventoryColumnFormatter implements IColumnFormatter
 
 	function formatNumber(a_entryField:Object, a_entryObject:Object)
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("InventoryColumnFormatter formatNumber()");
 		// Do nothing. Those require no special formating and the value has already been set
 	}
 
 	function formatText(a_entryField:Object, a_entryObject:Object)
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("InventoryColumnFormatter formatText()");
 		// Do nothing. Those require no special formating and the value has already been set
 	}
 }

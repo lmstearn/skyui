@@ -18,8 +18,6 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 	// Children
 	var scrollbar:MovieClip;
 
-	var debug;
-
 	// Constructor
 	function DynamicScrollingList()
 	{
@@ -64,8 +62,8 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 		if (!_bDisableInput) {
 			var entry = getClipByIndex(selectedIndex - scrollPosition);
 			// if divider , ignore
-			if (isDivider(entry))
-				return;
+			//if (isDivider(entry))
+				//return;
 			
 			processed = entry != undefined && entry.handleInput != undefined && entry.handleInput(details, pathToFocus.slice(1));
 

@@ -7,7 +7,7 @@
 	
 	function processEntry(a_entryObject:Object, a_itemInfo:Object)
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("BarterDataFetcher processEntry(), barterMult = " + _barterMult);
+		//if (DEBUG_LEVEL > 0) _global.skse.Log("BarterDataFetcher processEntry(), barterMult = " + _barterMult);
 		switch (a_itemInfo.type) {
 			case InventoryDefines.ICT_ARMOR :
 				a_entryObject.infoArmor = a_itemInfo.armor;
@@ -31,8 +31,6 @@
 				a_entryObject.infoSoulLVL = a_itemInfo.soulLVL;
 				break;
 		}
-
-		//a_entryObject.infoValue = Math.round(a_itemInfo.value);
 		a_entryObject.infoValue = Math.round(a_itemInfo.value * _barterMult);
 		a_entryObject.infoWeight = int(a_itemInfo.weight * 100) / 100;
 		a_entryObject.infoType = a_itemInfo.type;

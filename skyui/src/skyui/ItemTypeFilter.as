@@ -37,13 +37,6 @@ class skyui.ItemTypeFilter implements skyui.IFilter
 		}
 	}
 
-	function categoryFilterChange()
-	{
-		if (DEBUG_LEVEL > 0)
-			_global.skse.Log("ItemTypeFilter categoryFilterChange()");
-		dispatchEvent({type:"filterChange"});
-	}
-
 	function setPartitionedFilterMode(a_bPartition)
 	{
 		if (DEBUG_LEVEL > 0)
@@ -94,7 +87,7 @@ class skyui.ItemTypeFilter implements skyui.IFilter
 			_global.skse.Log("ItemTypeFilter process()");
 		for (var i = 0; i < a_filteredList.length; i++)
 		{
-			if (!entryMatchesFunc(a_filteredList[i]) || a_filteredList[i].barterFlag)
+			if (!entryMatchesFunc(a_filteredList[i]))
 			{
 				_global.skse.Log("Filtering out " + a_filteredList[i].text);
 				a_filteredList.splice(i,1);

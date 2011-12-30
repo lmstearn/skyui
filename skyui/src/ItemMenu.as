@@ -246,10 +246,10 @@ class ItemMenu extends MovieClip
         if (DEBUG_LEVEL > 0)
 		{
 			_global.skse.Log("ItemMenu onItemHighlightChange()");
-			for (var key:String in event)
+			/*for (var key:String in event)
 			{
 				_global.skse.Log(key + " : " + event[key]);
-			}
+			}*/
 		}
 		if (event.index != -1) {
 			
@@ -273,13 +273,7 @@ class ItemMenu extends MovieClip
 	function onShowItemsList(event)
 	{
 		if (DEBUG_LEVEL > 0)
-		{
 			_global.skse.Log("ItemMenu onShowItemsList()");
-			for (var key:String in event)
-			{
-				_global.skse.Log(key + " : " + event[key]);
-			}
-		}
 		onItemHighlightChange(event);
 	}
 

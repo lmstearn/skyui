@@ -75,7 +75,6 @@ class skyui.DynamicList extends MovieClip
 	
 	function createEntryClip(a_index:Number):MovieClip
 	{
-		trace(_entryClassName);
 		return attachMovie(_entryClassName, "Entry" + a_index, getNextHighestDepth());
 	}
 
@@ -89,6 +88,7 @@ class skyui.DynamicList extends MovieClip
 		}
 		
 		var entryClip = this["Entry" + a_index];
+
 		if (entryClip != undefined) {
 			return entryClip;
 		}
@@ -101,7 +101,6 @@ class skyui.DynamicList extends MovieClip
 		entryClip.onRollOver = function()
 		{
 			if (!_parent.listAnimating && !_parent._bDisableInput && this.itemIndex != undefined) {
-				_global.skse.Log("onRollOver itemIndex = " + this.itemIndex);
 				_parent.doSetSelectedIndex(this.itemIndex, 0);
 				_parent._bMouseDrivenNav = true;
 			}
@@ -142,7 +141,7 @@ class skyui.DynamicList extends MovieClip
 	{
 		if (DEBUG_LEVEL > 0)
 			_global.skse.Log("DynamicList doSetSelectedIndex()");
-		if (DEBUG_LEVEL > 1)
+		if (DEBUG_LEVEL > 0)
 			_global.skse.Log("DynamicList doSetSelectedIndex " + a_newIndex);
 		if (!_bDisableSelection && a_newIndex != _selectedIndex) {
 			var oldIndex = _selectedIndex;
@@ -153,6 +152,8 @@ class skyui.DynamicList extends MovieClip
 			}
 
 			if (_selectedIndex != -1) {
+				if (DEBUG_LEVEL > 0)
+					_global.skse.Log("DynamicList doSetSelectedIndex() setting new entry " + _entryList[_selectedIndex].text);
 				setEntry(getClipByIndex(_entryList[_selectedIndex].clipIndex),_entryList[_selectedIndex]);
 			}
 
@@ -203,11 +204,6 @@ class skyui.DynamicList extends MovieClip
 	function set disableInput(a_bFlag:Boolean)
 	{
 		_bDisableInput = a_bFlag;
-	}
-
-	function isDivider(a_entryObject)
-	{
-		return (a_entryObject.divider == true || a_entryObject.entry.flag == 0);
 	}
 
 	function get textOption():Number

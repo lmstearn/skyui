@@ -1,284 +1,307 @@
-﻿dynamic class ContainerMenu extends ItemMenu
+﻿import gfx.io.GameDelegate;
+
+import skyui.InventoryColumnFormatter;
+import skyui.InventoryDataFetcher;
+
+
+class ContainerMenu extends ItemMenu
 {
-static var DEBUG_LEVEL:Number = 1;
-	var bPCControlsReady: Boolean = true;
+        static var DEBUG_LEVEL:Number = 1;
 	static var NULL_HAND: Number = -1;
 	static var RIGHT_HAND: Number = 0;
 	static var LEFT_HAND: Number = 1;
-	var BottomBar_mc;
-	var ContainerButtonArt;
-	var InventoryButtonArt;
-	var InventoryLists_mc;
-	var ItemCardFadeHolder_mc;
-	var ItemCard_mc;
-	var ShouldProcessItemsListInput;
-	var bNPCMode;
-	var bShowEquipButtonHelp;
-	var iEquipHand;
-	var iPlatform;
-	var iSelectedCategory;
+
+	private var _bNPCMode:Boolean;
+	private var _bShowEquipButtonHelp:Boolean;
+	private var _equipHand:Number;
+	private var _selectedCategory:Number;
+
+	var ContainerButtonArt:Object;
+	var InventoryButtonArt:Object;
+	var CategoryListIconArt:Array;
+	
+	var ColumnFormatter:InventoryColumnFormatter;
+	var DataFetcher:InventoryDataFetcher;
+
+	// ?
+	var bPCControlsReady:Boolean = true;
+
 
 	function ContainerMenu()
 	{
 		super();
-if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu ContainerMenu()");
-		this.ContainerButtonArt = [{PCArt: "M1M2", XBoxArt: "360_LTRT", PS3Art: "PS3_LBRB"}, {PCArt: "E", XBoxArt: "360_A", PS3Art: "PS3_A"}, {PCArt: "R", XBoxArt: "360_X", PS3Art: "PS3_X"}];
-		this.InventoryButtonArt = [{PCArt: "M1M2", XBoxArt: "360_LTRT", PS3Art: "PS3_LBRB"}, {PCArt: "E", XBoxArt: "360_A", PS3Art: "PS3_A"}, {PCArt: "R", XBoxArt: "360_X", PS3Art: "PS3_X"}, {PCArt: "F", XBoxArt: "360_Y", PS3Art: "PS3_Y"}];
-		this.bNPCMode = false;
-		this.bShowEquipButtonHelp = true;
-		this.iEquipHand = undefined;
+		ContainerButtonArt = [{PCArt:"M1M2",XBoxArt:"360_LTRT",PS3Art:"PS3_LBRB"},
+							  {PCArt:"E",XBoxArt:"360_A",PS3Art:"PS3_A"},
+							  {PCArt:"R",XBoxArt:"360_X",PS3Art:"PS3_X"}];
+		InventoryButtonArt = [{PCArt:"M1M2",XBoxArt:"360_LTRT",PS3Art:"PS3_LBRB"},
+							  {PCArt:"E",XBoxArt:"360_A",PS3Art:"PS3_A"},
+							  {PCArt:"R",XBoxArt:"360_X",PS3Art:"PS3_X"},
+							  {PCArt:"F",XBoxArt:"360_Y",PS3Art:"PS3_Y"}];
+		_bNPCMode = false;
+		_bShowEquipButtonHelp = true;
+		_equipHand = undefined;
+
+		CategoryListIconArt = ["inv_all", "inv_weapons", "inv_armor",
+							   "inv_potions", "inv_scrolls", "inv_food", "inv_ingredients",
+							   "inv_books", "inv_keys", "inv_misc"];
+		
+		ColumnFormatter = new InventoryColumnFormatter();
+		ColumnFormatter.maxTextLength = 80;
+		
+		DataFetcher = new InventoryDataFetcher();
 	}
 
 	function InitExtensions()
 	{
 if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu InitExtensions()");
 		super.InitExtensions(false);
-		gfx.io.GameDelegate.addCallBack("AttemptEquip", this, "AttemptEquip");
-		gfx.io.GameDelegate.addCallBack("XButtonPress", this, "onXButtonPress");
-		this.ItemCardFadeHolder_mc.StealTextInstance._visible = false;
-		InventoryLists_mc.addEventListener("itemHighlightChange",this,"onShowItemsList");
-		this.updateButtons();
+		
+		InventoryLists_mc.CategoriesList.setIconArt(CategoryListIconArt);
+		
+		InventoryLists_mc.ItemsList.entryClassName = "ItemsListEntryInv";
+		InventoryLists_mc.ItemsList.columnFormatter = ColumnFormatter;
+		InventoryLists_mc.ItemsList.dataFetcher = DataFetcher;
+		InventoryLists_mc.ItemsList.setConfigSection("ItemList");
+		
+		GameDelegate.addCallBack("AttemptEquip",this,"AttemptEquip");
+		GameDelegate.addCallBack("XButtonPress",this,"onXButtonPress");
+                ItemCardFadeHolder_mc.StealTextInstance._visible = false;
+		updateButtons();
 	}
 
 	function ShowItemsList()
 	{
-if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu ShowItemsList()");
-		this.InventoryLists_mc.ShowItemsList(false);
+                if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu ShowItemsList()");
+		InventoryLists_mc.showItemsList();
 	}
 
 	function handleInput(details, pathToFocus)
 	{
 if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu handleInput()");
 		super.handleInput(details, pathToFocus);
-		if (this.ShouldProcessItemsListInput(false)) 
-		{
-			if (this.iPlatform == 0 && details.code == 16) 
-			{
-				this.bShowEquipButtonHelp = details.value != "keyUp";
-				this.updateButtons();
+
+		if (ShouldProcessItemsListInput(false)) {
+			if (_platform == 0 && details.code == 16) {
+				_bShowEquipButtonHelp = details.value != "keyUp";
+				updateButtons();
 			}
 		}
+
 		return true;
 	}
 
 	function onXButtonPress()
 	{
-if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu onXButtonPress()");
-		if (this.isViewingContainer() && !this.bNPCMode) 
-		{
-			gfx.io.GameDelegate.call("TakeAllItems", []);
+                if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu onXButtonPress()");
+		if (isViewingContainer() && ! _bNPCMode) {
+			GameDelegate.call("TakeAllItems",[]);
 			return;
 		}
-		if (this.isViewingContainer()) 
-		{
+
+		if (isViewingContainer()) {
 			return;
 		}
-		this.StartItemTransfer();
+
+		StartItemTransfer();
 	}
 
-	function UpdateItemCardInfo(aUpdateObj)
+	function UpdateItemCardInfo(a_updateObj:Object)
 	{
-if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu UpdateItemCardInfo()");
-		super.UpdateItemCardInfo(aUpdateObj);
-		this.updateButtons();
-		if (aUpdateObj.pickpocketChance != undefined) 
-		{
-			this.ItemCardFadeHolder_mc.StealTextInstance._visible = true;
-			this.ItemCardFadeHolder_mc.StealTextInstance.PercentTextInstance.html = true;
-			this.ItemCardFadeHolder_mc.StealTextInstance.PercentTextInstance.htmlText = "<font face=\'$EverywhereBoldFont\' size=\'24\' color=\'#FFFFFF\'>" + aUpdateObj.pickpocketChance + "%</font>" + (this.isViewingContainer() ? _root.TranslationBass.ToStealTextInstance.text : _root.TranslationBass.ToPlaceTextInstance.text);
+                if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu UpdateItemCardInfo()");
+		super.UpdateItemCardInfo(a_updateObj);
+
+		updateButtons();
+		for (var key:String in a_updateObj)
+			_global.skse.Log(key + " : " + a_updateObj[key]);
+		if (a_updateObj.pickpocketChance != undefined) {
+			_global.skse.Log("pickpocketchance, isViewingContainer = " + isViewingContainer());
+			ItemCardFadeHolder_mc.StealTextInstance._visible = true;
+			ItemCardFadeHolder_mc.StealTextInstance.PercentTextInstance.html = true;
+			ItemCardFadeHolder_mc.StealTextInstance.PercentTextInstance.htmlText = "<font face=\'$EverywhereBoldFont\' size=\'24\' color=\'#FFFFFF\'>" + a_updateObj.pickpocketChance + "%</font>" + (isViewingContainer() ? _root.TranslationBass.ToStealTextInstance.text : _root.TranslationBass.ToPlaceTextInstance.text);
 			return;
 		}
-		this.ItemCardFadeHolder_mc.StealTextInstance._visible = false;
+
+		ItemCardFadeHolder_mc.StealTextInstance._visible = false;
 	}
 
 	function onShowItemsList(event)
 	{
-if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu onShowItemsList()");
-		this.iSelectedCategory = this.InventoryLists_mc.CategoriesList.selectedIndex;
-		this.updateButtons();
+                if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu onShowItemsList()");
+		_selectedCategory = InventoryLists_mc.CategoriesList.selectedIndex;
+		updateButtons();
+
 		super.onShowItemsList(event);
 	}
 
 	function onHideItemsList(event)
 	{
-if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu onHideItemsList()");
+                if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu onHideItemsList()");
 		super.onHideItemsList(event);
-		this.BottomBar_mc.UpdatePerItemInfo({type: InventoryDefines.ICT_NONE});
-		this.updateButtons();
+
+		BottomBar_mc.UpdatePerItemInfo({type:InventoryDefines.ICT_NONE});
+		updateButtons();
 	}
 
 	function updateButtons()
 	{
-if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu updateButtons()");
-		this.BottomBar_mc.SetButtonsArt(this.isViewingContainer() ? this.ContainerButtonArt : this.InventoryButtonArt);
-		if (this.InventoryLists_mc.currentState != InventoryLists.TRANSITIONING_TO_SHOW_PANEL && this.InventoryLists_mc.currentState != InventoryLists.SHOW_PANEL) 
-		{
-			this.BottomBar_mc.SetButtonText("", 0);
-			this.BottomBar_mc.SetButtonText("", 1);
-			this.BottomBar_mc.SetButtonText("", 2);
-			this.BottomBar_mc.SetButtonText("", 3);
+                if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu updateButtons()");
+		BottomBar_mc.SetButtonsArt(isViewingContainer() ? ContainerButtonArt:InventoryButtonArt);
+
+		if (InventoryLists_mc.currentState != InventoryLists.TRANSITIONING_TO_SHOW_PANEL && InventoryLists_mc.currentState != InventoryLists.SHOW_PANEL) {
+			BottomBar_mc.SetButtonText("",0);
+			BottomBar_mc.SetButtonText("",1);
+			BottomBar_mc.SetButtonText("",2);
+			BottomBar_mc.SetButtonText("",3);
+
 			return;
 		}
-		this.updateEquipButtonText();
-		if (this.isViewingContainer()) 
-		{
-			this.BottomBar_mc.SetButtonText("$Take", 1);
+
+		updateEquipButtonText();
+
+		if (isViewingContainer()) {
+			BottomBar_mc.SetButtonText("$Take",1);
+		} else {
+			BottomBar_mc.SetButtonText(_bShowEquipButtonHelp ? "":InventoryDefines.GetEquipText(ItemCard_mc.itemInfo.type),1);
 		}
-		else 
-		{
-			this.BottomBar_mc.SetButtonText(this.bShowEquipButtonHelp ? "" : InventoryDefines.GetEquipText(this.ItemCard_mc.itemInfo.type), 1);
+
+		if (isViewingContainer()) {
+			if (_bNPCMode) {
+				BottomBar_mc.SetButtonText("",2);
+			} else if (isViewingContainer()) {
+				BottomBar_mc.SetButtonText("$Take All",2);
 		}
-		if (this.isViewingContainer()) 
-		{
-			if (this.bNPCMode) 
-			{
-				this.BottomBar_mc.SetButtonText("", 2);
-			}
-			else if (this.isViewingContainer()) 
-			{
-				this.BottomBar_mc.SetButtonText("$Take All", 2);
-			}
+		} else if (_bNPCMode) {
+			BottomBar_mc.SetButtonText("$Give",2);
+		} else {
+			BottomBar_mc.SetButtonText("$Store",2);
 		}
-		else if (this.bNPCMode) 
-		{
-			this.BottomBar_mc.SetButtonText("$Give", 2);
-		}
-		else 
-		{
-			this.BottomBar_mc.SetButtonText("$Store", 2);
-		}
-		this.updateFavoriteText();
+
+		updateFavoriteText();
 	}
 
-	function onMouseRotationFastClick(aiMouseButton)
+	function onMouseRotationFastClick(a_mouseButton:Number)
 	{
-if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu onMouseRotationFastClick()");
-		gfx.io.GameDelegate.call("CheckForMouseEquip", [aiMouseButton], this, "AttemptEquip");
+                if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu onMouseRotationFastClick()");
+		GameDelegate.call("CheckForMouseEquip",[a_mouseButton],this,"AttemptEquip");
 	}
 
 	function updateEquipButtonText()
 	{
-if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu updateEquipButtonText()");
-		this.BottomBar_mc.SetButtonText(this.bShowEquipButtonHelp ? InventoryDefines.GetEquipText(this.ItemCard_mc.itemInfo.type) : "", 0);
+                if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu updateEquipButtonText()");
+		BottomBar_mc.SetButtonText(_bShowEquipButtonHelp ? InventoryDefines.GetEquipText(ItemCard_mc.itemInfo.type) : "",0);
 	}
 
 	function updateFavoriteText()
 	{
-if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu updateFavoriteText()");
-		if (!this.isViewingContainer()) 
-		{
-			this.BottomBar_mc.SetButtonText(this.ItemCard_mc.itemInfo.favorite ? "$Unfavorite" : "$Favorite", 3);
+                if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu updateFavoriteText()");
+		if (! isViewingContainer()) {
+			BottomBar_mc.SetButtonText(ItemCard_mc.itemInfo.favorite ? "$Unfavorite":"$Favorite",3);
 			return;
 		}
-		this.BottomBar_mc.SetButtonText("", 3);
+
+		BottomBar_mc.SetButtonText("",3);
 	}
 
 	function isViewingContainer()
 	{
-if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu isViewingContainer()");
-		
-		var __reg2 = this.InventoryLists_mc.CategoriesList.dividerIndex;
-		return __reg2 != undefined && this.iSelectedCategory < __reg2;
+                if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu isViewingContainer()");
+		var divider = InventoryLists_mc.CategoriesList.dividerIndex;
+		return divider != undefined && _selectedCategory < divider;
 	}
 
 	function onQuantityMenuSelect(event)
 	{
-if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu onQuantityMenuSelect()");
-		if (this.iEquipHand != undefined) 
-		{
-			gfx.io.GameDelegate.call("EquipItem", [this.iEquipHand, event.amount]);
-			this.iEquipHand = undefined;
+                if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu onQuantityMenuSelect()");
+		if (_equipHand != undefined) {
+			GameDelegate.call("EquipItem",[_equipHand,event.amount]);
+			_equipHand = undefined;
 			return;
 		}
-		if (this.InventoryLists_mc.ItemsList.selectedEntry.enabled) 
-		{
-			gfx.io.GameDelegate.call("ItemTransfer", [event.amount, this.isViewingContainer()]);
+
+		if (InventoryLists_mc.ItemsList.selectedEntry.enabled) {
+			GameDelegate.call("ItemTransfer",[event.amount,isViewingContainer()]);
 			return;
 		}
-		gfx.io.GameDelegate.call("DisabledItemSelect", []);
+
+		GameDelegate.call("DisabledItemSelect",[]);
 	}
 
-	function AttemptEquip(aiSlot, abCheckOverList)
+	function AttemptEquip(a_slot:Number, a_bCheckOverList:Boolean)
 	{
-if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu AttemptEquip()");
-		var __reg2 = abCheckOverList == undefined ? true : abCheckOverList;
-		if (this.ShouldProcessItemsListInput(__reg2)) 
-		{
-			if (this.iPlatform == 0) 
-			{
-				if (!this.isViewingContainer() || this.bShowEquipButtonHelp) 
-				{
-					this.StartItemEquip(aiSlot);
-				}
-				else 
-				{
-					this.StartItemTransfer();
+                if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu AttemptEquip()");
+		var bCheckOverList = a_bCheckOverList == undefined ? true : a_bCheckOverList;
+
+		if (ShouldProcessItemsListInput(bCheckOverList) && ConfirmSelectedEntry()) {
+			if (_platform == 0) {
+				if (!isViewingContainer() || _bShowEquipButtonHelp) {
+					StartItemEquip(a_slot);
+				} else {
+					StartItemTransfer();
 				}
 				return;
 			}
-			this.StartItemEquip(aiSlot);
+			StartItemEquip(a_slot);
 		}
 	}
 
 	function onItemSelect(event)
 	{
-if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu onItemSelect()");
-		if (event.keyboardOrMouse != 0) 
-		{
-			if (!this.isViewingContainer()) 
-			{
-				this.StartItemEquip(ContainerMenu.NULL_HAND);
+                if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu onItemSelect()");
+		if (event.keyboardOrMouse != 0) {
+			if (! isViewingContainer()) {
+				StartItemEquip(ContainerMenu.NULL_HAND);
 				return;
 			}
-			this.StartItemTransfer();
+			StartItemTransfer();
 		}
 	}
 
 	function StartItemTransfer()
 	{
-if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu StartItemTransfer()");
-		if (this.ItemCard_mc.itemInfo.weight == 0 && this.isViewingContainer()) 
-		{
-			this.onQuantityMenuSelect({amount: this.InventoryLists_mc.ItemsList.selectedEntry.count});
+                if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu StartItemTransfer()");
+		if (ItemCard_mc.itemInfo.weight == 0 && isViewingContainer()) {
+			onQuantityMenuSelect({amount:InventoryLists_mc.ItemsList.selectedEntry.count});
 			return;
 		}
-		if (this.InventoryLists_mc.ItemsList.selectedEntry.count <= InventoryDefines.QUANTITY_MENU_COUNT_LIMIT) 
-		{
-			this.onQuantityMenuSelect({amount: 1});
+
+		if (InventoryLists_mc.ItemsList.selectedEntry.count <= InventoryDefines.QUANTITY_MENU_COUNT_LIMIT) {
+			onQuantityMenuSelect({amount:1});
 			return;
 		}
-		this.ItemCard_mc.ShowQuantityMenu(this.InventoryLists_mc.ItemsList.selectedEntry.count);
+
+		ItemCard_mc.ShowQuantityMenu(InventoryLists_mc.ItemsList.selectedEntry.count);
 	}
 
-	function StartItemEquip(aiEquipHand)
+	function StartItemEquip(a_equipHand)
 	{
-if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu StartItemEquip()");
-		if (this.isViewingContainer()) 
-		{
-			this.iEquipHand = aiEquipHand;
-			this.StartItemTransfer();
+                if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu StartItemEquip()");
+		if (isViewingContainer()) {
+			_equipHand = a_equipHand;
+			StartItemTransfer();
 			return;
 		}
-		gfx.io.GameDelegate.call("EquipItem", [aiEquipHand]);
+
+		GameDelegate.call("EquipItem",[a_equipHand]);
 	}
 
 	function onItemCardSubMenuAction(event)
 	{
-if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu onItemCardSubMenuAction()");
+                if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu onItemCardSubMenuAction()");
 		super.onItemCardSubMenuAction(event);
-		if (event.menu == "quantity") 
-		{
-			gfx.io.GameDelegate.call("QuantitySliderOpen", [event.opening]);
+		
+		if (event.menu == "quantity") {
+			GameDelegate.call("QuantitySliderOpen",[event.opening]);
 		}
 	}
 
-	function SetPlatform(aiPlatform, abPS3Switch)
+	function SetPlatform(a_platform:Number, a_bPS3Switch:Boolean)
 	{
-if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu SetPlatform()");
-		super.SetPlatform(aiPlatform, abPS3Switch);
-		this.iPlatform = aiPlatform;
-		this.bShowEquipButtonHelp = aiPlatform != 0;
-		this.updateButtons();
+                if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu SetPlatform()");
+		super.SetPlatform(a_platform,a_bPS3Switch);
+		
+		_platform = a_platform;
+		_bShowEquipButtonHelp = a_platform != 0;
+		updateButtons();
 	}
 
 }

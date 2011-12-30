@@ -131,8 +131,7 @@ class MagicMenu extends ItemMenu
 			_global.skse.Log("MagicMenu onItemHighlightChange()");
 		super.onItemHighlightChange(event);
 		
-		if (event.index != -1)
-		{
+		if (event.index != -1) {
 			UpdateButtonText();
 		}
 	}
@@ -147,7 +146,7 @@ class MagicMenu extends ItemMenu
 	
 	function get hideButtonFlag()
 	{
-		return (_hideButtonFlag);
+		return _hideButtonFlag;
 	}
 	
 	function set hideButtonFlag(a_hideFlag)
@@ -199,6 +198,5 @@ class MagicMenu extends ItemMenu
 			return;
 		}
 			GameDelegate.call("ShowShoutFail", []);
-		
 	}
 }
