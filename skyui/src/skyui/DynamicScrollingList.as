@@ -14,6 +14,10 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 	private var _listHeight:Number;
 	
 	private var _entryHeight:Number;
+	
+	
+	private var _scrollTmp: Number;
+	
 
 	// Children
 	var scrollbar:MovieClip;
@@ -30,6 +34,9 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 		_entryHeight = 28;
 		_listHeight = border._height;
 		_maxListIndex = Math.floor(_listHeight / _entryHeight);
+		
+		_scrollTmp = 0;
+		
 	}
 
 	function onLoad()
@@ -88,12 +95,23 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 		if (DEBUG_LEVEL > 0)
 			_global.skse.Log("DynamicScrollingList onMouseWheel()");
 		if (!_bDisableInput) {
+			// TODO -- Add this to config
+			var scrollDeltaFromConfig: Number = 2;
+			var scrollDelta: Number = scrollDeltaFromConfig;
+			
+			
 			for (var target = Mouse.getTopMostEntity(); target && target != undefined; target = target._parent) {
 				if (target == this) {
 					if (delta < 0) {
-						scrollPosition = scrollPosition + 1;
+						_scrollTmp = _scrollTmp + scrollDelta;
+						if (_scrollTmp >= 1) {
+							scrollPosition = scrollPosition + _scrollTmp;
+						}
 					} else if (delta > 0) {
-						scrollPosition = scrollPosition - 1;
+						_scrollTmp = _scrollTmp - scrollDelta;
+						if (_scrollTmp <= -1) {
+							scrollPosition = scrollPosition + _scrollTmp;
+						}
 					}
 				}
 			}
@@ -150,6 +168,7 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 				updateScrollPosition(a_newPosition);
 			}
 		}
+		_scrollTmp = 0;
 	}
 
 	function updateScrollPosition(a_position:Number)
