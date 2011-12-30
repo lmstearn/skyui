@@ -88,6 +88,7 @@ class skyui.ConfigurableList extends skyui.FilteredList
 
 	function onConfigLoad(event)
 	{
+		super.onConfigLoad(event);
 		if (DEBUG_LEVEL > 0)
 			_global.skse.Log("ConfigurableList onConfigLoad " + event.config);
 		_config = event.config;

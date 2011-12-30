@@ -72,6 +72,9 @@ class skyui.TabBar extends MovieClip
 	
 	function onLoad()
 	{
+		leftLabel.textAutoSize = "shrink";
+		rightLabel.textAutoSize = "shrink";
+		
 		leftButton.onPress = function(a_mouseIndex, a_keyboardOrMouse, a_buttonIndex)
 		{
 			if (_parent._activeTab != LEFT_TAB && _parent._bAllowPress)

@@ -3,6 +3,7 @@ import gfx.ui.NavigationCode;
 import Shared.GlobalFunc;
 
 import skyui.ScrollBar;
+import skyui.Config;
 
 class skyui.DynamicScrollingList extends skyui.DynamicList
 {
@@ -17,7 +18,9 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 	
 	
 	private var _scrollTmp: Number;
+	private var _scrollDelta: Number;
 	
+	private var _config: Config;
 
 	// Children
 	var scrollbar:MovieClip;
@@ -36,7 +39,9 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 		_maxListIndex = Math.floor(_listHeight / _entryHeight);
 		
 		_scrollTmp = 0;
+		_scrollDelta = 1;
 		
+		Config.instance.addEventListener("configLoad", this, "onConfigLoad");
 	}
 
 	function onLoad()
@@ -46,6 +51,22 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 			scrollbar.addEventListener("scroll",this,"onScroll");
 			scrollbar._y = _indent;
 			scrollbar.height = _listHeight;
+		}
+	}
+
+	function onConfigLoad(event)
+	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("DynamicScrollingList onConfigLoad()");
+			
+		_config = event.config;
+		var scrollDelta: Number = _config.General.scrollDelta;
+		if (scrollDelta != undefined && scrollDelta != 0) {
+			if (Math.abs(scrollDelta) < _maxListIndex) {
+				_scrollDelta = scrollDelta;
+			} else {
+				_scrollDelta = _maxListIndex;
+			}
 		}
 	}
 
@@ -95,21 +116,17 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 		if (DEBUG_LEVEL > 0)
 			_global.skse.Log("DynamicScrollingList onMouseWheel()");
 		if (!_bDisableInput) {
-			// TODO -- Add this to config
-			var scrollDeltaFromConfig: Number = 2;
-			var scrollDelta: Number = scrollDeltaFromConfig;
-			
-			
 			for (var target = Mouse.getTopMostEntity(); target && target != undefined; target = target._parent) {
 				if (target == this) {
 					if (delta < 0) {
-						_scrollTmp = _scrollTmp + scrollDelta;
+						_scrollTmp = _scrollTmp + _scrollDelta;
 						if (_scrollTmp >= 1) {
 							scrollPosition = scrollPosition + _scrollTmp;
 						}
 					} else if (delta > 0) {
-						_scrollTmp = _scrollTmp - scrollDelta;
+						_scrollTmp = _scrollTmp - _scrollDelta;
 						if (_scrollTmp <= -1) {
+							// _scrollTmp will be negative here
 							scrollPosition = scrollPosition + _scrollTmp;
 						}
 					}
@@ -168,7 +185,7 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 				updateScrollPosition(a_newPosition);
 			}
 		}
-		_scrollTmp = 0;
+		_scrollTmp %= 1;
 	}
 
 	function updateScrollPosition(a_position:Number)
