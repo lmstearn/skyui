@@ -42,7 +42,7 @@ class skyui.TabBar extends MovieClip
 	
 	function tabPress(a_tabIndex:Number)
 	{
-		_global.skse.Log("TabBar tabPress " + a_tabIndex);
+		if (DEBUG_LEVEL > 0) _global.skse.Log("TabBar tabPress " + a_tabIndex);
 		dispatchEvent({type:"tabPress", index: a_tabIndex});
 	}
 	
@@ -90,7 +90,7 @@ class skyui.TabBar extends MovieClip
 		
 		leftButton.onRollOver = function()
 		{
-			if (_parent._activeTab != LEFT_TAB) {
+			if (_parent._activeTab != LEFT_TAB && _parent._bAllowPress) {
 				_parent.leftIcon._alpha = 75;
 				_parent.leftLabel._alpha = 75;
 			}
@@ -98,7 +98,7 @@ class skyui.TabBar extends MovieClip
 
 		leftButton.onRollOut = function()
 		{
-			if (_parent._activeTab != LEFT_TAB) {
+			if (_parent._activeTab != LEFT_TAB && _parent._bAllowPress) {
 				_parent.leftIcon._alpha = 50;
 				_parent.leftLabel._alpha = 50;
 			}
@@ -122,7 +122,7 @@ class skyui.TabBar extends MovieClip
 		
 		rightButton.onRollOver = function()
 		{
-			if (_parent._activeTab != RIGHT_TAB) {
+			if (_parent._activeTab != RIGHT_TAB && _parent._bAllowPress) {
 				_parent.rightIcon._alpha = 75;
 				_parent.rightLabel._alpha = 75;
 	}
@@ -130,7 +130,7 @@ class skyui.TabBar extends MovieClip
 	
 		rightButton.onRollOut = function()
 	{
-			if (_parent._activeTab != RIGHT_TAB) {
+			if (_parent._activeTab != RIGHT_TAB && _parent._bAllowPress) {
 				_parent.rightIcon._alpha = 50;
 				_parent.rightLabel._alpha = 50;
 			}
