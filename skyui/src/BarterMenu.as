@@ -192,11 +192,10 @@ class BarterMenu extends ItemMenu
 				InventoryLists_mc.TabBar._bAllowPress = false;
 				return;
 			}
-			else if (event.opening == false)
-			{
+			else if (event.opening == false) {
 				InventoryLists_mc.TabBar._bAllowPress = true;
-				BottomBar_mc.SetBarterInfo(_playerGold, _vendorGold);
 			}
+			BottomBar_mc.SetBarterInfo(_playerGold, _vendorGold);
 		}
 	}
 

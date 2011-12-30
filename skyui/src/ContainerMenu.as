@@ -286,14 +286,14 @@ if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu handleInput()");
 
 	function onItemCardSubMenuAction(event)
 	{
-                if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu onItemCardSubMenuAction()");
+        if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu onItemCardSubMenuAction()");
 		super.onItemCardSubMenuAction(event);
-		
+		for (var key:String in event)
+			_global.skse.Log(key + " : " + event[key]);
 		if (event.menu == "quantity") {
-			if (event.opening) {	
 				GameDelegate.call("QuantitySliderOpen",[event.opening]);
+			if (event.opening) 	
 				InventoryLists_mc.TabBar._bAllowPress = false;
-			}
 			else if (event.opening == false)
 				InventoryLists_mc.TabBar._bAllowPress = true;
 		}
@@ -301,7 +301,7 @@ if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu handleInput()");
 
 	function SetPlatform(a_platform:Number, a_bPS3Switch:Boolean)
 	{
-                if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu SetPlatform()");
+        if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu SetPlatform()");
 		super.SetPlatform(a_platform,a_bPS3Switch);
 		
 		_platform = a_platform;
