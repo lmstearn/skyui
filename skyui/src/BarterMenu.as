@@ -14,8 +14,6 @@ class BarterMenu extends ItemMenu
 	private var _playerGold:Number;
 	private var _selectedCategory:Number;
 	private var _vendorGold:Number;
-	private var _CategoriesList;
-	private var _bAllowTabs:Boolean;
 	
 	var CategoryListIconArt:Array;
 	
@@ -30,7 +28,6 @@ class BarterMenu extends ItemMenu
 		_vendorGold = 0;
 		_playerGold = 0;
 		_confirmAmount = 0;
-		_bAllowTabs = true;
 		
 		CategoryListIconArt = ["inv_all", "inv_weapons", "inv_armor",
 							   "inv_potions", "inv_scrolls", "inv_food", "inv_ingredients",
@@ -53,7 +50,6 @@ class BarterMenu extends ItemMenu
 		BottomBar_mc.Button1.disabled = false;
 		
 		InventoryLists_mc.CategoriesList.setIconArt(CategoryListIconArt);
-		_CategoriesList = InventoryLists_mc.panelContainer.categoriesList;
 
 		InventoryLists_mc.ItemsList.entryClassName = "ItemsListEntryInv";
 		InventoryLists_mc.ItemsList.columnFormatter = ColumnFormatter;
@@ -125,8 +121,6 @@ class BarterMenu extends ItemMenu
 			return;
 		}
 		doTransaction(event.amount);
-		// allow tabs after transaction
-		_bAllowTabs = true;
 	}
 
 	function ShowRawDealWarning(strWarning)
@@ -177,12 +171,12 @@ class BarterMenu extends ItemMenu
 	function onQuantitySliderChange(event)
 	{
 		if (DEBUG_LEVEL > 0) _global.skse.Log("BarterMenu onQuantitySliderChange()");
-		var __reg2 = ItemCard_mc.itemInfo.value * event.value;
+		var price = ItemCard_mc.itemInfo.value * event.value;
 		if (IsViewingVendorItems()) 
 		{
-			__reg2 = __reg2 * -1;
+			price = price * -1;
 		}
-		BottomBar_mc.SetBarterInfo(_playerGold, _vendorGold, __reg2);
+		BottomBar_mc.SetBarterInfo(_playerGold, _vendorGold, price);
 	}
 
 	function onItemCardSubMenuAction(event)
@@ -194,11 +188,15 @@ class BarterMenu extends ItemMenu
 			if (event.opening) 
 			{
 				onQuantitySliderChange({value: ItemCard_mc.itemInfo.count});
-				// disable tabs while quantity menu is open
-				_bAllowTabs = false;
+				// disable tab change while quantity menu is open
+				InventoryLists_mc.TabBar._bAllowPress = false;
 				return;
 			}
-			BottomBar_mc.SetBarterInfo(_playerGold, _vendorGold);
+			else if (event.opening == false)
+			{
+				InventoryLists_mc.TabBar._bAllowPress = true;
+				BottomBar_mc.SetBarterInfo(_playerGold, _vendorGold);
+			}
 		}
 	}
 

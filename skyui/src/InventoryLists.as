@@ -147,7 +147,6 @@ class InventoryLists extends MovieClip
 				} else if (details.navEquivalent == NavigationCode.RIGHT) {
 					_CategoriesList.moveSelectionRight();
 					bCaught = true;
-
 					// Search hotkey (default space)
 				} else if (details.code == _searchKey) {
 					bCaught = true;
@@ -194,6 +193,11 @@ class InventoryLists extends MovieClip
 		}
 
 		_currentState = a_newState;
+	}
+	
+	function get TabBar()
+	{
+		return _TabBar;
 	}
 
 	function RestoreCategoryIndex()

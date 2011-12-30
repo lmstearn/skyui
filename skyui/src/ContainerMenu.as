@@ -290,7 +290,12 @@ if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu handleInput()");
 		super.onItemCardSubMenuAction(event);
 		
 		if (event.menu == "quantity") {
-			GameDelegate.call("QuantitySliderOpen",[event.opening]);
+			if (event.opening) {	
+				GameDelegate.call("QuantitySliderOpen",[event.opening]);
+				InventoryLists_mc.TabBar._bAllowPress = false;
+			}
+			else if (event.opening == false)
+				InventoryLists_mc.TabBar._bAllowPress = true;
 		}
 	}
 

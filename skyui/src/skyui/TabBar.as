@@ -10,6 +10,7 @@ class skyui.TabBar extends MovieClip
 	
 	static var DEBUG_LEVEL = 0;
 	private var _activeTab:Number;
+	var _bAllowPress:Boolean;
 	
 	// Children
 	var image:MovieClip;
@@ -29,7 +30,7 @@ class skyui.TabBar extends MovieClip
 	{
 		super();
 		EventDispatcher.initialize(this);
-		
+		_bAllowPress = true;
 		activeTab = LEFT_TAB;
 	}
 
@@ -73,12 +74,18 @@ class skyui.TabBar extends MovieClip
 	{
 		leftButton.onPress = function(a_mouseIndex, a_keyboardOrMouse, a_buttonIndex)
 		{
-			_parent.tabPress(LEFT_TAB);
+			if (_parent._activeTab != LEFT_TAB && _parent._bAllowPress)
+			{
+				_parent.tabPress(LEFT_TAB);
+			}
 		};
 
 		leftButton.onPressAux = function(a_mouseIndex, a_keyboardOrMouse, a_buttonIndex)
 		{
-			_parent.tabPress(LEFT_TAB);
+			if (_parent._activeTab != LEFT_TAB && _parent._bAllowPress)
+			{
+				_parent.tabPress(LEFT_TAB);
+			}
 		};
 		
 		leftButton.onRollOver = function()
@@ -99,12 +106,18 @@ class skyui.TabBar extends MovieClip
 
 		rightButton.onPress = function(a_mouseIndex, a_keyboardOrMouse, a_buttonIndex)
 		{
-			_parent.tabPress(RIGHT_TAB);
+			if (_parent._activeTab != RIGHT_TAB && _parent._bAllowPress)
+			{
+				_parent.tabPress(RIGHT_TAB);
+			}
 		};
 
 		rightButton.onPressAux = function(a_mouseIndex, a_keyboardOrMouse, a_buttonIndex)
 		{
-			_parent.tabPress(RIGHT_TAB);
+			if (_parent._activeTab != RIGHT_TAB && _parent._bAllowPress)
+			{
+				_parent.tabPress(RIGHT_TAB);
+			}
 		};
 		
 		rightButton.onRollOver = function()
