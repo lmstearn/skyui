@@ -117,18 +117,17 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 			_global.skse.Log("DynamicScrollingList onMouseWheel()");
 		if (!_bDisableInput) {
 			for (var target = Mouse.getTopMostEntity(); target && target != undefined; target = target._parent) {
-				if (target == this) {
+				if (target == this && delta != 0) {
+					var entriesToScroll: Number;
 					if (delta < 0) {
 						_scrollTmp = _scrollTmp + _scrollDelta;
-						if (_scrollTmp >= 1) {
-							scrollPosition = scrollPosition + _scrollTmp;
-						}
-					} else if (delta > 0) {
+					} else {
 						_scrollTmp = _scrollTmp - _scrollDelta;
-						if (_scrollTmp <= -1) {
-							// _scrollTmp will be negative here
-							scrollPosition = scrollPosition + _scrollTmp;
-						}
+					}
+					entriesToScroll = Math.floor(_scrollTmp)
+					_scrollTmp = _scrollTmp - entriesToScroll;
+					if (entriesToScroll <= -1 || entriesToScroll >= 1) {
+						scrollPosition = scrollPosition + entriesToScroll;
 					}
 				}
 			}
@@ -185,7 +184,6 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 				updateScrollPosition(a_newPosition);
 			}
 		}
-		_scrollTmp %= 1;
 	}
 
 	function updateScrollPosition(a_position:Number)
