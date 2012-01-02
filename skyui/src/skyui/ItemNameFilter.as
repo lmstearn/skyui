@@ -1,5 +1,6 @@
 ﻿import gfx.events.EventDispatcher;
 
+
 class skyui.ItemNameFilter implements skyui.IFilter
 {
 	private var _filterText:String;

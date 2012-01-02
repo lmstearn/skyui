@@ -32,55 +32,7 @@ class skyui.ItemSortingFilter implements skyui.IFilter
 
 	function process(a_filteredList:Array)
 	{
-		if (DEBUG_LEVEL > 0)
-			_global.skse.Log("ItemSortingFilter process()");
-//		if (_sortBy == SORT_BY_NAME) {
-//			a_filteredList.sortOn(["equipState", attr], [Array.NUMERIC | Array.DESCENDING, opt]);
-//		} else {
-	// 18 = DESCENDING | NUMERIC
-	// 16 = ASCENDING | NUMERIC
-	var sortDirection = _sortOptions[0];
-	var num;
-	if (sortDirection == 18) {
-		if (DEBUG_LEVEL > 1)
-			_global.skse.Log("NEGATIVE");
-		num = Number.NEGATIVE_INFINITY;
-	}
-	else if (sortDirection == 16) {
-		if (DEBUG_LEVEL > 1)
-			_global.skse.Log("POSITIVE");
-		num = Number.POSITIVE_INFINITY;
-	}
-	
-	if (num != undefined)
-	{
-	for (var i = 0; i < a_filteredList.length;i++)
-	{
-		if (a_filteredList[i].infoArmor == "-")
-		{
-			a_filteredList[i].infoArmor = num;
-		}
-		if (a_filteredList[i].infoDamage == "-")
-		{
-			a_filteredList[i].infoDamage = num;
-		}
-	}
-		
-	}
-	
+		if (DEBUG_LEVEL > 0) _global.skse.Log("ItemSortingFilter process()");
 			a_filteredList.sortOn(_sortAttributes, _sortOptions);
-			
-		for (var i = 0; i < a_filteredList.length; i++)
-		{
-			if (a_filteredList[i].infoArmor == Number.POSITIVE_INFINITY || a_filteredList[i].infoArmor == Number.NEGATIVE_INFINITY )
-			{
-				a_filteredList[i].infoArmor = "-";
-			}
-			if (a_filteredList[i].infoDamage == Number.POSITIVE_INFINITY || a_filteredList[i].infoDamage == Number.NEGATIVE_INFINITY)
-			{
-				a_filteredList[i].infoDamage = "-";
-			}
-		}
-
 	}
 }

@@ -108,8 +108,7 @@ class MagicMenu extends ItemMenu
 	{
 		if (DEBUG_LEVEL > 0)
 			_global.skse.Log("MagicMenu onFadeCompletion()");
-		if (_bMenuClosing)
-		{
+		if (_bMenuClosing) {
 			GameDelegate.call("CloseMenu", []);
 		}
 	}
@@ -119,8 +118,7 @@ class MagicMenu extends ItemMenu
 		super.onShowItemsList(event);
 		if (DEBUG_LEVEL > 0)
 			_global.skse.Log("MagicMenu onShowItemsList()");
-		if (event.index != -1)
-		{
+		if (event.index != -1) {
 			UpdateButtonText();
 		}
 	}

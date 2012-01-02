@@ -76,12 +76,9 @@ class InventoryMenu extends ItemMenu
 			_global.skse.Log("InventoryMenu handleInput()");
 		if (DEBUG_LEVEL > 1)
 			_global.skse.Log("InventoryMenu handleInput() details = " + details.navEquivalent + ", object = " + details);
-		if (_bFadedIn && !pathToFocus[0].handleInput(details, pathToFocus.slice(1)))
-		{
-			if (GlobalFunc.IsKeyPressed(details))
-			{
-				if (details.navEquivalent == NavigationCode.TAB)
-				{
+		if (_bFadedIn && !pathToFocus[0].handleInput(details, pathToFocus.slice(1))) {
+			if (GlobalFunc.IsKeyPressed(details)) {
+				if (details.navEquivalent == NavigationCode.TAB) {
 					StartMenuFade();
 					GameDelegate.call("CloseTweenMenu",[]);
 				}
@@ -112,8 +109,7 @@ class InventoryMenu extends ItemMenu
 	{
 		if (DEBUG_LEVEL > 0)
 			_global.skse.Log("InventoryMenu onFadeCompletion()");
-		if (_bMenuClosing)
-		{
+		if (_bMenuClosing) {
 			GameDelegate.call("CloseMenu",[]);
 		}
 	}
@@ -123,8 +119,7 @@ class InventoryMenu extends ItemMenu
 		super.onShowItemsList(event);
 		if (DEBUG_LEVEL > 0)
 			_global.skse.Log("InventoryMenu onShowItemsList()");
-		if (event.index != -1)
-		{
+		if (event.index != -1) {
 			UpdateBottomBarButtons();
 		}
 	}
@@ -134,8 +129,7 @@ class InventoryMenu extends ItemMenu
 		super.onItemHighlightChange(event);
 		if (DEBUG_LEVEL > 0)
 			_global.skse.Log("InventoryMenu onItemHighlightChange()");
-		if (event.index != -1)
-		{
+		if (event.index != -1) {
 			UpdateBottomBarButtons();
 		}
 	}
@@ -145,53 +139,40 @@ class InventoryMenu extends ItemMenu
 		if (DEBUG_LEVEL > 0)
 			_global.skse.Log("InventoryMenu UpdateBottomBarButtons()");
 		BottomBar_mc.SetButtonArt(AltButtonArt,0);
-		switch (ItemCard_mc.itemInfo.type)
-		{
+		switch (ItemCard_mc.itemInfo.type) {
 			case InventoryDefines.ICT_ARMOR :
-				{
 					BottomBar_mc.SetButtonText("$Equip",0);
 				break;
-			} ;
+
 			case InventoryDefines.ICT_BOOK :
-				{
 					BottomBar_mc.SetButtonText("$Read",0);
 				break;
-			} ;
+
 			case InventoryDefines.ICT_POTION :
-				{
 					BottomBar_mc.SetButtonText("$Use",0);
 				break;
-			} ;
+
 			case InventoryDefines.ICT_FOOD :
 			case InventoryDefines.ICT_INGREDIENT :
-				{
 					BottomBar_mc.SetButtonText("$Eat",0);
 				break;
-			} ;
+
 			default :
-				{
 					BottomBar_mc.SetButtonArt(EquipButtonArt,0);
 					BottomBar_mc.SetButtonText("$Equip",0);
-				break;
 			}
-		};
+
 
 		BottomBar_mc.SetButtonText("$Drop",1);
-		if ((InventoryLists_mc.ItemsList.selectedEntry.filterFlag & InventoryLists_mc.CategoriesList.entryList[0].flag) != 0)
-		{
+		if (InventoryLists_mc.ItemsList.selectedEntry.filterFlag & InventoryLists_mc.CategoriesList.entryList[0].flag != 0) {
 			BottomBar_mc.SetButtonText("$Unfavorite",2);
-		}
-		else
-		{
+		} else {
 			BottomBar_mc.SetButtonText("$Favorite",2);
 		}
 
-		if (ItemCard_mc.itemInfo.charge != undefined && ItemCard_mc.itemInfo.charge < 100)
-		{
+		if (ItemCard_mc.itemInfo.charge != undefined && ItemCard_mc.itemInfo.charge < 100) {
 			BottomBar_mc.SetButtonText("$Charge",3);
-		}
-		else
-		{
+		} else {
 			BottomBar_mc.SetButtonText("",3);
 		}
 	}
@@ -208,8 +189,7 @@ class InventoryMenu extends ItemMenu
 	{
 		if (DEBUG_LEVEL > 0)
 			_global.skse.Log("InventoryMenu onItemSelect()");
-		if (event.entry.enabled && event.keyboardOrMouse != 0)
-		{
+		if (event.entry.enabled && event.keyboardOrMouse != 0) {
 			GameDelegate.call("ItemSelect",[]);
 		}
 	}
@@ -219,8 +199,7 @@ class InventoryMenu extends ItemMenu
 		if (DEBUG_LEVEL > 0)
 			_global.skse.Log("InventoryMenu AttemptEquip()");
 		var bCheckOverList = a_bCheckOverList != undefined ? a_bCheckOverList : (true);
-		if (ShouldProcessItemsListInput(bCheckOverList) && ConfirmSelectedEntry())
-		{
+		if (ShouldProcessItemsListInput(bCheckOverList) && ConfirmSelectedEntry()) {
 			if (DEBUG_LEVEL > 1)
 				_global.skse.Log("InventoryMenu AttemptEquip() ItemSelect");
 			GameDelegate.call("ItemSelect",[a_slot]);
@@ -243,8 +222,7 @@ class InventoryMenu extends ItemMenu
 	function AttemptChargeItem() {
 		if (DEBUG_LEVEL > 0)
 			_global.skse.Log("InventoryMenu AttemptChargeItem()");
-		if (ShouldProcessItemsListInput(false) && ItemCard_mc.itemInfo.charge != undefined && ItemCard_mc.itemInfo.charge < 100)
-		{
+		if (ShouldProcessItemsListInput(false) && ItemCard_mc.itemInfo.charge != undefined && ItemCard_mc.itemInfo.charge < 100) {
 			if (DEBUG_LEVEL > 1)
 				_global.skse.Log("InventoryMenu AttemtChargeItem() GameDelegate.call ShowSoulGemList");
 			GameDelegate.call("ShowSoulGemList",[]);
@@ -282,16 +260,13 @@ class InventoryMenu extends ItemMenu
 			_global.skse.Log("InventoryMenu onItemCardSubMenuAction()");
 		super.onItemCardSubMenuAction(event);
 		GameDelegate.call("QuantitySliderOpen",[event.opening]);
-		if (event.menu == "list")
-		{
-			if (event.opening == true)
-			{
+		
+		if (event.menu == "list") {
+			if (event.opening == true) {
 				PrevButtonArt = BottomBar_mc.GetButtonsArt();
 				BottomBar_mc.SetButtonsText("$Select","$Cancel");
 				BottomBar_mc.SetButtonsArt(ItemCardListButtonArt);
-			}
-			else
-			{
+			} else {
 				BottomBar_mc.SetButtonsArt(PrevButtonArt);
 				PrevButtonArt = undefined;
 				GameDelegate.call("RequestItemCardInfo",[],this,"UpdateItemCardInfo");

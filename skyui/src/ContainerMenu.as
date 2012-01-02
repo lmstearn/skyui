@@ -111,13 +111,11 @@ if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu handleInput()");
 		super.UpdateItemCardInfo(a_updateObj);
 
 		updateButtons();
-		for (var key:String in a_updateObj)
-			_global.skse.Log(key + " : " + a_updateObj[key]);
+
 		if (a_updateObj.pickpocketChance != undefined) {
-			_global.skse.Log("pickpocketchance, isViewingContainer = " + isViewingContainer());
 			ItemCardFadeHolder_mc.StealTextInstance._visible = true;
 			ItemCardFadeHolder_mc.StealTextInstance.PercentTextInstance.html = true;
-			ItemCardFadeHolder_mc.StealTextInstance.PercentTextInstance.htmlText = "<font face=\'$EverywhereBoldFont\' size=\'24\' color=\'#FFFFFF\'>" + a_updateObj.pickpocketChance + "%</font>" + (isViewingContainer() ? _root.TranslationBass.ToStealTextInstance.text : _root.TranslationBass.ToPlaceTextInstance.text);
+			ItemCardFadeHolder_mc.StealTextInstance.PercentTextInstance.htmlText = "<font face=\'$EverywhereBoldFont\' size=\'24\' color=\'#FFFFFF\'>" + a_updateObj.pickpocketChance + "%</font>" + isViewingContainer() ? _root.TranslationBass.ToStealTextInstance.text:_root.TranslationBass.ToPlaceTextInstance.text;
 			return;
 		}
 
@@ -129,8 +127,9 @@ if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu handleInput()");
                 if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu onShowItemsList()");
 		_selectedCategory = InventoryLists_mc.CategoriesList.selectedIndex;
 		updateButtons();
+		InventoryLists_mc.showItemsList();
 
-		super.onShowItemsList(event);
+		//super.onShowItemsList(event);
 	}
 
 	function onHideItemsList(event)
@@ -288,14 +287,9 @@ if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu handleInput()");
 	{
         if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu onItemCardSubMenuAction()");
 		super.onItemCardSubMenuAction(event);
-		for (var key:String in event)
-			_global.skse.Log(key + " : " + event[key]);
+		
 		if (event.menu == "quantity") {
 				GameDelegate.call("QuantitySliderOpen",[event.opening]);
-			if (event.opening) 	
-				InventoryLists_mc.TabBar._bAllowPress = false;
-			else if (event.opening == false)
-				InventoryLists_mc.TabBar._bAllowPress = true;
 		}
 	}
 

@@ -15,28 +15,28 @@ class skyui.MagicColumnFormatter extends InventoryColumnFormatter
 		if (DEBUG_LEVEL > 0) _global.skse.Log("MagicColumnFormatter formatItemIcon()");
 		// Default without script extender
 		switch (a_entryObject.infoType) {
-			case Defines.MAGIC_ALTERATION :
+			case Defines.MAGIC_TYPE_ALTERATION :
 				a_entryField.gotoAndStop("default_alteration");
 				break;
-			case Defines.MAGIC_ILLUSION :
+			case Defines.MAGIC_TYPE_ILLUSION :
 				a_entryField.gotoAndStop("default_illusion");
 				break;
-			case Defines.MAGIC_DESTRUCTION :
+			case Defines.MAGIC_TYPE_DESTRUCTION :
 				a_entryField.gotoAndStop("default_destruction");
 				break;
-			case Defines.MAGIC_CONJURATION :
+			case Defines.MAGIC_TYPE_CONJURATION :
 				a_entryField.gotoAndStop("default_conjuration");
 				break;
-			case Defines.MAGIC_RESTORATION :
+			case Defines.MAGIC_TYPE_RESTORATION :
 				a_entryField.gotoAndStop("default_restoration");
 				break;
-			case InventoryDefines.ICT_SHOUT :
+			case Defines.MAGIC_TYPE_SHOUT :
 				a_entryField.gotoAndStop("default_shout");
 				break;
-			case InventoryDefines.ICT_ACTIVE_EFFECT :
+			case Defines.MAGIC_TYPE_ACTIVEEFFECT :
 				a_entryField.gotoAndStop("default_effect");
 				break;
-			case InventoryDefines.ICT_SPELL_DEFAULT :// Powers
+			case Defines.MAGIC_TYPE_POWER :// Powers
 				a_entryField.gotoAndStop("default_power");
 				break;
 			default :

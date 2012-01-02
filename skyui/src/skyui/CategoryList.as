@@ -122,7 +122,7 @@ class skyui.CategoryList extends skyui.DynamicList
 	
 	function restoreSelectedEntry(a_newIndex:Number)
 	{
-		doSetSelectedIndex(a_newIndex,0);
+		doSetSelectedIndex(a_newIndex,1);
 		onItemPress(1);
 	}
 	
@@ -145,7 +145,6 @@ class skyui.CategoryList extends skyui.DynamicList
 
 		entryClip.clipIndex = a_index;
 
-		// How about proper closures? :(
 		entryClip.buttonArea.onRollOver = function()
 		{
 			if (!_parent._parent.listAnimating && !_parent._parent._bDisableInput && _parent.itemIndex != undefined && _parent.enabled) {
@@ -243,8 +242,6 @@ class skyui.CategoryList extends skyui.DynamicList
 			xOffset = border._x;
 			tw = border._width;
 		}
-
-		skse.Log("Len: " + _segmentLength + " Off: " + _segmentOffset);
 
 		for (var i = 0; i < _segmentLength; i++) {
 			var entryClip = getClipByIndex(i);

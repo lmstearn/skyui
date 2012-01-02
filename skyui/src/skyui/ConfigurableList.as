@@ -59,10 +59,12 @@ class skyui.ConfigurableList extends skyui.FilteredList
 		_defaultEntryFormat = new TextFormat(); 
 		_defaultLabelFormat = new TextFormat();
 		
+		_config = undefined;
+		
 		// Reasonable defaults, will be overridden later
 		_entryWidth = 525;
 		_entryHeight = 28;
-		_activeViewIndex = 0;
+		_activeViewIndex = -1;
 		_lastViewIndex = -1;
 		_bEnableItemIcon = false;
 		_bEnableEquipIcon = false;
@@ -126,6 +128,8 @@ class skyui.ConfigurableList extends skyui.FilteredList
 		entryClip["itemIcon"]._visible = false;
 		entryClip["equipIcon"]._visible = false;
 
+		entryClip.viewIndex = -1;
+
 		return entryClip;
 	}
 	
@@ -133,7 +137,7 @@ class skyui.ConfigurableList extends skyui.FilteredList
 	{
 		if (DEBUG_LEVEL > 0)
 			_global.skse.Log("ConfigurableList setEntry " + a_entryObject.text);
-		if (a_entryClip.viewIndex != _activeViewIndex) {
+		if (_activeViewIndex != -1 && a_entryClip.viewIndex != _activeViewIndex) {
 			a_entryClip.viewIndex = _activeViewIndex;
 			
 			var columns = currentView.columns;
@@ -201,7 +205,7 @@ class skyui.ConfigurableList extends skyui.FilteredList
 			}
 		}
 		
-		if (_lastViewIndex == _activeViewIndex) {
+		if (_activeViewIndex == -1 || _lastViewIndex == _activeViewIndex) {
 			return;
 		}
 		

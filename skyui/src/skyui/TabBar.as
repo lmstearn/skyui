@@ -10,7 +10,6 @@ class skyui.TabBar extends MovieClip
 	
 	static var DEBUG_LEVEL = 0;
 	private var _activeTab:Number;
-	var _bAllowPress:Boolean;
 	
 	// Children
 	var image:MovieClip;
@@ -30,7 +29,7 @@ class skyui.TabBar extends MovieClip
 	{
 		super();
 		EventDispatcher.initialize(this);
-		_bAllowPress = true;
+
 		activeTab = LEFT_TAB;
 	}
 
@@ -46,6 +45,11 @@ class skyui.TabBar extends MovieClip
 		dispatchEvent({type:"tabPress", index: a_tabIndex});
 	}
 	
+	function tabToggle()
+	{
+		tabPress(_activeTab == LEFT_TAB ? RIGHT_TAB : LEFT_TAB);
+	}
+
 	function get activeTab():Number
 	{
 		return _activeTab;
@@ -75,25 +79,20 @@ class skyui.TabBar extends MovieClip
 		leftLabel.textAutoSize = "shrink";
 		rightLabel.textAutoSize = "shrink";
 		
+		
 		leftButton.onPress = function(a_mouseIndex, a_keyboardOrMouse, a_buttonIndex)
 		{
-			if (_parent._activeTab != LEFT_TAB && _parent._bAllowPress)
-			{
 				_parent.tabPress(LEFT_TAB);
-			}
 		};
 
 		leftButton.onPressAux = function(a_mouseIndex, a_keyboardOrMouse, a_buttonIndex)
 		{
-			if (_parent._activeTab != LEFT_TAB && _parent._bAllowPress)
-			{
 				_parent.tabPress(LEFT_TAB);
-			}
 		};
 		
 		leftButton.onRollOver = function()
 		{
-			if (_parent._activeTab != LEFT_TAB && _parent._bAllowPress) {
+			if (_parent._activeTab != LEFT_TAB) {
 				_parent.leftIcon._alpha = 75;
 				_parent.leftLabel._alpha = 75;
 			}
@@ -101,7 +100,7 @@ class skyui.TabBar extends MovieClip
 
 		leftButton.onRollOut = function()
 		{
-			if (_parent._activeTab != LEFT_TAB && _parent._bAllowPress) {
+			if (_parent._activeTab != LEFT_TAB) {
 				_parent.leftIcon._alpha = 50;
 				_parent.leftLabel._alpha = 50;
 			}
@@ -109,23 +108,17 @@ class skyui.TabBar extends MovieClip
 
 		rightButton.onPress = function(a_mouseIndex, a_keyboardOrMouse, a_buttonIndex)
 		{
-			if (_parent._activeTab != RIGHT_TAB && _parent._bAllowPress)
-			{
 				_parent.tabPress(RIGHT_TAB);
-			}
 		};
 
 		rightButton.onPressAux = function(a_mouseIndex, a_keyboardOrMouse, a_buttonIndex)
 		{
-			if (_parent._activeTab != RIGHT_TAB && _parent._bAllowPress)
-			{
 				_parent.tabPress(RIGHT_TAB);
-			}
 		};
 		
 		rightButton.onRollOver = function()
 		{
-			if (_parent._activeTab != RIGHT_TAB && _parent._bAllowPress) {
+			if (_parent._activeTab != RIGHT_TAB) {
 				_parent.rightIcon._alpha = 75;
 				_parent.rightLabel._alpha = 75;
 	}
@@ -133,29 +126,10 @@ class skyui.TabBar extends MovieClip
 	
 		rightButton.onRollOut = function()
 	{
-			if (_parent._activeTab != RIGHT_TAB && _parent._bAllowPress) {
+			if (_parent._activeTab != RIGHT_TAB) {
 				_parent.rightIcon._alpha = 50;
 				_parent.rightLabel._alpha = 50;
 			}
 		};
-	}
-	
-	function handleInput(details, pathToFocus)
-	{
-		var bCaught = false;
-
-		if (GlobalFunc.IsKeyPressed(details)) {
-		
-			if (details.navEquivalent == NavigationCode.SHIFT_TAB) {
-				tabPress(_activeTab == LEFT_TAB ? RIGHT_TAB : LEFT_TAB);
-				bCaught = true;
-			}
-		
-			if (!bCaught) {
-				bCaught = pathToFocus[0].handleInput(details, pathToFocus.slice(1));
-			}
-		}
-		
-		return bCaught;
 	}
 }

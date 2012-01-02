@@ -42,6 +42,7 @@ class InventoryLists extends MovieClip
 	private var _currCategoryIndex:Number;
 
 	private var _searchKey:Number;
+	private var _tabToggleKey:Number;
 
 	// Children
 	var panelContainer:MovieClip;
@@ -76,6 +77,7 @@ class InventoryLists extends MovieClip
 		_sortFilter = new ItemSortingFilter();
 
 		_searchKey = undefined;
+		_tabToggleKey = undefined;
 	
 		Config.instance.addEventListener("configLoad",this,"onConfigLoad");
 	}
@@ -119,7 +121,8 @@ class InventoryLists extends MovieClip
 		if (DEBUG_LEVEL > 0)
 			_global.skse.Log("InventoryLists onConfigLoad()");
 		_config = event.config;
-		_searchKey = _config.SearchBox.hotkey;
+		_searchKey = _config.Input.hotkey.search;
+		_tabToggleKey = _config.Input.hotkey.tabToggle;
 	}
 
 	function SetPlatform(a_platform:Number, a_bPS3Switch:Boolean)
@@ -140,6 +143,7 @@ class InventoryLists extends MovieClip
 
 		if (_currentState == SHOW_PANEL) {
 			if (GlobalFunc.IsKeyPressed(details)) {
+				
 				if (details.navEquivalent == NavigationCode.LEFT) {
 						_CategoriesList.moveSelectionLeft();
 						bCaught = true;
@@ -147,10 +151,17 @@ class InventoryLists extends MovieClip
 				} else if (details.navEquivalent == NavigationCode.RIGHT) {
 					_CategoriesList.moveSelectionRight();
 					bCaught = true;
+
 					// Search hotkey (default space)
 				} else if (details.code == _searchKey) {
 					bCaught = true;
 					_SearchWidget.startInput();
+					
+				// Toggle tab (default ALT)
+				} else if (_TabBar != undefined && details.code == _tabToggleKey) {
+					
+					bCaught = true;
+					_TabBar.tabToggle();
 				}
 			}
 			if (!bCaught) {
@@ -195,11 +206,6 @@ class InventoryLists extends MovieClip
 		_currentState = a_newState;
 	}
 	
-	function get TabBar()
-	{
-		return _TabBar;
-	}
-
 	function RestoreCategoryIndex()
 	{
 		if (DEBUG_LEVEL > 0)
@@ -261,8 +267,8 @@ class InventoryLists extends MovieClip
 			_ItemsList.UpdateList();
 		}
 
-		dispatchEvent({type:"showItemsList", index:_ItemsList.selectedIndex});
-//		dispatchEvent({type:"itemHighlightChange", index:_ItemsList.selectedIndex});
+//		dispatchEvent({type:"showItemsList", index:_ItemsList.selectedIndex});
+		dispatchEvent({type:"itemHighlightChange", index:_ItemsList.selectedIndex});
 
 		_ItemsList.disableInput = false;
 		GameDelegate.call("PlaySound",["UIMenuFocus"]);
@@ -296,7 +302,7 @@ class InventoryLists extends MovieClip
 
 	function onTabPress(event)
 	{
-		if (_CategoriesList.disableSelection) {
+		if (_CategoriesList.disableSelection || _CategoriesList.disableInput || _ItemsList.disableSelection || _ItemsList.disableInput) {
 			return;
 		}
 		
@@ -308,6 +314,7 @@ class InventoryLists extends MovieClip
 			_CategoriesList.activeSegment = CategoryList.RIGHT_SEGMENT;
 		}
 		
+		GameDelegate.call("PlaySound",["UIMenuBladeOpenSD"]);
 		showItemsList();
 	}
 
@@ -468,7 +475,7 @@ class InventoryLists extends MovieClip
 				if (_CategoriesList.entryList[j].filterFlag != 0) {
 					continue;
 				}
-                                // if Barter and Player both share an item of same category then enable the category
+
 				if (_ItemsList.entryList[i].filterFlag & _CategoriesList.entryList[j].flag) {
 					_CategoriesList.entryList[j].filterFlag = 1;
 				}

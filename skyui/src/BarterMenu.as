@@ -1,24 +1,25 @@
-﻿import skyui.InventoryColumnFormatter;
+﻿import gfx.io.GameDelegate;
+
+import skyui.InventoryColumnFormatter;
 import skyui.BarterDataFetcher;
-import gfx.io.GameDelegate;
+
 
 class BarterMenu extends ItemMenu
 {
-    static var DEBUG_LEVEL:Number = 1;
-        
-	private var bPCControlsReady: Boolean = true;
-	private var _playerInfoObj;
+        static var DEBUG_LEVEL:Number = 1;
+	private var _playerInfoObj:Object;
 	private var _buyMult:Number;
 	private var _sellMult:Number;
 	private var _confirmAmount:Number;
-	private var _playerGold:Number;
 	private var _selectedCategory:Number;
+	private var _playerGold:Number;
 	private var _vendorGold:Number;
 	
 	var CategoryListIconArt:Array;
 	
 	var ColumnFormatter:InventoryColumnFormatter;
 	var DataFetcher:BarterDataFetcher;
+
 
 	function BarterMenu()
 	{
@@ -29,9 +30,7 @@ class BarterMenu extends ItemMenu
 		_playerGold = 0;
 		_confirmAmount = 0;
 		
-		CategoryListIconArt = ["inv_all", "inv_weapons", "inv_armor",
-							   "inv_potions", "inv_scrolls", "inv_food", "inv_ingredients",
-							   "inv_books", "inv_keys", "inv_misc"];
+		CategoryListIconArt = ["inv_all", "inv_weapons", "inv_armor", "inv_potions", "inv_scrolls", "inv_food", "inv_ingredients", "inv_books", "inv_keys", "inv_misc"];
 		
 		ColumnFormatter = new InventoryColumnFormatter();
 		ColumnFormatter.maxTextLength = 80;
@@ -43,6 +42,7 @@ class BarterMenu extends ItemMenu
 	{
 		super.InitExtensions();
 		GameDelegate.addCallBack("SetBarterMultipliers", this, "SetBarterMultipliers");
+		
 		ItemCard_mc.addEventListener("messageConfirm", this, "onTransactionConfirm");
 		ItemCard_mc.addEventListener("sliderChange", this, "onQuantitySliderChange");
 		BottomBar_mc.SetButtonArt({PCArt: "Tab", XBoxArt: "360_B", PS3Art: "PS3_B"}, 1);
@@ -54,7 +54,7 @@ class BarterMenu extends ItemMenu
 		InventoryLists_mc.ItemsList.entryClassName = "ItemsListEntryInv";
 		InventoryLists_mc.ItemsList.columnFormatter = ColumnFormatter;
 		InventoryLists_mc.ItemsList.dataFetcher = DataFetcher;
-		InventoryLists_mc.ItemsList.setConfigSection("BarterList");
+		InventoryLists_mc.ItemsList.setConfigSection("ItemList");
 	}
 
 	function onExitButtonPress()
@@ -63,37 +63,38 @@ class BarterMenu extends ItemMenu
 		GameDelegate.call("CloseMenu", []);
 	}
 
-	function SetBarterMultipliers(a_buyMult, a_sellMult)
+	function SetBarterMultipliers(a_buyMult:Number, a_sellMult:Number)
 	{
 		if (DEBUG_LEVEL > 0)_global.skse.Log("BarterMenu SetBarterMultipliers()");
 		_buyMult = a_buyMult;
 		_sellMult = a_sellMult;
-		// set initial multiplier for datafetcher
-		InventoryLists_mc.ItemsList.dataFetcher._barterMult = _buyMult;
+		InventoryLists_mc.ItemsList.dataFetcher.barterSellMult = a_sellMult;
+		InventoryLists_mc.ItemsList.dataFetcher.barterBuyMult = a_buyMult;
 		BottomBar_mc.SetButtonsText("", "$Exit");
 	}
 
+	
 	function onShowItemsList(event)
 	{
+                if (DEBUG_LEVEL > 0) _global.skse.Log("BarterMenu onShowItemsList()");
 		_selectedCategory = InventoryLists_mc.CategoriesList.selectedIndex;
-		if (DEBUG_LEVEL > 0) _global.skse.Log("BarterMenu onShowItemsList() _selectedCategory = " + _selectedCategory);
-		if (IsViewingVendorItems())
-		{
-			// adjust item values to buy multiplier
-			InventoryLists_mc.ItemsList.dataFetcher._barterMult = _buyMult;
-			// invalidate data to apply new values
-			InventoryLists_mc.ItemsList.InvalidateData();
-			BottomBar_mc.SetButtonsText("$Buy", "$Exit");
+		InventoryLists_mc.showItemsList();
+
+		//super.onShowItemsList(event);
 		}
-		else
+
+	
+	function onItemHighlightChange(event)
 		{
-			// adjust item values to sell multiplier
-			InventoryLists_mc.ItemsList.dataFetcher._barterMult = _sellMult;
-			// invalidate data to apply new values
-			InventoryLists_mc.ItemsList.InvalidateData();
+		if (event.index != -1) {
+			if (IsViewingVendorItems()) {
+				BottomBar_mc.SetButtonsText("$Buy","$Exit");
+			} else {
 			BottomBar_mc.SetButtonsText("$Sell", "$Exit");
+	         	}
 		}
-		super.onShowItemsList(event);
+
+		super.onItemHighlightChange(event);
 	}
 	
 	function onHideItemsList(event)
@@ -105,17 +106,16 @@ class BarterMenu extends ItemMenu
 
 	function IsViewingVendorItems()
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("BarterMenu IsViewingVendorItems()");
-		var divider = InventoryLists_mc.CategoriesList.dividerIndex;
-		return divider != undefined && _selectedCategory < divider;
+                if (DEBUG_LEVEL > 0) _global.skse.Log("BarterMenu IsViewingVendorItems()");
+		var dividerIndex = InventoryLists_mc.CategoriesList.dividerIndex;
+		return dividerIndex != undefined && _selectedCategory < dividerIndex;
 	}
 
 	function onQuantityMenuSelect(event)
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("BarterMenu onQuantityMenuSelect()");
+                if (DEBUG_LEVEL > 0) _global.skse.Log("BarterMenu onQuantityMenuSelect()");
 		var price = event.amount * ItemCard_mc.itemInfo.value;
-		if (price > _vendorGold && !IsViewingVendorItems()) 
-		{
+		if (price > _vendorGold && !IsViewingVendorItems()) {
 			_confirmAmount = event.amount;
 			GameDelegate.call("GetRawDealWarningString", [price], this, "ShowRawDealWarning");
 			return;
@@ -123,10 +123,10 @@ class BarterMenu extends ItemMenu
 		doTransaction(event.amount);
 	}
 
-	function ShowRawDealWarning(strWarning)
+	function ShowRawDealWarning(a_warning:String)
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("BarterMenu ShowRawDealWarning()");
-		ItemCard_mc.ShowConfirmMessage(strWarning);
+                if (DEBUG_LEVEL > 0) _global.skse.Log("BarterMenu ShowRawDealWarning()");
+		ItemCard_mc.ShowConfirmMessage(a_warning);
 	}
 
 	function onTransactionConfirm()
@@ -136,44 +136,40 @@ class BarterMenu extends ItemMenu
 		_confirmAmount = 0;
 	}
 
-	function doTransaction(aiAmount)
+	function doTransaction(a_amount:Number)
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("BarterMenu doTransaction()");
-		GameDelegate.call("ItemSelect", [aiAmount, ItemCard_mc.itemInfo.value, IsViewingVendorItems()]);
+                if (DEBUG_LEVEL > 0) _global.skse.Log("BarterMenu doTransaction()");
+		GameDelegate.call("ItemSelect",[a_amount, ItemCard_mc.itemInfo.value, IsViewingVendorItems()]);
 	}
 
-	function UpdateItemCardInfo(aUpdateObj)
+	function UpdateItemCardInfo(a_updateObj:Object)
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("BarterMenu UpdateItemCardInfo()");
-		if (IsViewingVendorItems()) 
-		{
-			aUpdateObj.value = aUpdateObj.value * _buyMult;
-			aUpdateObj.value = Math.max(aUpdateObj.value, 1);
+                if (DEBUG_LEVEL > 0) _global.skse.Log("BarterMenu UpdateItemCardInfo()");
+		if (IsViewingVendorItems()) {
+			a_updateObj.value = a_updateObj.value * _buyMult;
+			a_updateObj.value = Math.max(a_updateObj.value, 1);
+		} else {
+			a_updateObj.value = a_updateObj.value * _sellMult;
 		}
-		else 
-		{
-			aUpdateObj.value = aUpdateObj.value * _sellMult;
-		}
-		aUpdateObj.value = Math.floor(aUpdateObj.value + 0.5);
-		ItemCard_mc.itemInfo = aUpdateObj;
-		BottomBar_mc.SetBarterPerItemInfo(aUpdateObj, _playerInfoObj);
+		a_updateObj.value = Math.floor(a_updateObj.value + 0.5);
+		ItemCard_mc.itemInfo = a_updateObj;
+		BottomBar_mc.SetBarterPerItemInfo(a_updateObj,_playerInfoObj);
 	}
 
-	function UpdatePlayerInfo(a_playerGold, a_vendorGold, astrVendorName, aUpdateObj)
+	function UpdatePlayerInfo(a_playerGold:Number, a_vendorGold:Number, a_vendorName:String, a_updateObj:Object)
 	{
 		if (DEBUG_LEVEL > 0) _global.skse.Log("BarterMenu UpdatePlayerInfo()");
 		_vendorGold = a_vendorGold;
 		_playerGold = a_playerGold;
-		BottomBar_mc.SetBarterInfo(a_playerGold, a_vendorGold, undefined, astrVendorName);
-		_playerInfoObj = aUpdateObj;
+		BottomBar_mc.SetBarterInfo(a_playerGold,a_vendorGold,undefined,a_vendorName);
+		_playerInfoObj = a_updateObj;
 	}
 
 	function onQuantitySliderChange(event)
 	{
 		if (DEBUG_LEVEL > 0) _global.skse.Log("BarterMenu onQuantitySliderChange()");
 		var price = ItemCard_mc.itemInfo.value * event.value;
-		if (IsViewingVendorItems()) 
-		{
+		if (IsViewingVendorItems()) {
 			price = price * -1;
 		}
 		BottomBar_mc.SetBarterInfo(_playerGold, _vendorGold, price);
@@ -183,17 +179,10 @@ class BarterMenu extends ItemMenu
 	{
 		if (DEBUG_LEVEL > 0) _global.skse.Log("BarterMenu onItemCardSubMenuAction()");
 		super.onItemCardSubMenuAction(event);
-		if (event.menu == "quantity") 
-		{
-			if (event.opening) 
-			{
+		if (event.menu == "quantity") {
+			if (event.opening) {
 				onQuantitySliderChange({value: ItemCard_mc.itemInfo.count});
-				// disable tab change while quantity menu is open
-				InventoryLists_mc.TabBar._bAllowPress = false;
 				return;
-			}
-			else if (event.opening == false) {
-				InventoryLists_mc.TabBar._bAllowPress = true;
 			}
 			BottomBar_mc.SetBarterInfo(_playerGold, _vendorGold);
 		}

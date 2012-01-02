@@ -15,7 +15,7 @@ class skyui.SortedListHeader extends MovieClip
 	var dispatchEvent:Function;
 	var addEventListener:Function;
 
-	static var debugLevel = 1;
+	static var DEBUG_LEVEL = 1;
 
 	function SortedListHeader()
 	{
@@ -29,7 +29,7 @@ class skyui.SortedListHeader extends MovieClip
 	
 	function columnPress(a_columnIndex:Number)
 	{
-		if (debugLevel > 0)
+		if (DEBUG_LEVEL > 0)
 			_global.skse.Log("SortedListHeader columnPress()");
 		dispatchEvent({type:"columnPress", index: a_columnIndex});
 	}
@@ -37,7 +37,7 @@ class skyui.SortedListHeader extends MovieClip
 	/* Hides all columns (but doesn't delete them since they can be re-used later */
 	function clearColumns()
 	{
-		if (debugLevel > 0)
+		if (DEBUG_LEVEL > 0)
 			_global.skse.Log("SortedListHeader clearColumns()");
 		for (var i=0; i< _columns.length; i++) {
 			_columns[i]._visible = false;
@@ -66,7 +66,7 @@ class skyui.SortedListHeader extends MovieClip
 	
 	function addColumn(a_index:Number)
 	{
-		if (debugLevel > 0)
+		if (DEBUG_LEVEL > 0)
 			_global.skse.Log("SortedListHeader addColumn()");
 		if (a_index < 0) {
 			return undefined;
@@ -106,7 +106,7 @@ class skyui.SortedListHeader extends MovieClip
 	/* Places the buttonAreas around textfields and the sort indicator */
 	function positionButtons()
 	{
-		if (debugLevel > 0)
+		if (DEBUG_LEVEL > 0)
 			_global.skse.Log("SortedListHeader positionButtons()");
 		for (var i=0; i<_columns.length; i++) {
 			var e = _columns[i];

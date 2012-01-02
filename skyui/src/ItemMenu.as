@@ -243,14 +243,7 @@ class ItemMenu extends MovieClip
 
 	function onItemHighlightChange(event)
 	{
-        if (DEBUG_LEVEL > 0)
-		{
-			_global.skse.Log("ItemMenu onItemHighlightChange()");
-			/*for (var key:String in event)
-			{
-				_global.skse.Log(key + " : " + event[key]);
-			}*/
-		}
+        if (DEBUG_LEVEL > 0) _global.skse.Log("ItemMenu onItemHighlightChange()");
 		if (event.index != -1) {
 			
 			if (!_bItemCardFadedIn) {
@@ -268,8 +261,6 @@ class ItemMenu extends MovieClip
 		}
 	}
 
-	// Barter menu calls this
-	// Might event might still be sent from somewhere else, so keep this for now.
 	function onShowItemsList(event)
 	{
 		if (DEBUG_LEVEL > 0)
@@ -327,15 +318,12 @@ class ItemMenu extends MovieClip
 	{
 		if (DEBUG_LEVEL > 0)
 			_global.skse.Log("ItemMenu onItemCardSubMenuAction()");
-		if (event.opening == true)
-		{
+		if (event.opening == true) {
 			InventoryLists_mc.ItemsList.disableSelection = true;
 			InventoryLists_mc.ItemsList.disableInput = true;
 			InventoryLists_mc.CategoriesList.disableSelection = true;
 			InventoryLists_mc.CategoriesList.disableInput = true;
-		}
-		else if (event.opening == false)
-		{
+		} else if (event.opening == false) {
 			InventoryLists_mc.ItemsList.disableSelection = false;
 			InventoryLists_mc.ItemsList.disableInput = false;
 			InventoryLists_mc.CategoriesList.disableSelection = false;
@@ -353,7 +341,7 @@ class ItemMenu extends MovieClip
 			var e = Mouse.getTopMostEntity();
 			var found = false;
 			
-			while (!found && e && e != undefined)
+			while (!found && e != undefined)
 			{
 				if (e == InventoryLists_mc.ItemsList) {
 					found = true;
@@ -408,8 +396,7 @@ class ItemMenu extends MovieClip
 	{
 		if (DEBUG_LEVEL > 0)
 			_global.skse.Log("ItemMenu onMouseRotationFastClick()");
-		if (ShouldProcessItemsListInput(false))
-		{
+		if (ShouldProcessItemsListInput(false)) {
 			onItemSelect({entry:InventoryLists_mc.ItemsList.selectedEntry, keyboardOrMouse:0});
 		}
 	}
@@ -450,9 +437,9 @@ class ItemMenu extends MovieClip
 
 		if (arguments[0] != undefined && arguments[0] != -1) {
 			InventoryLists_mc.CategoriesList.restoreSelectedEntry(arguments[0]);
-		} else {
-			// ALL
-			InventoryLists_mc.CategoriesList.restoreSelectedEntry(1);
+		} else {		
+            // ALL
+			InventoryLists_mc.CategoriesList.restoreSelectedEntry(0);
 		}
 
 		var index;
