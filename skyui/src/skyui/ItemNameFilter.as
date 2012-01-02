@@ -25,9 +25,14 @@ class skyui.ItemNameFilter implements skyui.IFilter
 
 		var seekIndex = 0;
 		var seek = false;
-
+		var charCode: Number;
+		
 		for (var i = 0; i < searchStr.length; i++) {
-			if (searchStr.charAt(i) == _filterText.charAt(seekIndex)) {
+			charCode = _filterText.charCodeAt(seekIndex);
+			if (charCode > 0x3FF) {
+				charCode = charCode - 0x350;
+			}
+			if (searchStr.charCodeAt(i) == charCode) {
 				if (!seek) {
 					seek = true;
 				}
