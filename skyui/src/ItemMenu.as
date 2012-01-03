@@ -9,7 +9,6 @@ class ItemMenu extends MovieClip
 	private var _platform:Number;
 	private var _bFadedIn:Boolean;
 	private var _bItemCardFadedIn:Boolean;
-	private var _bDoNotRestore:Boolean;
 	
 	private var _3DIconXSettingStr:String;
 	private var _3DIconZSettingStr:String;
@@ -434,21 +433,22 @@ class ItemMenu extends MovieClip
 	{
 		if (DEBUG_LEVEL > 0)
 			_global.skse.Log("<================================ItemMenu RestoreIndices==================================" + "\n");
-		if (DEBUG_LEVEL > 0)
+		if (DEBUG_LEVEL > 1)
 			_global.skse.Log("ItemMenu RestoreIndices() argument[0] = " + arguments[0] + " size = " + arguments.length);
-		
-		// Extra state information. Cleared after game restart.
-		var bRestarted = arguments[arguments.length - 1] == undefined;
 		
 		if (arguments[0] != undefined && arguments[0] != -1 && arguments.length != 1) {
 			InventoryLists_mc.CategoriesList.restoreSelectedEntry(arguments[0]);
 			InventoryLists_mc.CategoriesList.UpdateList();
 		}
 		
+		var index;
 		// Saved category indices
-		for (var index = 1; index < arguments.length && index < InventoryLists_mc.CategoriesList.entryList.length; index++) {
+		for (index = 1; index < arguments.length && index < InventoryLists_mc.CategoriesList.entryList.length; index++) {
 				InventoryLists_mc.CategoriesList.entryList[index - 1].savedItemIndex = arguments[index];
 		}
+		
+		// Extra state information. Cleared after game restart.
+		var bRestarted = arguments[index] == undefined;
 		
 		if (bRestarted) {
 			// Display SKSE warning if necessary after restart
