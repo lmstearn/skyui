@@ -176,12 +176,7 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 
 	function set scrollPosition(a_newPosition:Number)
 	{
-		if (a_newPosition != _scrollPosition) {
-			if (a_newPosition < 0) {
-				a_newPosition = 0;
-			} else if (a_newPosition > _maxScrollPosition) {
-				a_newPosition = _maxScrollPosition;
-			}
+		if (a_newPosition != _scrollPosition && a_newPosition >= 0 && a_newPosition <= _maxScrollPosition) {
 			
 			if (scrollbar != undefined) {
 				scrollbar.position = a_newPosition;

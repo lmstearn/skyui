@@ -5,8 +5,7 @@
 	
 	function processEntry(a_entryObject:Object, a_itemInfo:Object)
 	{
-		_global.skse.Log("processing entry " + a_entryObject.text + "...");
-		if (DEBUG_LEVEL > 0) _global.skse.Log("InventoryDataFetcher processEntry()");
+		if (DEBUG_LEVEL > 0) _global.skse.Log("InventoryDataFetcher processEntry() entry " + a_entryObject.text + "...");
 		switch (a_itemInfo.type) {
 			case InventoryDefines.ICT_ARMOR :
 				a_entryObject.infoArmor = a_itemInfo.armor;

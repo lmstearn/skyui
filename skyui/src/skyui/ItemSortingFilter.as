@@ -24,7 +24,6 @@ class skyui.ItemSortingFilter implements skyui.IFilter
 		var changed = _sortAttributes != a_sortAttributes || _sortOptions != a_sortOptions;
 		_sortAttributes = a_sortAttributes;
 		_sortOptions = a_sortOptions;
-
 		if (changed) {
 			dispatchEvent({type:"filterChange"});
 		}

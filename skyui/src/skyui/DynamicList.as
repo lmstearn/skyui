@@ -225,18 +225,19 @@ class skyui.DynamicList extends MovieClip
 	function InvalidateData()
 	{
 		if (DEBUG_LEVEL > 0)
-			_global.skse.Log("DynamicList InvalidateData()");
+			_global.skse.Log("<========================DynamicList InvalidateData==================================" + "\n");
 		if (_selectedIndex >= _entryList.length) {
 			_selectedIndex = _entryList.length - 1;
 		}
 
 		UpdateList();
+		_global.skse.Log("========================END DynamicList InvalidateData==================================>" + "\n");
 	}
 
 	function UpdateList()
 	{
 		if (DEBUG_LEVEL > 0)
-			_global.skse.Log("DynamicList UpdateList()");
+			_global.skse.Log("<========================DynamicList UpdateList==================================" + "\n");
 		var yStart = _indent;
 		var yOffset = 0;
 
@@ -252,6 +253,7 @@ class skyui.DynamicList extends MovieClip
 
 			yOffset = yOffset + entryClip._height;
 		}
+		_global.skse.Log("========================END DynamicList UpdateList==================================>" + "\n");
 	}
 
 	function onItemPress(a_keyboardOrMouse)
@@ -291,7 +293,7 @@ class skyui.DynamicList extends MovieClip
 	function setEntryText(a_entryClip:MovieClip, a_entryObject:Object)
 	{
 		if (DEBUG_LEVEL > 0)
-			_global.skse.Log("DynamicList setEntryText()");
+			_global.skse.Log("DynamicList setEntryText() for category " + a_entryObject.text + " at pos " + a_entryClip.clipIndex);
 		if (a_entryClip.textField != undefined) {
 			if (textOption == TEXT_OPTION_SHRINK_TO_FIT) {
 				a_entryClip.textField.textAutoSize = "shrink";

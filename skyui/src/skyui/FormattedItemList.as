@@ -41,14 +41,15 @@ class skyui.FormattedItemList extends skyui.ConfigurableList
 
 	function InvalidateData()
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("FormattedItemList InvalidateData()");
+		if (DEBUG_LEVEL > 0)
+		_global.skse.Log("<========================FormattedItemList InvalidateData==================================" + "\n");
 		if (_dataFetcher != undefined) {
 			for (var i = 0; i < _entryList.length; i++) {
 				requestItemInfo(i);
 				_dataFetcher.processEntry(_entryList[i], _itemInfo);
 			}
 		}
-
+		_global.skse.Log("========================END FormattedItemList InvalidateData==============================>" + "\n");
 		super.InvalidateData();
 	}
 

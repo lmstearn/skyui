@@ -9,6 +9,7 @@ class ItemMenu extends MovieClip
 	private var _platform:Number;
 	private var _bFadedIn:Boolean;
 	private var _bItemCardFadedIn:Boolean;
+	private var _bDoNotRestore:Boolean;
 	
 	private var _3DIconXSettingStr:String;
 	private var _3DIconZSettingStr:String;
@@ -62,7 +63,7 @@ class ItemMenu extends MovieClip
 	function InitExtensions(a_bPlayBladeSound)
 	{
 		if (DEBUG_LEVEL > 0)
-			_global.skse.Log("ItemMenu InitExtensions()");
+			_global.skse.Log("<========================ITEMMENU INITEXTENSIONS==================================" + "\n");
 		GameDelegate.addCallBack("UpdatePlayerInfo",this,"UpdatePlayerInfo");
 		GameDelegate.addCallBack("UpdateItemCardInfo",this,"UpdateItemCardInfo");
 		GameDelegate.addCallBack("ToggleMenuFade",this,"ToggleMenuFade");
@@ -89,6 +90,7 @@ class ItemMenu extends MovieClip
 				_parent.onExitMenuRectClick();
 			}
 		};
+		_global.skse.Log("========================END ITEMMENU INITEXTENSIONS==================================>" + "\n");
 	}
 
 	function onConfigLoad(event)
@@ -431,26 +433,22 @@ class ItemMenu extends MovieClip
 	function RestoreIndices()
 	{
 		if (DEBUG_LEVEL > 0)
-			_global.skse.Log("ItemMenu RestoreIndices()");
-		if (DEBUG_LEVEL > 1)
-			_global.skse.Log("ItemMenu RestoreIndices() argument[0] = " + arguments[0]);
-
-		if (arguments[0] != undefined && arguments[0] != -1) {
-			InventoryLists_mc.CategoriesList.restoreSelectedEntry(arguments[0]);
-		} else {		
-            // ALL
-			InventoryLists_mc.CategoriesList.restoreSelectedEntry(0);
-		}
-
-		var index;
-
-		// Saved category indices
-		for (index = 1; index < arguments.length && index < InventoryLists_mc.CategoriesList.entryList.length; index++) {
-			InventoryLists_mc.CategoriesList.entryList[index - 1].savedItemIndex = arguments[index];
-		}
+			_global.skse.Log("<================================ItemMenu RestoreIndices==================================" + "\n");
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("ItemMenu RestoreIndices() argument[0] = " + arguments[0] + " size = " + arguments.length);
 		
 		// Extra state information. Cleared after game restart.
-		var bRestarted = arguments[index] == undefined;
+		var bRestarted = arguments[arguments.length - 1] == undefined;
+		
+		if (arguments[0] != undefined && arguments[0] != -1 && arguments.length != 1) {
+			InventoryLists_mc.CategoriesList.restoreSelectedEntry(arguments[0]);
+			InventoryLists_mc.CategoriesList.UpdateList();
+		}
+		
+		// Saved category indices
+		for (var index = 1; index < arguments.length && index < InventoryLists_mc.CategoriesList.entryList.length; index++) {
+				InventoryLists_mc.CategoriesList.entryList[index - 1].savedItemIndex = arguments[index];
+		}
 		
 		if (bRestarted) {
 			// Display SKSE warning if necessary after restart
@@ -458,8 +456,8 @@ class ItemMenu extends MovieClip
 				skseWarningMsg.gotoAndStop("show");
 			}			
 		}
+	_global.skse.Log("============================END ItemMenu RestoreIndices==================================>" + "\n");
 		
-		InventoryLists_mc.CategoriesList.UpdateList();
 	}
 
 	function SaveIndices()

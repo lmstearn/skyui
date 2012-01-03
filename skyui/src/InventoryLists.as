@@ -256,7 +256,8 @@ class InventoryLists extends MovieClip
 			// Set filter type before update
 			if (DEBUG_LEVEL > 1)
 				_global.skse.Log("CHANGE DETECTED! Setting filter flags to sort");
-			_typeFilter.itemFilter = _CategoriesList.selectedEntry.flag;
+			// avoid filterChange
+			_typeFilter.changeFilterFlag(_CategoriesList.selectedEntry.flag, false);
 
 			_currCategoryIndex = _CategoriesList.selectedIndex;
 			_ItemsList.changeFilterFlag(_CategoriesList.selectedEntry.flag);
@@ -426,7 +427,7 @@ class InventoryLists extends MovieClip
 	function SetCategoriesList()
 	{
 		if (DEBUG_LEVEL > 0)
-			_global.skse.Log("InventoryLists SetCategoriesList()");
+			_global.skse.Log("<========================InventoryLists SetCategoriesList==================================" + "\n");
 		var textOffset = 0;
 		var flagOffset = 1;
 		var bDontHideOffset = 2;
@@ -453,15 +454,28 @@ class InventoryLists extends MovieClip
 		 // Restore 0 as default index for tabbed lists
 			_CategoriesList.selectedIndex = 0;
 		}
-
+		else {
+			/* 
+				Retores ALL as default category for Magic/Item menus, and 
+				category at index 0 for rest.
+				Checks to see if second entry in list is ALL category
+				else sets index to 0.
+				Note: RestoreIndices will override this if player has closed menu at least once.
+			*/
+			if (_CategoriesList.entryList[1].flag == 1023)			
+				_CategoriesList.restoreSelectedEntry(1);
+			else _CategoriesList.restoreSelectedEntry(0);
+		}
+		
 		_CategoriesList.InvalidateData();
+		_global.skse.Log("========================END InventoryLists SetCategoriesList==================================>" + "\n");
 	}
 
 	// API - Called whenever the underlying entryList data is updated (using an item, equipping etc.)
 	function InvalidateListData()
 	{
 	if (DEBUG_LEVEL > 0)
-			_global.skse.Log("InventoryLists InvalidateListData()");
+			_global.skse.Log("<========================InventoryLists InvalidateListData==================================" + "\n");
 		var flag = _CategoriesList.selectedEntry.flag;
 
 		for (var i = 0; i < _CategoriesList.entryList.length; i++) {
@@ -481,7 +495,7 @@ class InventoryLists extends MovieClip
 				}
 			}
 		}
-
+		
 		_CategoriesList.UpdateList();
 
 		if (flag != _CategoriesList.selectedEntry.flag) {
@@ -492,5 +506,7 @@ class InventoryLists extends MovieClip
 		
 		// This is called when an ItemCard list closes(ex. ShowSoulGemList) to refresh ItemCard data 
 		dispatchEvent({type:"showItemsList", index:_ItemsList.selectedIndex});
+		_global.skse.Log("========================END InventoryLists InvalidateListData==================================>" + "\n");
 		}
+		
 	}

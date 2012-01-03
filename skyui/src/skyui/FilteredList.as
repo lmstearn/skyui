@@ -65,7 +65,7 @@ class skyui.FilteredList extends skyui.DynamicScrollingList
 	function UpdateList()
 	{
 		if (DEBUG_LEVEL > 0)
-			_global.skse.Log("FilteredList UpdateList()");
+			_global.skse.Log("<========================FilteredList UpdateList==================================" + "\n");
 		var yStart = _indent;
 		var h = 0;
 
@@ -106,12 +106,13 @@ class skyui.FilteredList extends skyui.DynamicScrollingList
 				}
 			}
 		}
+		_global.skse.Log("========================END FilteredList UpdateList==================================>" + "\n");
 	}
 
 	function InvalidateData()
 	{
             	if (DEBUG_LEVEL > 0)
-			_global.skse.Log("FilteredList InvalidateData()");
+			_global.skse.Log("<========================FilteredList InvalidateData==================================" + "\n");
 		generateFilteredList();
 		super.InvalidateData();
 		
@@ -126,6 +127,7 @@ class skyui.FilteredList extends skyui.DynamicScrollingList
 			
 			doSetSelectedIndex(entryClip.itemIndex, 1);
 		}
+		_global.skse.Log("========================END FilteredList InvalidateData==================================>" + "\n");
 	}
 
 	function calculateMaxScrollPosition()
