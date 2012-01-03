@@ -9,6 +9,7 @@ class skyui.ConfigurableList extends skyui.FilteredList
 
 	private var _views:Array;
 	private var _activeViewIndex:Number;
+	private var _activeCategory:Object;
 	
 	private var _activeColumnIndex:Number;
 	private var _lastViewIndex:Number;
@@ -41,6 +42,8 @@ class skyui.ConfigurableList extends skyui.FilteredList
 	private var _defaultEntryFormat:TextFormat;
 	private var _defaultLabelFormat:TextFormat;
 	
+	private var _categoryColumnInfo:Array;
+	
 	// Children
 	var header:MovieClip;
 
@@ -52,6 +55,7 @@ class skyui.ConfigurableList extends skyui.FilteredList
 		_columnPositions = new Array();
 		_columnSizes = new Array();
 		_columnNames = new Array();
+		_categoryColumnInfo = new Array();
 		_hiddenColumnNames = new Array();
 		_columnEntryValues = new Array();
 		_customEntryFormats = new Array();
@@ -70,7 +74,8 @@ class skyui.ConfigurableList extends skyui.FilteredList
 		_bEnableEquipIcon = false;
 		_activeColumnState = 1;
 		_activeColumnIndex = 0;
-
+		_activeCategory = undefined;
+		
 		Config.instance.addEventListener("configLoad", this, "onConfigLoad");
 	}
 	
@@ -81,6 +86,31 @@ class skyui.ConfigurableList extends skyui.FilteredList
 		if (header != 0) {
 			header.addEventListener("columnPress", this, "onColumnPress");
 		}
+	}
+	
+	function generateInitialColumnInfo(a_array)
+	{
+		if (a_array == undefined)
+			return;
+		_categoryColumnInfo = a_array;
+		for (var i = 0; i < _categoryColumnInfo.length; i++)
+		{
+			var entry = _categoryColumnInfo[i];
+			entry.columnIndex = -1;
+			entry.columnState = -1;
+		}
+	}
+	
+	function getCategoryEntry(a_flag)
+	{
+		for (var index = 0; index < _categoryColumnInfo.length; index++)
+			if (_categoryColumnInfo[index].flag == a_flag)
+				return _categoryColumnInfo[index];
+	}
+	
+	function get categoryColumnInfo():Array
+	{
+		return _categoryColumnInfo;
 	}
 	
 	function get currentView()
@@ -193,10 +223,10 @@ class skyui.ConfigurableList extends skyui.FilteredList
 		super.setEntry(a_entryClip, a_entryObject);
 	}
 
+	// called when switching categories
 	function changeFilterFlag(a_flag:Number)
 	{
-		if (DEBUG_LEVEL > 0)
-			_global.skse.Log("ConfigurableList changeFilterFlag " + a_flag);
+		if (DEBUG_LEVEL > 0) _global.skse.Log("ConfigurableList changeFilterFlag " + a_flag);
 		// Find a match, or use last index
 		for (var i = 0; i < _views.length; i++) {
 			if (_views[i].category == a_flag || i == _views.length-1) {
@@ -204,18 +234,29 @@ class skyui.ConfigurableList extends skyui.FilteredList
 				break;
 			}
 		}
-		
+
+		_activeCategory = getCategoryEntry(a_flag);
+		if (DEBUG_LEVEL > 0) _global.skse.Log("ACTIVE CATEGORY = " + _activeCategory.text);
 		if (_activeViewIndex == -1)  
 			return;
-		if (_lastViewIndex == _activeViewIndex) {
-			// if views are the same, trigger a filter change to update the list
-			onFilterChange();
-			return;
-		}
 		
 		_lastViewIndex = _activeViewIndex;
-		_activeColumnState = 1;
-		_activeColumnIndex = _views[_activeViewIndex].columns.indexOf(_views[_activeViewIndex].primaryColumn);
+
+		if (_activeCategory.columnState != -1)
+			_activeColumnState = _activeCategory.columnState;
+		else
+		{
+			_activeColumnState = 1;
+			_activeCategory.columnState = _activeColumnState;
+		}
+		
+		if (_activeCategory.columnIndex != -1)
+			_activeColumnIndex = _activeCategory.columnIndex;
+		else 
+		{
+			_activeColumnIndex = _views[_activeViewIndex].columns.indexOf(_views[_activeViewIndex].primaryColumn);
+			_activeCategory.columnIndex = _activeColumnIndex;
+		}
 		if (DEBUG_LEVEL > 1)
 			_global.skse.Log("ConfigurableList changeFilterFlag " + a_flag + ", activeColumnIndex = " + _activeColumnIndex + ", activeColumnState = " + _activeColumnState + ", activeViewIndex = " + _activeViewIndex);
 		if (_activeColumnIndex == undefined) {
@@ -245,12 +286,16 @@ class skyui.ConfigurableList extends skyui.FilteredList
 		if (currentView.columns[a_index] == undefined) {
 			return;
 		}
-			
+		
+		// save category column index
+		_activeCategory.columnIndex = a_index;
+		
 			// Don't process for passive columns
 		if (currentView.columns[a_index].passive) {
 				return;
 			}
-			
+		
+		// change active state for column
 		if (_activeColumnIndex != a_index) {
 			_activeColumnIndex = a_index;
 				_activeColumnState = 1;
@@ -261,6 +306,8 @@ class skyui.ConfigurableList extends skyui.FilteredList
 					_activeColumnState = 1;
 				}
 			}
+			// save column state
+			_activeCategory.columnState = _activeColumnState;
 			
 			updateView();
 		}
