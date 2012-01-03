@@ -205,7 +205,11 @@ class skyui.ConfigurableList extends skyui.FilteredList
 			}
 		}
 		
-		if (_activeViewIndex == -1 || _lastViewIndex == _activeViewIndex) {
+		if (_activeViewIndex == -1)  
+			return;
+		if (_lastViewIndex == _activeViewIndex) {
+			// if views are the same, trigger a filter change to update the list
+			onFilterChange();
 			return;
 		}
 		
