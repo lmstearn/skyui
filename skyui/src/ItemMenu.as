@@ -165,7 +165,7 @@ class ItemMenu extends MovieClip
 			MovieClip(MouseRotationRect).Lock("T");
 			MouseRotationRect._x = ItemCard_mc._parent._x;
 			MouseRotationRect._width = ItemCard_mc._parent._width;
-			MouseRotationRect._height = 0.550000 * Stage.visibleRect.height;
+			MouseRotationRect._height = 0.55 * Stage.visibleRect.height;
 		}
 		
 		if (skseWarningMsg != undefined) {
@@ -192,6 +192,13 @@ class ItemMenu extends MovieClip
 		InventoryLists_mc.SetPlatform(a_platform,a_bPS3Switch);
 		ItemCard_mc.SetPlatform(a_platform,a_bPS3Switch);
 		BottomBar_mc.SetPlatform(a_platform,a_bPS3Switch);
+	}
+	
+	// API
+	function get bFadedIn()
+	{
+		if (DEBUG_LEVEL > 0) _global.skse.Log("InventoryMenu get bFadedIn()");
+		return _bFadedIn;
 	}
 
 	// API
@@ -223,6 +230,7 @@ class ItemMenu extends MovieClip
 			_global.skse.Log("ItemMenu onMouseWheel()");
 		for (var e = Mouse.getTopMostEntity(); e != undefined; e = e._parent) {
 			if (e == MouseRotationRect && ShouldProcessItemsListInput(false) || !_bFadedIn && delta == -1) {
+				_global.skse.Log("ItemMenu ZoomItemModel " + delta);
 				GameDelegate.call("ZoomItemModel",[delta]);
 				continue;
 			}
@@ -341,7 +349,6 @@ class ItemMenu extends MovieClip
 		if (process && _platform == 0 && abCheckIfOverRect) {
 			var e = Mouse.getTopMostEntity();
 			var found = false;
-			
 			while (!found && e != undefined)
 			{
 				if (e == InventoryLists_mc.ItemsList) {
@@ -446,7 +453,7 @@ class ItemMenu extends MovieClip
 		for (index = 1; index < arguments.length && index < InventoryLists_mc.CategoriesList.entryList.length; index++) {
 				InventoryLists_mc.CategoriesList.entryList[index - 1].savedItemIndex = arguments[index];
 		}
-		
+
 		// Extra state information. Cleared after game restart.
 		var bRestarted = arguments[index] == undefined;
 		
@@ -474,7 +481,7 @@ class ItemMenu extends MovieClip
 		
 		// Restarted == false
 		a.push(1);
-		
+
 		GameDelegate.call("SaveIndices",[a]);
 
 		ResetElements();
