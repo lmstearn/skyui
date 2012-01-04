@@ -150,7 +150,17 @@ class ContainerMenu extends ItemMenu
 	{
 		if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu onItemHighlightChange()");
 		if (event.index != -1) 
+		{
 			updateButtons();
+		}
+		if (InventoryLists_mc.ItemsList.selectedIndex == -1)
+		{
+			updateButtons();
+			if (!isViewingContainer())
+				BottomBar_mc.SetButtonText("",1);
+			BottomBar_mc.SetButtonText("",0);
+			BottomBar_mc.SetButtonText("",2);		
+		}
 		super.onItemHighlightChange(event);
 	}
 
@@ -163,9 +173,12 @@ class ContainerMenu extends ItemMenu
 
 	function onHideItemsList(event)
 	{
-        if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu onHideItemsList()");
 		super.onHideItemsList(event);
+		if (DEBUG_LEVEL > 0) _global.skse.Log("ContainerMenu onHideItemsList()");
+		updateButtons();
 		// Hide buttons that are not needed while items are not selected.
+		if (!isViewingContainer())
+			BottomBar_mc.SetButtonText("",1);
 		BottomBar_mc.SetButtonText("",0);
 		BottomBar_mc.SetButtonText("",2);	
 		BottomBar_mc.UpdatePerItemInfo({type:InventoryDefines.ICT_NONE});
@@ -182,12 +195,12 @@ class ContainerMenu extends ItemMenu
 	function updateButtons()
 	{
         if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu updateButtons()");
-
+		
+		BottomBar_mc.SetButtonsArt(ContainerButtonArt);
 		if (InventoryLists_mc.currentState != InventoryLists.TRANSITIONING_TO_SHOW_PANEL && InventoryLists_mc.currentState != InventoryLists.SHOW_PANEL) {
 			hideButtons();
 			return;
 		}
-		BottomBar_mc.SetButtonsArt(ContainerButtonArt);
 		/*
 		  bShowEquipButtonHelp is only meant for PC
 		  It's primary purpose is to inform players that M1/M2 can equip left and right weapons
