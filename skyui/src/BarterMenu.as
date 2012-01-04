@@ -76,12 +76,12 @@ class BarterMenu extends ItemMenu
 	
 	function onShowItemsList(event)
 	{
-                if (DEBUG_LEVEL > 0) _global.skse.Log("BarterMenu onShowItemsList()");
+        if (DEBUG_LEVEL > 0) _global.skse.Log("BarterMenu onShowItemsList()");
 		_selectedCategory = InventoryLists_mc.CategoriesList.selectedIndex;
 		InventoryLists_mc.showItemsList();
 
 		//super.onShowItemsList(event);
-		}
+	}
 
 	
 	function onItemHighlightChange(event)
@@ -106,9 +106,10 @@ class BarterMenu extends ItemMenu
 
 	function IsViewingVendorItems()
 	{
-                if (DEBUG_LEVEL > 0) _global.skse.Log("BarterMenu IsViewingVendorItems()");
-		var dividerIndex = InventoryLists_mc.CategoriesList.dividerIndex;
-		return dividerIndex != undefined && _selectedCategory < dividerIndex;
+        if (DEBUG_LEVEL > 0) _global.skse.Log("BarterMenu IsViewingVendorItems()");
+		if (InventoryLists_mc.CategoriesList.activeSegment == 0)
+			return true;
+		else return false;
 	}
 
 	function onQuantityMenuSelect(event)

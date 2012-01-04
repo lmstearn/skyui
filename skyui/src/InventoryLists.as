@@ -162,7 +162,13 @@ class InventoryLists extends MovieClip
 					
 					bCaught = true;
 					_TabBar.tabToggle();
-				}
+				
+				// Toggle tab for controller (default BACK
+				} else if (_TabBar != undefined && details.navEquivalent == NavigationCode.GAMEPAD_BACK) {
+					
+					bCaught = true;
+					_TabBar.tabToggle();
+				}				
 			}
 			if (!bCaught) {
 				bCaught = pathToFocus[0].handleInput(details, pathToFocus.slice(1));
