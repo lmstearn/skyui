@@ -153,8 +153,7 @@ class ContainerMenu extends ItemMenu
 		{
 			updateButtons();
 		}
-		if (InventoryLists_mc.ItemsList.selectedIndex == -1)
-		{
+		else { // tab or category changed
 			updateButtons();
 			if (!isViewingContainer())
 				BottomBar_mc.SetButtonText("",1);
