@@ -7,7 +7,7 @@ class skyui.FilteredList extends skyui.DynamicScrollingList
 	private var _filterChain:Array;
 
 	private var _curClipIndex:Number;
-	private var _lastScrollPos:Number;
+	private var _lastScrollPosition:Number;
 	private var _oldEntryClipIndex:Number;
 
 	function FilteredList()
@@ -16,7 +16,7 @@ class skyui.FilteredList extends skyui.DynamicScrollingList
 		_filteredList = new Array();
 		_filterChain = new Array();
 		_curClipIndex = -1;
-		_lastScrollPos = -1;
+		_lastScrollPosition = -1;
 		_oldEntryClipIndex = -1;
 	}
 
@@ -202,7 +202,7 @@ class skyui.FilteredList extends skyui.DynamicScrollingList
 			var newEntry = _entryList[_selectedIndex];
 			var clipDiff = (_maxListIndex - _oldEntryClipIndex);
 			if (DEBUG_LEVEL > 1)
-				_global.skse.Log("clipDiff = " + clipDiff + "oldClipIndex = " + _oldEntryClipIndex + " , _maxListIndex = " + _maxListIndex + ", lastScrollPos = " + _lastScrollPos + ", scrollPosition = " + _scrollPosition);
+				_global.skse.Log("clipDiff = " + clipDiff + "oldClipIndex = " + _oldEntryClipIndex + " , _maxListIndex = " + _maxListIndex + ", lastScrollPosition = " + _lastScrollPosition + ", scrollPosition = " + _scrollPosition);
 			/*
 				Since vanilla does not use a scrollbar, we must verify if the old entry is still visible 
 				on list when we scroll up or down. If we highlight a new item and the old item is not
@@ -219,14 +219,14 @@ class skyui.FilteredList extends skyui.DynamicScrollingList
 				4. If the difference of new scroll and last scroll position is greater than our old
 				clip index, do not update old entry since it is no longer visible.
 			*/
-			if (_lastScrollPosition != _scrollPosition && _lastScrollPos != -1) {
+			if (_lastScrollPosition != _scrollPosition && _lastScrollPosition != -1) {
 				if (_lastScrollPosition > _scrollPosition) { // moved scrollbar up
 					// check scroll pos
 					if ((_lastScrollPosition - _scrollPosition) > clipDiff) {
 						oldIndex = -1;
 					}
 				} else { // moved scrollbar down 
-					if ((_scrollPosition - _lastScrollPos) > _oldEntryClipIndex) {
+					if ((_scrollPosition - _lastScrollPosition) > _oldEntryClipIndex) {
 						oldIndex = -1
 					}
 				}
@@ -255,7 +255,7 @@ class skyui.FilteredList extends skyui.DynamicScrollingList
 				_curClipIndex = -1;
 			}
 			// save our current scroll position for next selection
-			_lastScrollPos = _scrollPosition;
+			_lastScrollPosition = _scrollPosition;
 			dispatchEvent({type:"selectionChange", index:_selectedIndex, keyboardOrMouse:a_keyboardOrMouse});
 		}
 	}
