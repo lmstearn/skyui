@@ -15,30 +15,42 @@ class skyui.MagicColumnFormatter extends InventoryColumnFormatter
 		if (DEBUG_LEVEL > 0) _global.skse.Log("MagicColumnFormatter formatItemIcon()");
 		// Default without script extender
 		switch (a_entryObject.infoType) {
-			case Defines.MAGIC_TYPE_ALTERATION :
+			
+			// Spell
+			case InventoryDefines.ICT_SPELL :
+				switch (a_entryObject.subType) {
+					case Defines.SPELL_TYPE_ALTERATION :
 				a_entryField.gotoAndStop("default_alteration");
 				break;
-			case Defines.MAGIC_TYPE_ILLUSION :
+					case Defines.SPELL_TYPE_ILLUSION :
 				a_entryField.gotoAndStop("default_illusion");
 				break;
-			case Defines.MAGIC_TYPE_DESTRUCTION :
+					case Defines.SPELL_TYPE_DESTRUCTION :
 				a_entryField.gotoAndStop("default_destruction");
 				break;
-			case Defines.MAGIC_TYPE_CONJURATION :
+					case Defines.SPELL_TYPE_CONJURATION :
 				a_entryField.gotoAndStop("default_conjuration");
 				break;
-			case Defines.MAGIC_TYPE_RESTORATION :
+					case Defines.SPELL_TYPE_RESTORATION :
 				a_entryField.gotoAndStop("default_restoration");
 				break;
-			case Defines.MAGIC_TYPE_SHOUT :
-				a_entryField.gotoAndStop("default_shout");
+					default:
+						a_entryField.gotoAndStop("default_power");
+				}
 				break;
-			case Defines.MAGIC_TYPE_ACTIVEEFFECT :
-				a_entryField.gotoAndStop("default_effect");
-				break;
-			case Defines.MAGIC_TYPE_POWER :// Powers
+			
+			// Power
+			case InventoryDefines.ICT_SPELL_DEFAULT :
 				a_entryField.gotoAndStop("default_power");
 				break;
+			
+			// Shout
+			case InventoryDefines.ICT_SHOUT :
+				a_entryField.gotoAndStop("default_shout");
+				break;
+			
+			// Active Effect
+			case InventoryDefines.ICT_ACTIVE_EFFECT :
 			default :
 				a_entryField.gotoAndStop("default_effect");
 		}

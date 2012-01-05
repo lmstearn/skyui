@@ -186,10 +186,11 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 		}
 	}
 
+	// called when pressing mouse button on scrollbar and moving up or down
 	function updateScrollPosition(a_position:Number)
 	{
 		if (DEBUG_LEVEL > 0)
-			_global.skse.Log("DynamicScrollingList updateScrollPosition()");
+			_global.skse.Log("DynamicScrollingList updateScrollPosition()" + " currentScrollPos = " + _scrollPosition + ", new scroll pos = " + a_position);
 		_scrollPosition = a_position;
 		UpdateList();
 	}

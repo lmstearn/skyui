@@ -155,7 +155,6 @@ class skyui.SearchWidget extends MovieClip
 				endInput();
 				
 			} else if (details.navEquivalent == NavigationCode.TAB || details.navEquivalent == NavigationCode.ESCAPE) {
-					   //|| (details.navEquivalent == NavigationCode.GAMEPAD_BACK && details.code != 8)) {
 				clearText();
 				endInput();
 			}

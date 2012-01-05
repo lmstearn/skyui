@@ -158,13 +158,7 @@ class InventoryLists extends MovieClip
 					_SearchWidget.startInput();
 					
 				// Toggle tab (default ALT)
-				} else if (_TabBar != undefined && details.code == _tabToggleKey) {
-					
-					bCaught = true;
-					_TabBar.tabToggle();
-				
-				// Toggle tab for controller (default BACK
-				} else if (_TabBar != undefined && details.navEquivalent == NavigationCode.GAMEPAD_BACK) {
+				} else if (_TabBar != undefined && (details.code == _tabToggleKey || (details.navEquivalent == NavigationCode.GAMEPAD_BACK && details.code != 8))) {
 					
 					bCaught = true;
 					_TabBar.tabToggle();
@@ -195,6 +189,11 @@ class InventoryLists extends MovieClip
 		return _ItemsList;
 	}
 
+	function get TabBar()
+	{
+		return _TabBar;
+	}
+
 	function get currentState()
 	{
 		return _currentState;
@@ -202,10 +201,9 @@ class InventoryLists extends MovieClip
 
 	function set currentState(a_newState)
 	{
-		if (DEBUG_LEVEL > 1)
-		_global.skse.Log("InventoryLists currentState(aiNewState) set currentState to " + a_newState);
-		if (a_newState == SHOW_PANEL)
-		{
+	    if (DEBUG_LEVEL > 1)
+		    _global.skse.Log("InventoryLists currentState(aiNewState) set currentState to " + a_newState);
+		if (a_newState == SHOW_PANEL) {
 			FocusHandler.instance.setFocus(_ItemsList,0);
 		}
 
@@ -257,8 +255,7 @@ class InventoryLists extends MovieClip
 		_ItemsList.selectedIndex = -1;
 		if (DEBUG_LEVEL > 1)
 			_global.skse.Log("Category selectedEntry = " + _CategoriesList.selectedEntry.text);
-		if (_CategoriesList.selectedEntry != undefined)
-		{
+		if (_CategoriesList.selectedEntry != undefined)	{
 			// Set filter type before update
 			if (DEBUG_LEVEL > 1)
 				_global.skse.Log("CHANGE DETECTED! Setting filter flags to sort");
@@ -286,12 +283,14 @@ class InventoryLists extends MovieClip
 	{
 		if (DEBUG_LEVEL > 0)
 			_global.skse.Log("InventoryLists hideItemsList()");
-		//_currentState = TRANSITIONING_TO_ONE_PANEL;
-		//dispatchEvent({type:"hideItemsList", index:_ItemsList.selectedIndex});
-		//_ItemsList.selectedIndex = -1;
-		//gotoAndPlay("Panel2Hide");
-		//GameDelegate.call("PlaySound",["UIMenuBladeCloseSD"]);
-		//_ItemsList.disableInput = true;
+		/*
+		_currentState = TRANSITIONING_TO_ONE_PANEL;
+		dispatchEvent({type:"hideItemsList", index:_ItemsList.selectedIndex});
+		_ItemsList.selectedIndex = -1;
+		gotoAndPlay("Panel2Hide");
+		GameDelegate.call("PlaySound",["UIMenuBladeCloseSD"]);
+		_ItemsList.disableInput = true;
+		*/
 	}
 
 	function onCategoriesItemPress()
@@ -343,8 +342,7 @@ class InventoryLists extends MovieClip
 	{
 		if (DEBUG_LEVEL > 0)
 			_global.skse.Log("InventoryLists onCategoriesListMouseSelectionChange()");
-		if (event.keyboardOrMouse == 0)
-		{
+		if (event.keyboardOrMouse == 0) {
 			doCategorySelectionChange(event);
 		}
 	}
@@ -367,8 +365,7 @@ class InventoryLists extends MovieClip
 	{
 		if (DEBUG_LEVEL > 0)
 			_global.skse.Log("InventoryLists onItemsListMouseSelectionChange()");
-		if (event.keyboardOrMouse == 0)
-		{
+		if (event.keyboardOrMouse == 0) {
 			doItemsSelectionChange(event);
 		}
 	}

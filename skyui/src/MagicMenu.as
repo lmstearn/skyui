@@ -72,7 +72,7 @@ class MagicMenu extends ItemMenu
 	{
 		if (DEBUG_LEVEL > 0)
 			_global.skse.Log("MagicMenu handleInput()");
-		if (_bFadedIn && ! pathToFocus[0].handleInput(details,pathToFocus.slice(1))) {
+		if (bFadedIn && ! pathToFocus[0].handleInput(details,pathToFocus.slice(1))) {
 			if (Shared.GlobalFunc.IsKeyPressed(details)) {
 				if (InventoryLists_mc.currentState == InventoryLists.SHOW_PANEL && details.navEquivalent == NavigationCode.RIGHT) {
 					StartMenuFade();
@@ -180,7 +180,7 @@ class MagicMenu extends ItemMenu
 	{
 		if (DEBUG_LEVEL > 0)
 			_global.skse.Log("MagicMenu AttemptEquip()");
-		if (ShouldProcessItemsListInput(true)) {
+		if (ShouldProcessItemsListInput(true) && ConfirmSelectedEntry()) {
 			GameDelegate.call("ItemSelect", [aiSlot]);
 		} 
 	}

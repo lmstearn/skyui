@@ -77,6 +77,8 @@ class skyui.ConfigurableList extends skyui.FilteredList
 		_activeCategory = undefined;
 		
 		Config.instance.addEventListener("configLoad", this, "onConfigLoad");
+		
+		Util.addArrayFunctions();
 	}
 	
 	function onLoad()
@@ -166,7 +168,7 @@ class skyui.ConfigurableList extends skyui.FilteredList
 	function setEntry(a_entryClip:MovieClip, a_entryObject:Object)
 	{
 		if (DEBUG_LEVEL > 0)
-			_global.skse.Log("ConfigurableList setEntry " + a_entryObject.text);
+			_global.skse.Log("ConfigurableList setEntry " + a_entryObject.text + " at clipIndex " + a_entryClip.clipIndex);
 		if (_activeViewIndex != -1 && a_entryClip.viewIndex != _activeViewIndex) {
 			a_entryClip.viewIndex = _activeViewIndex;
 			
@@ -229,7 +231,13 @@ class skyui.ConfigurableList extends skyui.FilteredList
 		if (DEBUG_LEVEL > 0) _global.skse.Log("ConfigurableList changeFilterFlag " + a_flag);
 		// Find a match, or use last index
 		for (var i = 0; i < _views.length; i++) {
-			if (_views[i].category == a_flag || i == _views.length-1) {
+			
+			// Wrap in list if necessary
+			if (! ((_views[i].category) instanceof Array)) {
+				_views[i].category = [_views[i].category];
+			}
+			
+			if (_views[i].category.indexOf(a_flag) != undefined || i == _views.length-1) {
 				_activeViewIndex = i;
 				break;
 			}
@@ -346,7 +354,8 @@ class skyui.ConfigurableList extends skyui.FilteredList
 		
 		var columns = currentView.columns;
 
-		var weightedWidth = _entryWidth;
+		// Subtract arrow tip width
+		var weightedWidth = _entryWidth - 12;
 		var weightSum = 0;
 		var maxHeight = 0;
 		

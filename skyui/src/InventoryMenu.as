@@ -76,7 +76,7 @@ class InventoryMenu extends ItemMenu
 			_global.skse.Log("InventoryMenu handleInput()");
 		if (DEBUG_LEVEL > 1)
 			_global.skse.Log("InventoryMenu handleInput() details = " + details.navEquivalent + ", object = " + details);
-		if (_bFadedIn && !pathToFocus[0].handleInput(details, pathToFocus.slice(1))) {
+		if (bFadedIn && !pathToFocus[0].handleInput(details, pathToFocus.slice(1))) {
 			if (GlobalFunc.IsKeyPressed(details)) {
 				if (details.navEquivalent == NavigationCode.TAB) {
 					StartMenuFade();
@@ -219,7 +219,8 @@ class InventoryMenu extends ItemMenu
 		}
 	}
 
-	function AttemptChargeItem() {
+	function AttemptChargeItem() 
+        {
 		if (DEBUG_LEVEL > 0)
 			_global.skse.Log("InventoryMenu AttemptChargeItem()");
 		if (ShouldProcessItemsListInput(false) && ItemCard_mc.itemInfo.charge != undefined && ItemCard_mc.itemInfo.charge < 100) {

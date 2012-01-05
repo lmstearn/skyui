@@ -15,16 +15,16 @@
 	static var FLAG_INV_KEYS = 256;
 	static var FLAG_INV_MISC = 512;
 
-	static var FLAG_BARTER_ALL = 1047552;
-	static var FLAG_BARTER_WEAPONS = 2048;
-	static var FLAG_BARTER_ARMOR = 4096;
-	static var FLAG_BARTER_POTIONS = 8192;
-	static var FLAG_BARTER_SCROLLS = 16384;
-	static var FLAG_BARTER_FOOD = 32768;
-	static var FLAG_BARTER_INGREDIENTS = 65536;
-	static var FLAG_BARTER_BOOKS = 131072;
-	static var FLAG_BARTER_KEYS = 262144;
-	static var FLAG_BARTER_MISC = 524288;
+	static var FLAG_CONTAINER_ALL = 1047552;
+	static var FLAG_CONTAINER_WEAPONS = 2048;
+	static var FLAG_CONTAINER_ARMOR = 4096;
+	static var FLAG_CONTAINER_POTIONS = 8192;
+	static var FLAG_CONTAINER_SCROLLS = 16384;
+	static var FLAG_CONTAINER_FOOD = 32768;
+	static var FLAG_CONTAINER_INGREDIENTS = 65536;
+	static var FLAG_CONTAINER_BOOKS = 131072;
+	static var FLAG_CONTAINER_KEYS = 262144;
+	static var FLAG_CONTAINER_MISC = 524288;
 	
     static var FLAG_CRAFTING_HIDE = 2;
 	static var FLAG_CRAFTING_IRON = 8;
@@ -70,14 +70,10 @@
 	static var WEAPON_TYPE_BOW = 7;
 	static var WEAPON_TYPE_STAFF = 8;
 
-	// Magic types
-	static var MAGIC_TYPE_ALTERATION = 0;
-	static var MAGIC_TYPE_ILLUSION = 1;
-	static var MAGIC_TYPE_DESTRUCTION = 2;
-	static var MAGIC_TYPE_CONJURATION = 3;
-	static var MAGIC_TYPE_RESTORATION = 4;
-	static var MAGIC_TYPE_SPELL = 7;
-	static var MAGIC_TYPE_SHOUT = 10;
-	static var MAGIC_TYPE_ACTIVEEFFECT = 11;
-	static var MAGIC_TYPE_POWER = 13;
+	// Spell type
+	static var SPELL_TYPE_ALTERATION = 18;
+	static var SPELL_TYPE_CONJURATION = 19;
+	static var SPELL_TYPE_DESTRUCTION = 20;
+	static var SPELL_TYPE_ILLUSION = 21;
+	static var SPELL_TYPE_RESTORATION = 22;
 }

@@ -41,41 +41,7 @@ class skyui.InventoryColumnFormatter implements IColumnFormatter
 
 	function formatItemIcon(a_entryField:Object, a_entryObject:Object)
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("InventoryColumnFormatter formatItemIcon()");
-		if (a_entryObject.extended == undefined) {
-
-			// Default without script extender
-			switch (a_entryObject.infoType) {
-				case InventoryDefines.ICT_WEAPON :
-					a_entryField.gotoAndStop("default_weapon");
-					break;
-				case InventoryDefines.ICT_ARMOR :
-					a_entryField.gotoAndStop("default_armor");
-					break;
-				case InventoryDefines.ICT_POTION :
-					a_entryField.gotoAndStop("default_potion");
-					break;
-				case InventoryDefines.ICT_SPELL :
-					a_entryField.gotoAndStop("default_scroll");
-					break;
-				case InventoryDefines.ICT_FOOD :
-					a_entryField.gotoAndStop("default_food");
-					break;
-				case InventoryDefines.ICT_INGREDIENT :
-					a_entryField.gotoAndStop("default_ingredient");
-					break;
-				case InventoryDefines.ICT_BOOK :
-					a_entryField.gotoAndStop("default_book");
-					break;
-				case InventoryDefines.ICT_KEY :
-					a_entryField.gotoAndStop("default_key");
-					break;
-				default :
-					a_entryField.gotoAndStop("default_misc");
-			}
-		} else {
-
-			// With plugin-extended attributes
+	                if (DEBUG_LEVEL > 0) _global.skse.Log("InventoryColumnFormatter formatItemIcon()");
 			switch (a_entryObject.infoType) {
 				case InventoryDefines.ICT_WEAPON :
 					if (a_entryObject.formType == Defines.FORMTYPE_ARROW) {
@@ -106,6 +72,7 @@ class skyui.InventoryColumnFormatter implements IColumnFormatter
 						a_entryField.gotoAndStop("weapon_staff");
 						break;
 					}
+			
 					a_entryField.gotoAndStop("default_weapon");
 					break;
 				case InventoryDefines.ICT_ARMOR :
@@ -137,7 +104,6 @@ class skyui.InventoryColumnFormatter implements IColumnFormatter
 						a_entryField.gotoAndStop("default_misc");
 					}
 			}
-		}
 	}
 
 	function formatName(a_entryField:Object, a_entryObject:Object, a_entryClip:MovieClip)
@@ -223,11 +189,6 @@ class skyui.InventoryColumnFormatter implements IColumnFormatter
 		} else {
 			a_entryField.SetText(" ");
 		}
-	}
-
-	function formatNumber(a_entryField:Object, a_entryObject:Object)
-	{
-		// Do nothing. Those require no special formating and the value has already been set
 	}
 
 	function formatText(a_entryField:Object, a_entryObject:Object)

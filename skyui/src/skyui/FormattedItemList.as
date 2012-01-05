@@ -87,7 +87,6 @@ class skyui.FormattedItemList extends skyui.ConfigurableList
 			
 			// Process based on column type 
 			switch (columns[i].type) {
-				
 				case Config.COL_TYPE_EQUIP_ICON :
 					_columnFormatter.formatEquipIcon(e, a_entryObject);
 					break;
@@ -98,10 +97,6 @@ class skyui.FormattedItemList extends skyui.ConfigurableList
 
 				case Config.COL_TYPE_NAME :
 					_columnFormatter.formatName(e, a_entryObject, a_entryClip);
-					break;
-
-				case Config.COL_TYPE_NUMBER :
-					_columnFormatter.formatNumber(e, a_entryObject);
 					break;
 
 				case Config.COL_TYPE_TEXT :

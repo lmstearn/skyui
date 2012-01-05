@@ -11,7 +11,6 @@ class BarterMenu extends ItemMenu
 	private var _buyMult:Number;
 	private var _sellMult:Number;
 	private var _confirmAmount:Number;
-	private var _selectedCategory:Number;
 	private var _playerGold:Number;
 	private var _vendorGold:Number;
 	
@@ -51,10 +50,13 @@ class BarterMenu extends ItemMenu
 		
 		InventoryLists_mc.CategoriesList.setIconArt(CategoryListIconArt);
 
+
 		InventoryLists_mc.ItemsList.entryClassName = "ItemsListEntryInv";
 		InventoryLists_mc.ItemsList.columnFormatter = ColumnFormatter;
 		InventoryLists_mc.ItemsList.dataFetcher = DataFetcher;
 		InventoryLists_mc.ItemsList.setConfigSection("ItemList");
+		
+		InventoryLists_mc.TabBar.setIcons("buy", "sell");
 	}
 
 	function onExitButtonPress()
@@ -77,7 +79,6 @@ class BarterMenu extends ItemMenu
 	function onShowItemsList(event)
 	{
         if (DEBUG_LEVEL > 0) _global.skse.Log("BarterMenu onShowItemsList()");
-		_selectedCategory = InventoryLists_mc.CategoriesList.selectedIndex;
 		InventoryLists_mc.showItemsList();
 
 		//super.onShowItemsList(event);
@@ -106,10 +107,8 @@ class BarterMenu extends ItemMenu
 
 	function IsViewingVendorItems()
 	{
-        if (DEBUG_LEVEL > 0) _global.skse.Log("BarterMenu IsViewingVendorItems()");
-		if (InventoryLists_mc.CategoriesList.activeSegment == 0)
-			return true;
-		else return false;
+                if (DEBUG_LEVEL > 0) _global.skse.Log("BarterMenu IsViewingVendorItems()");
+		return (InventoryLists_mc.CategoriesList.activeSegment == 0);
 	}
 
 	function onQuantityMenuSelect(event)

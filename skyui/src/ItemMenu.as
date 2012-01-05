@@ -7,7 +7,6 @@ import gfx.ui.NavigationCode;
 class ItemMenu extends MovieClip
 {
 	private var _platform:Number;
-	private var _bFadedIn:Boolean;
 	private var _bItemCardFadedIn:Boolean;
 	
 	private var _3DIconXSettingStr:String;
@@ -35,7 +34,10 @@ class ItemMenu extends MovieClip
 	var ExitMenuRect:MovieClip;
 	var skseWarningMsg:MovieClip;
 	
-	static var DEBUG_LEVEL = 1;
+	// API
+	var bFadedIn:Boolean;
+	
+        static var DEBUG_LEVEL = 1;
 
 	function ItemMenu()
 	{
@@ -48,7 +50,7 @@ class ItemMenu extends MovieClip
 		Mouse.addListener(this);
 		Config.instance.addEventListener("configLoad",this,"onConfigLoad");
 		
-		_bFadedIn = true;
+		bFadedIn = true;
 		_bItemCardFadedIn = false;
 		
 		_3DIconXSettingStr = "fInventory3DItemPosX:Interface";
@@ -85,7 +87,7 @@ class ItemMenu extends MovieClip
 
 		ExitMenuRect.onMouseDown = function()
 		{
-			if (_parent._bFadedIn == true && Mouse.getTopMostEntity() == this) {
+			if (_parent.bFadedIn == true && Mouse.getTopMostEntity() == this) {
 				_parent.onExitMenuRectClick();
 			}
 		};
@@ -195,13 +197,6 @@ class ItemMenu extends MovieClip
 	}
 	
 	// API
-	function get bFadedIn()
-	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("InventoryMenu get bFadedIn()");
-		return _bFadedIn;
-	}
-
-	// API
 	function GetInventoryItemList()
 	{
 		if (DEBUG_LEVEL > 0)
@@ -213,7 +208,7 @@ class ItemMenu extends MovieClip
 	{
 		if (DEBUG_LEVEL > 0)
 			_global.skse.Log("ItemMenu handleInput()");
-		if (_bFadedIn) {
+		if (bFadedIn) {
 			if (!pathToFocus[0].handleInput(details, pathToFocus.slice(1))) {
 				if (GlobalFunc.IsKeyPressed(details) && details.navEquivalent == NavigationCode.TAB) {
 					GameDelegate.call("CloseMenu",[]);
@@ -229,7 +224,7 @@ class ItemMenu extends MovieClip
         if (DEBUG_LEVEL > 0)
 			_global.skse.Log("ItemMenu onMouseWheel()");
 		for (var e = Mouse.getTopMostEntity(); e != undefined; e = e._parent) {
-			if (e == MouseRotationRect && ShouldProcessItemsListInput(false) || !_bFadedIn && delta == -1) {
+			if (e == MouseRotationRect && ShouldProcessItemsListInput(false) || !bFadedIn && delta == -1) {
 				_global.skse.Log("ItemMenu ZoomItemModel " + delta);
 				GameDelegate.call("ZoomItemModel",[delta]);
 				continue;
@@ -344,11 +339,12 @@ class ItemMenu extends MovieClip
 	{
 		if (DEBUG_LEVEL > 0)
 			_global.skse.Log("ItemMenu ShouldProcessItemsListInput()");
-		var process = _bFadedIn == true && InventoryLists_mc.currentState == InventoryLists.SHOW_PANEL && InventoryLists_mc.ItemsList.numUnfilteredItems > 0 && !InventoryLists_mc.ItemsList.disableSelection && !InventoryLists_mc.ItemsList.disableInput;
+		var process = bFadedIn == true && InventoryLists_mc.currentState == InventoryLists.SHOW_PANEL && InventoryLists_mc.ItemsList.numUnfilteredItems > 0 && !InventoryLists_mc.ItemsList.disableSelection && !InventoryLists_mc.ItemsList.disableInput;
 
 		if (process && _platform == 0 && abCheckIfOverRect) {
 			var e = Mouse.getTopMostEntity();
 			var found = false;
+			
 			while (!found && e != undefined)
 			{
 				if (e == InventoryLists_mc.ItemsList) {
@@ -413,9 +409,9 @@ class ItemMenu extends MovieClip
 	{
 		if (DEBUG_LEVEL > 0)
 			_global.skse.Log("ItemMenu ToggleMenuFade()");
-		if (_bFadedIn) {
+		if (bFadedIn) {
 			_parent.gotoAndPlay("fadeOut");
-			_bFadedIn = false;
+			bFadedIn = false;
 			InventoryLists_mc.ItemsList.disableSelection = true;
 			InventoryLists_mc.ItemsList.disableInput = true;
 			InventoryLists_mc.CategoriesList.disableSelection = true;
@@ -429,7 +425,7 @@ class ItemMenu extends MovieClip
 	{
 		if (DEBUG_LEVEL > 0)
 			_global.skse.Log("ItemMenu SetFadedIn()");
-		_bFadedIn = true;
+		bFadedIn = true;
 		InventoryLists_mc.ItemsList.disableSelection = false;
 		InventoryLists_mc.ItemsList.disableInput = false;
 		InventoryLists_mc.CategoriesList.disableSelection = false;

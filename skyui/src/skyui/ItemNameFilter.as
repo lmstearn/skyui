@@ -25,10 +25,9 @@ class skyui.ItemNameFilter implements skyui.IFilter
 
 		var seekIndex = 0;
 		var seek = false;
-		var charCode: Number;
 		
 		for (var i = 0; i < searchStr.length; i++) {
-			charCode = _filterText.charCodeAt(seekIndex);
+			var charCode = _filterText.charCodeAt(seekIndex);
 			// In the Russian version of the game,
 			// _filterText.text is encoded as Unicode
 			//   searchStr.text is encoded as CP1251 (Windows-1251)
@@ -42,6 +41,7 @@ class skyui.ItemNameFilter implements skyui.IFilter
 				// CYRILLIC SMALL LETTER IO
 				charCode = 0x00B8;
 			}
+			
 			if (searchStr.charCodeAt(i) == charCode) {
 				if (!seek) {
 					seek = true;
