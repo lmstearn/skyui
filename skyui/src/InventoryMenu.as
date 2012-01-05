@@ -81,7 +81,10 @@ class InventoryMenu extends ItemMenu
 				if (details.navEquivalent == NavigationCode.TAB) {
 					StartMenuFade();
 					GameDelegate.call("CloseTweenMenu",[]);
-				}
+				} else if (details.navEquivalent == NavigationCode.GAMEPAD_BACK && details.code != 8) {
+					_global.skse.OpenMenu("Magic Menu");
+					GameDelegate.call("CloseMenu", []);
+				}	
 			}
 		}
 		return true;

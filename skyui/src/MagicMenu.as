@@ -80,7 +80,10 @@ class MagicMenu extends ItemMenu
 				} else if (details.navEquivalent == NavigationCode.TAB) {
 					StartMenuFade();
 					GameDelegate.call("CloseTweenMenu", []);
-				}
+				} else if (details.navEquivalent == NavigationCode.GAMEPAD_BACK && details.code != 8) {
+					_global.skse.OpenMenu("Inventory Menu");
+					GameDelegate.call("CloseMenu", []);
+				}	
 			} 
 		}
 		return true;

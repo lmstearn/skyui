@@ -225,7 +225,6 @@ class ItemMenu extends MovieClip
 			_global.skse.Log("ItemMenu onMouseWheel()");
 		for (var e = Mouse.getTopMostEntity(); e != undefined; e = e._parent) {
 			if (e == MouseRotationRect && ShouldProcessItemsListInput(false) || !bFadedIn && delta == -1) {
-				_global.skse.Log("ItemMenu ZoomItemModel " + delta);
 				GameDelegate.call("ZoomItemModel",[delta]);
 				continue;
 			}
@@ -442,6 +441,8 @@ class ItemMenu extends MovieClip
 		if (arguments[0] != undefined && arguments[0] != -1 && arguments.length != 1) {
 			InventoryLists_mc.CategoriesList.restoreSelectedEntry(arguments[0]);
 			InventoryLists_mc.CategoriesList.UpdateList();
+		} else {
+			InventoryLists_mc.CategoriesList.restoreSelectedEntry(1); // ALL
 		}
 		
 		var index;

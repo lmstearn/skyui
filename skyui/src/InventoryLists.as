@@ -259,8 +259,9 @@ class InventoryLists extends MovieClip
 			// Set filter type before update
 			if (DEBUG_LEVEL > 1)
 				_global.skse.Log("CHANGE DETECTED! Setting filter flags to sort");
-			// avoid filterChange
-			_typeFilter.changeFilterFlag(_CategoriesList.selectedEntry.flag, false);
+                        _typeFilter.itemFilter = _CategoriesList.selectedEntry.flag;			
+                        // avoid filterChange
+                        //_typeFilter.changeFilterFlag(_CategoriesList.selectedEntry.flag, false);
 
 			_currCategoryIndex = _CategoriesList.selectedIndex;
 			_ItemsList.changeFilterFlag(_CategoriesList.selectedEntry.flag);
@@ -435,11 +436,13 @@ class InventoryLists extends MovieClip
 		var flagOffset = 1;
 		var bDontHideOffset = 2;
 		var len = 3;
+
 		_CategoriesList.clearList();
 
 		for (var i = 0, index = 0; i < arguments.length; i = i + len, index++) {
 			var entry = {text:arguments[i + textOffset], flag:arguments[i + flagOffset], bDontHide:arguments[i + bDontHideOffset], savedItemIndex:0, filterFlag:arguments[i + bDontHideOffset] == true ? (1) : (0)};
 			_CategoriesList.entryList.push(entry);
+
 			if (entry.flag == 0) {
 				_CategoriesList.dividerIndex = index;
 			}
@@ -457,18 +460,6 @@ class InventoryLists extends MovieClip
 			
 		 // Restore 0 as default index for tabbed lists
 			_CategoriesList.selectedIndex = 0;
-		}
-		else {
-			/* 
-				Retores ALL as default category for Magic/Item menus, and 
-				category at index 0 for rest.
-				Checks to see if second entry in list is ALL category
-				else sets index to 0.
-				Note: RestoreIndices will override this if player has closed menu at least once.
-			*/
-			if (_CategoriesList.entryList[1].flag == 1023)			
-				_CategoriesList.restoreSelectedEntry(1);
-			else _CategoriesList.restoreSelectedEntry(0);
 		}
 		
 		_CategoriesList.InvalidateData();

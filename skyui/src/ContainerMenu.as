@@ -67,7 +67,7 @@ class ContainerMenu extends ItemMenu
 		GameDelegate.addCallBack("XButtonPress",this,"onXButtonPress");
         ItemCardFadeHolder_mc.StealTextInstance._visible = false;
 		updateButtons();
-                // Hide buttons that are not needed when initially opening menu.
+        // Hide buttons that are not needed when initially opening menu.
 		BottomBar_mc.SetButtonText("",0);
 		BottomBar_mc.SetButtonText("",2);	
 
