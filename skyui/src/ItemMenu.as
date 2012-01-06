@@ -244,24 +244,31 @@ class ItemMenu extends MovieClip
 			_global.skse.Log("ItemMenu onCategoryChange()");
 	}
 
-	function onItemHighlightChange(event)
-	{
-        if (DEBUG_LEVEL > 0) _global.skse.Log("ItemMenu onItemHighlightChange()");
-		if (event.index != -1) {
-			
+    function onItemHighlightChange(event)
+  	{
+    	if (event.index != -1) {
+      
 			if (!_bItemCardFadedIn) {
 				_bItemCardFadedIn = true;
 				ItemCard_mc.FadeInCard();
 				BottomBar_mc.ShowButtons();
-			}
-			
-			GameDelegate.call("UpdateItem3D",[true]);
-			GameDelegate.call("RequestItemCardInfo",[],this,"UpdateItemCardInfo");
-			
-		} else if (_bItemCardFadedIn) {
+		  	}
+		  
+		  	GameDelegate.call("UpdateItem3D",[true]);
+		  	GameDelegate.call("RequestItemCardInfo",[],this,"UpdateItemCardInfo");
+		  
+		} else {
+		  if (!bFadedIn) {
+		  	GameDelegate.call("ZoomItemModel",[-1]);
+			ToggleMenuFade();
+			_bItemCardFadedIn = true;
+		  }
+		  
+		  if (_bItemCardFadedIn) {
 			_bItemCardFadedIn = false;
 			onHideItemsList();
-		}
+		  }
+	   }
 	}
 
 	function onShowItemsList(event)
