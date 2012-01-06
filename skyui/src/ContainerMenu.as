@@ -95,6 +95,7 @@ class ContainerMenu extends ItemMenu
 		return true;
 	}
 
+	// called when dropping items
 	function onXButtonPress()
 	{
         if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu onXButtonPress()");
@@ -107,7 +108,7 @@ class ContainerMenu extends ItemMenu
 			return;
 		}
 
-		StartItemTransfer();
+  			StartItemTransfer();
 	}
 
 	function UpdateItemCardInfo(a_updateObj:Object)
@@ -144,8 +145,9 @@ class ContainerMenu extends ItemMenu
 
 	function onShowItemsList(event)
 	{
-         if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu onShowItemsList()");
-		InventoryLists_mc.showItemsList();
+                 if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu onShowItemsList()");
+		         _global.skse.Log("selectedIndex = " + InventoryLists_mc.ItemsList._selectedIndex);
+	         InventoryLists_mc.showItemsList();
 	}
 
 	// called when switching categories
@@ -154,6 +156,7 @@ class ContainerMenu extends ItemMenu
 		super.onHideItemsList(event);
 		if (DEBUG_LEVEL > 0) _global.skse.Log("ContainerMenu onHideItemsList()");
 		updateButtons();
+		
 		// Hide buttons that are not needed while items are not selected.
 		if (!isViewingContainer())
 			BottomBar_mc.SetButtonText("",1);
@@ -229,13 +232,7 @@ class ContainerMenu extends ItemMenu
 			_equipHand = undefined;
 			return;
 		}
-
-		if (InventoryLists_mc.ItemsList.selectedEntry.enabled) {
 			GameDelegate.call("ItemTransfer",[event.amount,isViewingContainer()]);
-			return;
-		}
-
-		GameDelegate.call("DisabledItemSelect",[]);
 	}
 
 	function AttemptEquip(a_slot:Number, a_bCheckOverList:Boolean)
@@ -270,7 +267,8 @@ class ContainerMenu extends ItemMenu
 
 	function StartItemTransfer()
 	{
-        if (DEBUG_LEVEL > 0) _global.skse.Log("ContainerMenu StartItemTransfer()");
+                if (DEBUG_LEVEL > 0) _global.skse.Log("ContainerMenu StartItemTransfer()");
+		if (InventoryLists_mc.ItemsList.selectedEntry.enabled) {
 		if (ItemCard_mc.itemInfo.weight == 0 && isViewingContainer()) {
 			onQuantityMenuSelect({amount:InventoryLists_mc.ItemsList.selectedEntry.count});
 			return;
@@ -281,7 +279,9 @@ class ContainerMenu extends ItemMenu
 			return;
 		}
 
-		ItemCard_mc.ShowQuantityMenu(InventoryLists_mc.ItemsList.selectedEntry.count);
+			ItemCard_mc.ShowQuantityMenu(InventoryLists_mc.ItemsList.selectedEntry.count);
+		}
+		GameDelegate.call("DisabledItemSelect",[]);
 	}
 
 	function StartItemEquip(a_equipHand)
