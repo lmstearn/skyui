@@ -160,16 +160,35 @@ class MagicMenu extends ItemMenu
 		if (DEBUG_LEVEL > 0)
 			_global.skse.Log("MagicMenu UpdateButtonText()");
 		if (InventoryLists_mc.ItemsList.selectedEntry != undefined) {
-			var favStr = InventoryLists_mc.ItemsList.selectedEntry.filterFlag & InventoryLists_mc.CategoriesList.entryList[0].flag == 0 ? "$Favorite":"$Unfavorite";
+			var favStr = (InventoryLists_mc.ItemsList.selectedEntry.filterFlag & InventoryLists_mc.CategoriesList.entryList[0].flag) == 0 ? "$Favorite":"$Unfavorite";
 			var unlockStr = ItemCard_mc.itemInfo.showUnlocked == true ? "$Unlock":"";
 			
-			if (InventoryLists_mc.ItemsList.selectedEntry.filterFlag & _hideButtonFlag != 0) {
+			if ((InventoryLists_mc.ItemsList.selectedEntry.filterFlag & _hideButtonFlag) != 0) {
 				BottomBar_mc.HideButtons();
 				return;
 			}
 			BottomBar_mc.SetButtonsText("$Equip", favStr, unlockStr);
 		}
 	}
+
+	/*function UpdateButtonText()
+	{
+		if (DEBUG_LEVEL > 0)
+			_global.skse.Log("MagicMenu UpdateButtonText()");
+		if (InventoryLists_mc.ItemsList.selectedEntry != undefined)
+		{
+			var _loc3 = (InventoryLists_mc.ItemsList.selectedEntry.filterFlag & InventoryLists_mc.CategoriesList.entryList[0].flag) != 0 ? ("$Unfavorite") : ("$Favorite");
+			var _loc2 = ItemCard_mc.itemInfo.showUnlocked == true ? ("$Unlock") : ("");
+			if ((InventoryLists_mc.ItemsList.selectedEntry.filterFlag & _hideButtonFlag) != 0)
+			{
+				BottomBar_mc.HideButtons();
+			}
+			else
+			{
+				BottomBar_mc.SetButtonsText("$Equip", _loc3, _loc2);
+			}
+		}
+	}*/
 	
 	function onHideItemsList(event)
 	{
