@@ -220,19 +220,19 @@ class ContainerMenu extends ItemMenu
 
 	function isViewingContainer()
 	{
-                if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu isViewingContainer()");
+				if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu isViewingContainer()");
 		return (InventoryLists_mc.CategoriesList.activeSegment == 0);
 	}
 
 	function onQuantityMenuSelect(event)
 	{
-        if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu onQuantityMenuSelect()");
+				if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu onQuantityMenuSelect()");
 		if (_equipHand != undefined) {
 			GameDelegate.call("EquipItem",[_equipHand,event.amount]);
 			_equipHand = undefined;
 			return;
 		}
-			GameDelegate.call("ItemTransfer",[event.amount,isViewingContainer()]);
+		GameDelegate.call("ItemTransfer",[event.amount,isViewingContainer()]);
 	}
 
 	function AttemptEquip(a_slot:Number, a_bCheckOverList:Boolean)
@@ -248,9 +248,9 @@ class ContainerMenu extends ItemMenu
 					StartItemTransfer();
 				}
 			} else {
-			StartItemEquip(a_slot);
-		        }
-	        }
+				StartItemEquip(a_slot);
+			}
+		}
 	}
 
 	function onItemSelect(event)
@@ -261,27 +261,28 @@ class ContainerMenu extends ItemMenu
 				StartItemEquip(ContainerMenu.NULL_HAND);
 			} else {
 			StartItemTransfer();
-		        }
-	        }
+			}
+		}
 	}
 
 	function StartItemTransfer()
 	{
                 if (DEBUG_LEVEL > 0) _global.skse.Log("ContainerMenu StartItemTransfer()");
 		if (InventoryLists_mc.ItemsList.selectedEntry.enabled) {
-		if (ItemCard_mc.itemInfo.weight == 0 && isViewingContainer()) {
-			onQuantityMenuSelect({amount:InventoryLists_mc.ItemsList.selectedEntry.count});
-			return;
-		}
+			if (ItemCard_mc.itemInfo.weight == 0 && isViewingContainer()) {
+				onQuantityMenuSelect({amount:InventoryLists_mc.ItemsList.selectedEntry.count});
+				return;
+			}
 
-		if (InventoryLists_mc.ItemsList.selectedEntry.count <= InventoryDefines.QUANTITY_MENU_COUNT_LIMIT) {
-			onQuantityMenuSelect({amount:1});
-			return;
-		}
+			if (InventoryLists_mc.ItemsList.selectedEntry.count <= InventoryDefines.QUANTITY_MENU_COUNT_LIMIT) {
+				onQuantityMenuSelect({amount:1});
+				return;
+			}
 
 			ItemCard_mc.ShowQuantityMenu(InventoryLists_mc.ItemsList.selectedEntry.count);
+		} else {
+			GameDelegate.call("DisabledItemSelect",[]);
 		}
-		GameDelegate.call("DisabledItemSelect",[]);
 	}
 
 	function StartItemEquip(a_equipHand)
