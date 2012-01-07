@@ -6,6 +6,7 @@ import gfx.managers.FocusHandler;
 import Shared.GlobalFunc;
 
 import skyui.CategoryList;
+import skyui.Defines;
 import skyui.FormattedItemList;
 import skyui.ItemTypeFilter;
 import skyui.ItemNameFilter;
@@ -490,12 +491,13 @@ class InventoryLists extends MovieClip
 			_global.skse.Log("<========================InventoryLists InvalidateListData==================================" + "\n");
 		
 		/*
-			While zoomed into a 3D item model, all input should be disabled and was probably Betheseda's intent so 
-			let's fix this for them. This isn't as elegant as we would like but it works well enough for now.
+			While zoomed into a 3D item model, all input is disabled except unfavoriting in favorites category which was
+			probably Betheseda's intent so let's fix this for them. 
 			
-			If we are zoomed in, restore current selected entry to it's previous state to prevent equip, unfav, etc.
+			If we are zoomed into an item in the favorites category, restore current selected entry to it's previous state 
+			to prevent the removal of the favorited item.
 		*/
-		if (!_bFadedIn)
+		if (!_bFadedIn && (_CategoriesList.selectedEntry.flag == Defines.FLAG_INV_FAVORITES))
 			_ItemsList.entryList[savedEntry.unfilteredIndex] = savedEntry;
 		
 		var flag = _CategoriesList.selectedEntry.flag;

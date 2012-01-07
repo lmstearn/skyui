@@ -1,8 +1,9 @@
 ﻿import gfx.io.GameDelegate;
-import Shared.GlobalFunc;
-import skyui.Config;
 import gfx.ui.NavigationCode;
+import Shared.GlobalFunc;
 
+import skyui.Config;
+import skyui.Defines;
 
 class ItemMenu extends MovieClip
 {
@@ -406,10 +407,13 @@ class ItemMenu extends MovieClip
 		if (DEBUG_LEVEL > 0)
 			_global.skse.Log("ItemMenu ToggleMenuFade()");
 		if (bFadedIn) {
-			// save current entry
-			var entry = new Object();
-			entry = InventoryLists_mc.ItemsList.selectedEntry;
-			InventoryLists_mc.savedEntry = entry;
+			// save current entry if in favorites category
+			if (InventoryLists_mc.CategoriesList.selectedEntry.flag == Defines.FLAG_INV_FAVORITES)
+			{
+				var entry = new Object();
+				entry = InventoryLists_mc.ItemsList.selectedEntry;
+				InventoryLists_mc.savedEntry = entry;
+			}
 			_parent.gotoAndPlay("fadeOut");
 			bFadedIn = false;
 			InventoryLists_mc.fadedIn = false;
@@ -427,7 +431,8 @@ class ItemMenu extends MovieClip
 		if (DEBUG_LEVEL > 0)
 			_global.skse.Log("ItemMenu SetFadedIn()");
 		bFadedIn = true;
-		InventoryLists_mc.fadedIn = true;
+		if (InventoryLists_mc.CategoriesList.selectedEntry.flag == Defines.FLAG_INV_FAVORITES)
+			InventoryLists_mc.fadedIn = true;
 		InventoryLists_mc.ItemsList.disableSelection = false;
 		InventoryLists_mc.ItemsList.disableInput = false;
 		InventoryLists_mc.CategoriesList.disableSelection = false;
