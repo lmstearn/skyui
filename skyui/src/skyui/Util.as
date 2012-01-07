@@ -97,9 +97,9 @@
 				//CYRILLIC SMALL LETTER GHE WITH UPTURN
 				case 0x0491 :
 					return 0xA4;
-				//Standard Cyrillic characters
+				//Russian alphabet А to Я
 				default :
-					if (0x040F <= a_charCode && a_charCode <= 0x044F) {
+					if (0x0410 <= a_charCode && a_charCode <= 0x044F) {
 						return a_charCode - 0x0350;
 					}
 			}
