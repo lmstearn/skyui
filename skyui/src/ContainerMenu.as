@@ -1,4 +1,5 @@
 ﻿import gfx.io.GameDelegate;
+import gfx.ui.NavigationCode;
 
 import skyui.InventoryColumnFormatter;
 import skyui.InventoryDataFetcher;
@@ -13,6 +14,7 @@ class ContainerMenu extends ItemMenu
 	static var LEFT_HAND: Number = 1;
 
 	private var _bShowEquipButtonHelp:Boolean;
+	private var _bShowTakeAll:Boolean;
 	private var _equipHand:Number;
 	private var _equipHelpArt:Object;
 	private var _defaultEquipArt:Object;
@@ -34,6 +36,7 @@ class ContainerMenu extends ItemMenu
 	function ContainerMenu()
 	{
 		super();
+		
 		ContainerButtonArt = [{PCArt:"E", XBoxArt:"360_A", PS3Art:"PS3_A"}, {PCArt:"R", XBoxArt:"360_X", PS3Art:"PS3_X"}, {PCArt:"F", XBoxArt:"360_Y", PS3Art:"PS3_Y"}, {PCArt:"Tab", XBoxArt:"360_B", PS3Art:"PS3_B"}];
 		
 		_defaultEquipArt = {PCArt:"E",XBoxArt:"360_A",PS3Art:"PS3_A"};
@@ -42,6 +45,7 @@ class ContainerMenu extends ItemMenu
 		bNPCMode = false;
 		_bShowEquipButtonHelp = true;
 		_equipHand = undefined;
+		_bShowTakeAll = false;
 
 		CategoryListIconArt = ["inv_all", "inv_weapons", "inv_armor", "inv_potions", "inv_scrolls", "inv_food", "inv_ingredients", "inv_books", "inv_keys", "inv_misc"];
 		
@@ -69,7 +73,8 @@ class ContainerMenu extends ItemMenu
 		updateButtons();
         // Hide buttons that are not needed when initially opening menu.
 		BottomBar_mc.SetButtonText("",0);
-		BottomBar_mc.SetButtonText("",2);	
+		BottomBar_mc.SetButtonText("",2);
+		
 
 		InventoryLists_mc.TabBar.setIcons("take","give");
 	}
@@ -82,8 +87,13 @@ class ContainerMenu extends ItemMenu
 
 	function handleInput(details, pathToFocus)
 	{
-		if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu handleInput() " + details.value);
+		if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu handleInput() " + details.value + " details.navEquivalent = " + details.navEquivalent);
 		super.handleInput(details, pathToFocus);
+		for (var key:String in details)
+		{
+			_global.skse.Log(key + " : " + details[key]);
+		}
+
 
 		if (ShouldProcessItemsListInput(false)) {
 			if (_platform == 0 && details.code == 16 && InventoryLists_mc.ItemsList.selectedIndex != -1) {
@@ -91,6 +101,20 @@ class ContainerMenu extends ItemMenu
 				updateButtons();
 			}
 		}
+		/*
+			Handle input for TakeAll.
+		*/
+		if ((details.navEquivalent == NavigationCode.GAMEPAD_Y || details.code == 16) && isViewingContainer()) {
+				_global.skse.Log("Y HELD DOWN , code = " + details.code + " nav = " + details.navEquivalent);
+				_bShowTakeAll = details.value != "keyUp";
+				if (InventoryLists_mc.ItemsList.selectedIndex != -1)
+					updateButtons();
+				else BottomBar_mc.SetButtonText("$Take All",1);
+				
+				if (!_bShowTakeAll)
+					BottomBar_mc.SetButtonText("",1);
+			}
+		
 
 		return true;
 	}
@@ -99,7 +123,25 @@ class ContainerMenu extends ItemMenu
 	function onXButtonPress()
 	{
         if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu onXButtonPress()");
+		
+		/*
+			Disable all input while zoomed into an item.
+		*/
+		if (!bFadedIn)
+			return;
+		
+		/*
+			This is our take on fixing TakeAll the way it should of been in release.
+			
+			If on PC and shift is held, allow TakeAll.
+			If on PC and shift is not held, prevent TakeAll.
+			If using controller and Y is pressed, allow TakeAll.
+			If using controller and Y is not pressed, prevent TakeAll.
+		*/
 		if (isViewingContainer() && ! bNPCMode) {
+			if (!_bShowTakeAll)
+				return;
+				
 			GameDelegate.call("TakeAllItems",[]);
 			return;
 		}
@@ -196,8 +238,11 @@ class ContainerMenu extends ItemMenu
 			// Button 0
 			BottomBar_mc.SetButtonText("$Take",0);
 			// Button 1
-			BottomBar_mc.SetButtonText(bNPCMode ? "" : "$Take All",1);
-			// Button 2
+			/*
+				If on PC and shift is not held, hide TakeAll button.
+			*/
+			BottomBar_mc.SetButtonText((bNPCMode || !_bShowTakeAll) ? "" : "$Take All",1);
+			// Button 3
 			BottomBar_mc.SetButtonText("$Exit",3);
 			
 		} else {
@@ -220,19 +265,25 @@ class ContainerMenu extends ItemMenu
 
 	function isViewingContainer()
 	{
-				if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu isViewingContainer()");
+                if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu isViewingContainer()");
 		return (InventoryLists_mc.CategoriesList.activeSegment == 0);
 	}
 
 	function onQuantityMenuSelect(event)
 	{
-				if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu onQuantityMenuSelect()");
+        if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu onQuantityMenuSelect()");
 		if (_equipHand != undefined) {
 			GameDelegate.call("EquipItem",[_equipHand,event.amount]);
 			_equipHand = undefined;
 			return;
 		}
-		GameDelegate.call("ItemTransfer",[event.amount,isViewingContainer()]);
+
+		if (InventoryLists_mc.ItemsList.selectedEntry.enabled) {
+			GameDelegate.call("ItemTransfer",[event.amount,isViewingContainer()]);
+			return;
+		}
+
+		GameDelegate.call("DisabledItemSelect",[]);
 	}
 
 	function AttemptEquip(a_slot:Number, a_bCheckOverList:Boolean)
@@ -248,9 +299,9 @@ class ContainerMenu extends ItemMenu
 					StartItemTransfer();
 				}
 			} else {
-				StartItemEquip(a_slot);
-			}
-		}
+			StartItemEquip(a_slot);
+		        }
+	        }
 	}
 
 	function onItemSelect(event)
@@ -261,27 +312,25 @@ class ContainerMenu extends ItemMenu
 				StartItemEquip(ContainerMenu.NULL_HAND);
 			} else {
 			StartItemTransfer();
-			}
-		}
+		        }
+	        }
 	}
 
 	function StartItemTransfer()
 	{
                 if (DEBUG_LEVEL > 0) _global.skse.Log("ContainerMenu StartItemTransfer()");
 		if (InventoryLists_mc.ItemsList.selectedEntry.enabled) {
-			if (ItemCard_mc.itemInfo.weight == 0 && isViewingContainer()) {
-				onQuantityMenuSelect({amount:InventoryLists_mc.ItemsList.selectedEntry.count});
-				return;
-			}
+		if (ItemCard_mc.itemInfo.weight == 0 && isViewingContainer()) {
+			onQuantityMenuSelect({amount:InventoryLists_mc.ItemsList.selectedEntry.count});
+			return;
+		}
 
-			if (InventoryLists_mc.ItemsList.selectedEntry.count <= InventoryDefines.QUANTITY_MENU_COUNT_LIMIT) {
-				onQuantityMenuSelect({amount:1});
-				return;
-			}
+		if (InventoryLists_mc.ItemsList.selectedEntry.count <= InventoryDefines.QUANTITY_MENU_COUNT_LIMIT) {
+			onQuantityMenuSelect({amount:1});
+			return;
+		}
 
 			ItemCard_mc.ShowQuantityMenu(InventoryLists_mc.ItemsList.selectedEntry.count);
-		} else {
-			GameDelegate.call("DisabledItemSelect",[]);
 		}
 	}
 

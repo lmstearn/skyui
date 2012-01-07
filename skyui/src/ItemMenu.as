@@ -206,8 +206,6 @@ class ItemMenu extends MovieClip
 
 	function handleInput(details, pathToFocus)
 	{
-		if (DEBUG_LEVEL > 0)
-			_global.skse.Log("ItemMenu handleInput()");
 		if (bFadedIn) {
 			if (!pathToFocus[0].handleInput(details, pathToFocus.slice(1))) {
 				if (GlobalFunc.IsKeyPressed(details) && details.navEquivalent == NavigationCode.TAB) {
@@ -257,18 +255,10 @@ class ItemMenu extends MovieClip
 		  	GameDelegate.call("UpdateItem3D",[true]);
 		  	GameDelegate.call("RequestItemCardInfo",[],this,"UpdateItemCardInfo");
 		  
-		} else {
-		  if (!bFadedIn) {
-		  	GameDelegate.call("ZoomItemModel",[-1]);
-			ToggleMenuFade();
-			_bItemCardFadedIn = true;
-		  }
-		  
-		  if (_bItemCardFadedIn) {
+		} else if (_bItemCardFadedIn) {
 			_bItemCardFadedIn = false;
 			onHideItemsList();
 		  }
-	   }
 	}
 
 	function onShowItemsList(event)
@@ -416,8 +406,13 @@ class ItemMenu extends MovieClip
 		if (DEBUG_LEVEL > 0)
 			_global.skse.Log("ItemMenu ToggleMenuFade()");
 		if (bFadedIn) {
+			// save current entry
+			var entry = new Object();
+			entry = InventoryLists_mc.ItemsList.selectedEntry;
+			InventoryLists_mc.savedEntry = entry;
 			_parent.gotoAndPlay("fadeOut");
 			bFadedIn = false;
+			InventoryLists_mc.fadedIn = false;
 			InventoryLists_mc.ItemsList.disableSelection = true;
 			InventoryLists_mc.ItemsList.disableInput = true;
 			InventoryLists_mc.CategoriesList.disableSelection = true;
@@ -432,6 +427,7 @@ class ItemMenu extends MovieClip
 		if (DEBUG_LEVEL > 0)
 			_global.skse.Log("ItemMenu SetFadedIn()");
 		bFadedIn = true;
+		InventoryLists_mc.fadedIn = true;
 		InventoryLists_mc.ItemsList.disableSelection = false;
 		InventoryLists_mc.ItemsList.disableInput = false;
 		InventoryLists_mc.CategoriesList.disableSelection = false;
@@ -442,7 +438,7 @@ class ItemMenu extends MovieClip
 	{
 		if (DEBUG_LEVEL > 0)
 			_global.skse.Log("<================================ItemMenu RestoreIndices==================================" + "\n");
-		if (DEBUG_LEVEL > 1)
+		if (DEBUG_LEVEL > 0)
 			_global.skse.Log("ItemMenu RestoreIndices() argument[0] = " + arguments[0] + " size = " + arguments.length);
 		
 		if (arguments[0] != undefined && arguments[0] != -1 && arguments.length != 1) {

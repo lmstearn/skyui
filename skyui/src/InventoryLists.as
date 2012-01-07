@@ -43,6 +43,9 @@ class InventoryLists extends MovieClip
 
 	private var _searchKey:Number;
 	private var _tabToggleKey:Number;
+	
+	private var _bFadedIn:Boolean;
+	private var savedEntry:Object;
 
 	// Children
 	var panelContainer:MovieClip;
@@ -80,6 +83,8 @@ class InventoryLists extends MovieClip
 		_tabToggleKey = undefined;
 	
 		Config.instance.addEventListener("configLoad",this,"onConfigLoad");
+		
+		savedEntry = new Object();
 	}
 
 	function onLoad()
@@ -114,6 +119,8 @@ class InventoryLists extends MovieClip
 		if (_TabBar != undefined) {
 			_TabBar.addEventListener("tabPress",this,"onTabPress");
 		}
+		
+		fadedIn = true;
 	}
 	
 	function onConfigLoad(event)
@@ -208,6 +215,16 @@ class InventoryLists extends MovieClip
 		}
 
 		_currentState = a_newState;
+	}
+	
+	function get fadedIn()
+	{
+		return _bFadedIn;
+	}
+	
+	function set fadedIn(a_bFadedIn)
+	{
+		_bFadedIn = a_bFadedIn;
 	}
 	
 	function RestoreCategoryIndex()
@@ -471,6 +488,16 @@ class InventoryLists extends MovieClip
 	{
 	if (DEBUG_LEVEL > 0)
 			_global.skse.Log("<========================InventoryLists InvalidateListData==================================" + "\n");
+		
+		/*
+			While zoomed into a 3D item model, all input should be disabled and was probably Betheseda's intent so 
+			let's fix this for them. This isn't as elegant as we would like but it works well enough for now.
+			
+			If we are zoomed in, restore current selected entry to it's previous state to prevent equip, unfav, etc.
+		*/
+		if (!_bFadedIn)
+			_ItemsList.entryList[savedEntry.unfilteredIndex] = savedEntry;
+		
 		var flag = _CategoriesList.selectedEntry.flag;
 
 		for (var i = 0; i < _CategoriesList.entryList.length; i++) {
