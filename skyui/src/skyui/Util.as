@@ -1,15 +1,49 @@
 ﻿class skyui.Util
 {
-	static function extract(a_str:String, a_startChar:String, a_endChar:String):String
+	static function extract(a_str:String,a_startChar:String,a_endChar:String):String
 	{
-		return a_str.slice(a_str.indexOf(a_startChar)+1, a_str.lastIndexOf(a_endChar));
+		return a_str.slice(a_str.indexOf(a_startChar) + 1,a_str.lastIndexOf(a_endChar));
 	}
+	
+	
+	// Replaces any escaped characters
+	static function unescapeString(a_str:String, a_escaped:Array):String {
+		for (var i = 0; i <  a_escaped.length; i++) {
+			if (a_escaped[i].length == 1) {
+				switch (a_escaped[i]) {
+					case "n":
+					case "\n":
+					case "\\n":
+						a_str = a_str.split("\\n").join("\n");
+						continue;
+					case "\t":
+					case "\\t":
+						a_str = a_str.split("\\t").join("\t");
+						continue;
+					default:
+						a_str = a_str.split("\\" + a_escaped[i]).join(a_escaped[i]);
+				}
+			}
+		}
+		return a_str;
+	}
+	
 	
 	// Remove comments and leading/trailing white space
 	static function clean(a_str:String):String
 	{
-		if (a_str.indexOf(";") > 0) {
-			a_str = a_str.slice(0, a_str.indexOf(";"));
+		var commentStart:Number = a_str.indexOf(";");
+		if (commentStart > 0) {
+			if (a_str.charAt(commentStart - 1) == "\\") {
+				while (a_str.charAt(commentStart - 1) == "\\") {
+					commentStart = a_str.indexOf(";", commentStart + 1);
+					if (commentStart == -1) {
+						commentStart = a_str.length;
+						break;
+					}
+				}
+			}
+			a_str = a_str.slice(0, commentStart);
 		}
 		
 		var i = 0;
