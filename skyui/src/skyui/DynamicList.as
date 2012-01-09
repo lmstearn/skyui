@@ -80,9 +80,7 @@ class skyui.DynamicList extends MovieClip
 
 	function getClipByIndex(a_index:Number)
 	{
-		if (DEBUG_LEVEL > 0)
-			_global.skse.Log("DynamicList getClipByIndex()");
-
+		if (DEBUG_LEVEL > 0) _global.skse.Log("DynamicList getClipByIndex()");
 		if (a_index < 0) {
 			return undefined;
 		}
@@ -139,10 +137,8 @@ class skyui.DynamicList extends MovieClip
 
 	function doSetSelectedIndex(a_newIndex:Number, a_keyboardOrMouse:Number)
 	{
-		if (DEBUG_LEVEL > 0)
-			_global.skse.Log("DynamicList doSetSelectedIndex()");
-		if (DEBUG_LEVEL > 0)
-			_global.skse.Log("DynamicList doSetSelectedIndex " + a_newIndex);
+		if (DEBUG_LEVEL > 0) _global.skse.Log("DynamicList doSetSelectedIndex()");
+		if (DEBUG_LEVEL > 0) _global.skse.Log("DynamicList doSetSelectedIndex " + a_newIndex);
 		if (!_bDisableSelection && a_newIndex != _selectedIndex) {
 			var oldIndex = _selectedIndex;
 			_selectedIndex = a_newIndex;
@@ -152,8 +148,7 @@ class skyui.DynamicList extends MovieClip
 			}
 
 			if (_selectedIndex != -1) {
-				if (DEBUG_LEVEL > 0)
-					_global.skse.Log("DynamicList doSetSelectedIndex() setting new entry " + _entryList[_selectedIndex].text);
+				if (DEBUG_LEVEL > 0) _global.skse.Log("DynamicList doSetSelectedIndex() setting new entry " + _entryList[_selectedIndex].text);
 				setEntry(getClipByIndex(_entryList[_selectedIndex].clipIndex),_entryList[_selectedIndex]);
 			}
 
@@ -224,8 +219,7 @@ class skyui.DynamicList extends MovieClip
 
 	function InvalidateData()
 	{
-		if (DEBUG_LEVEL > 0)
-			_global.skse.Log("<========================DynamicList InvalidateData==================================" + "\n");
+		if (DEBUG_LEVEL > 0) _global.skse.Log("<========================DynamicList InvalidateData==================================" + "\n");
 		if (_selectedIndex >= _entryList.length) {
 			_selectedIndex = _entryList.length - 1;
 		}
@@ -236,8 +230,7 @@ class skyui.DynamicList extends MovieClip
 
 	function UpdateList()
 	{
-		if (DEBUG_LEVEL > 0)
-			_global.skse.Log("<========================DynamicList UpdateList==================================" + "\n");
+		if (DEBUG_LEVEL > 0) _global.skse.Log("<========================DynamicList UpdateList==================================" + "\n");
 		var yStart = _indent;
 		var yOffset = 0;
 
@@ -258,8 +251,7 @@ class skyui.DynamicList extends MovieClip
 
 	function onItemPress(a_keyboardOrMouse)
 	{
-		if (DEBUG_LEVEL > 0)
-			_global.skse.Log("DynamicList onItemPress()");
+		if (DEBUG_LEVEL > 0) _global.skse.Log("DynamicList onItemPress()");
 		if (!_bDisableInput && !_bDisableSelection && _selectedIndex != -1) {
 			dispatchEvent({type:"itemPress", index:_selectedIndex, entry:_entryList[_selectedIndex], keyboardOrMouse:a_keyboardOrMouse});
 		}
@@ -267,8 +259,7 @@ class skyui.DynamicList extends MovieClip
 
 	function onItemPressAux(a_keyboardOrMouse, a_buttonIndex)
 	{
-		if (DEBUG_LEVEL > 0)
-			_global.skse.Log("DynamicList onItemPressAux()");
+		if (DEBUG_LEVEL > 0) _global.skse.Log("DynamicList onItemPressAux()");
 		if (!_bDisableInput && !_bDisableSelection && _selectedIndex != -1 && a_buttonIndex == 1) {
 			dispatchEvent({type:"itemPressAux", index:_selectedIndex, entry:_entryList[_selectedIndex], keyboardOrMouse:a_keyboardOrMouse});
 		}
@@ -276,8 +267,7 @@ class skyui.DynamicList extends MovieClip
 
 	function setEntry(a_entryClip:MovieClip, a_entryObject:Object)
 	{
-		if (DEBUG_LEVEL > 0)
-			_global.skse.Log("DynamicList setEntry()");
+		if (DEBUG_LEVEL > 0) _global.skse.Log("DynamicList setEntry()");
 		if (a_entryClip != undefined) {
 			if (a_entryObject == selectedEntry) {
 				
@@ -292,8 +282,7 @@ class skyui.DynamicList extends MovieClip
 
 	function setEntryText(a_entryClip:MovieClip, a_entryObject:Object)
 	{
-		if (DEBUG_LEVEL > 0)
-			_global.skse.Log("DynamicList setEntryText() for category " + a_entryObject.text + " at pos " + a_entryClip.clipIndex);
+		if (DEBUG_LEVEL > 0) _global.skse.Log("DynamicList setEntryText() for category " + a_entryObject.text + " at pos " + a_entryClip.clipIndex);
 		if (a_entryClip.textField != undefined) {
 			if (textOption == TEXT_OPTION_SHRINK_TO_FIT) {
 				a_entryClip.textField.textAutoSize = "shrink";
@@ -319,8 +308,7 @@ class skyui.DynamicList extends MovieClip
 
 	function setPlatform(a_platform:Number, a_bPS3Switch:Boolean)
 	{
-		if (DEBUG_LEVEL > 0)
-			_global.skse.Log("DynamicList setPlatform()");
+		if (DEBUG_LEVEL > 0) _global.skse.Log("DynamicList setPlatform()");
 		_platform = a_platform;
 		_bMouseDrivenNav = _platform == 0;
 	}

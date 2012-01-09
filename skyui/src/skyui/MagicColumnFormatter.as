@@ -20,20 +20,20 @@ class skyui.MagicColumnFormatter extends InventoryColumnFormatter
 			case InventoryDefines.ICT_SPELL :
 				switch (a_entryObject.subType) {
 					case Defines.SPELL_TYPE_ALTERATION :
-				a_entryField.gotoAndStop("default_alteration");
-				break;
+						a_entryField.gotoAndStop("default_alteration");
+						break;
 					case Defines.SPELL_TYPE_ILLUSION :
-				a_entryField.gotoAndStop("default_illusion");
-				break;
+						a_entryField.gotoAndStop("default_illusion");
+						break;
 					case Defines.SPELL_TYPE_DESTRUCTION :
-				a_entryField.gotoAndStop("default_destruction");
-				break;
+						a_entryField.gotoAndStop("default_destruction");
+						break;
 					case Defines.SPELL_TYPE_CONJURATION :
-				a_entryField.gotoAndStop("default_conjuration");
-				break;
+						a_entryField.gotoAndStop("default_conjuration");
+						break;
 					case Defines.SPELL_TYPE_RESTORATION :
-				a_entryField.gotoAndStop("default_restoration");
-				break;
+						a_entryField.gotoAndStop("default_restoration");
+						break;
 					default:
 						a_entryField.gotoAndStop("default_power");
 				}
@@ -51,8 +51,8 @@ class skyui.MagicColumnFormatter extends InventoryColumnFormatter
 			
 			// Active Effect
 			case InventoryDefines.ICT_ACTIVE_EFFECT :
-			default :
-				a_entryField.gotoAndStop("default_effect");
+			default:
+				a_entryField.gotoAndStop("default_effect");			
 		}
 	}
 

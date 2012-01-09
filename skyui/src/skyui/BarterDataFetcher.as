@@ -28,7 +28,7 @@
 	function get barterBuyMult():Number
 	{
 		return _barterBuyMult;
-				}
+	}
 	
 	function processEntry(a_entryObject:Object, a_itemInfo:Object)
 	{

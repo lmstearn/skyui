@@ -11,7 +11,7 @@ class skyui.ItemNameFilter implements skyui.IFilter
 	var addEventListener:Function;
 
 	static var DEBUG_LEVEL = 1;
-	
+
 	function ItemNameFilter()
 	{
 		EventDispatcher.initialize(this);
@@ -20,13 +20,12 @@ class skyui.ItemNameFilter implements skyui.IFilter
 
 	function EntryMatchesFunc(a_entry):Boolean
 	{
-		if (DEBUG_LEVEL > 0)
-			_global.skse.Log("ItemNameFilter EntryMatchesFunc()");
+		if (DEBUG_LEVEL > 0) _global.skse.Log("ItemNameFilter EntryMatchesFunc()");
 		var searchStr = a_entry.text.toLowerCase();
 
 		var seekIndex = 0;
 		var seek = false;
-		
+
 		for (var i = 0; i < searchStr.length; i++) {
 			var charCode = Util.mapUnicodeChar(_filterText.charCodeAt(seekIndex));
 			
@@ -67,8 +66,7 @@ class skyui.ItemNameFilter implements skyui.IFilter
 
 	function process(a_filteredList:Array)
 	{
-		if (DEBUG_LEVEL > 0)
-			_global.skse.Log("ItemNameFilter process()");
+		if (DEBUG_LEVEL > 0) _global.skse.Log("ItemNameFilter process()");
 		if (_filterText == undefined || _filterText == "") {
 			return;
 		}

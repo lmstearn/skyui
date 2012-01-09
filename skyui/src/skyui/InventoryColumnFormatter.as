@@ -41,69 +41,68 @@ class skyui.InventoryColumnFormatter implements IColumnFormatter
 
 	function formatItemIcon(a_entryField:Object, a_entryObject:Object)
 	{
-	                if (DEBUG_LEVEL > 0) _global.skse.Log("InventoryColumnFormatter formatItemIcon()");
-			switch (a_entryObject.infoType) {
-				case InventoryDefines.ICT_WEAPON :
-					if (a_entryObject.formType == Defines.FORMTYPE_ARROW) {
-						a_entryField.gotoAndStop("weapon_arrow");
-						break;
-					} else if (a_entryObject.subType == Defines.WEAPON_TYPE_DAGGER) {
-						a_entryField.gotoAndStop("weapon_dagger");
-						break;
-					} else if (a_entryObject.subType == Defines.WEAPON_TYPE_BOW) {
-						a_entryField.gotoAndStop("weapon_bow");
-						break;
-					} else if (a_entryObject.subType == Defines.WEAPON_TYPE_GREATSWORD) {
-						a_entryField.gotoAndStop("weapon_greatsword");
-						break;
-					} else if (a_entryObject.subType == Defines.WEAPON_TYPE_WARAXE) {
-						a_entryField.gotoAndStop("weapon_waraxe");
-						break;
-					} else if (a_entryObject.subType == Defines.WEAPON_TYPE_MACE) {
-						a_entryField.gotoAndStop("weapon_mace");
-						break;
-					} else if (a_entryObject.subType == Defines.WEAPON_TYPE_LONGSWORD) {
-						a_entryField.gotoAndStop("weapon_sword");
-						break;
-					} else if (a_entryObject.subType == Defines.WEAPON_TYPE_HAMMER) {
-						a_entryField.gotoAndStop("weapon_hammer");
-						break;
-					} else if (a_entryObject.subType == Defines.WEAPON_TYPE_STAFF) {
-						a_entryField.gotoAndStop("weapon_staff");
-						break;
-					}
+		switch (a_entryObject.infoType) {
+			case InventoryDefines.ICT_WEAPON :
+				if (a_entryObject.formType == Defines.FORMTYPE_ARROW) {
+					a_entryField.gotoAndStop("weapon_arrow");
+					break;
+				} else if (a_entryObject.subType == Defines.WEAPON_TYPE_DAGGER) {
+					a_entryField.gotoAndStop("weapon_dagger");
+					break;
+				} else if (a_entryObject.subType == Defines.WEAPON_TYPE_BOW) {
+					a_entryField.gotoAndStop("weapon_bow");
+					break;
+				} else if (a_entryObject.subType == Defines.WEAPON_TYPE_GREATSWORD) {
+					a_entryField.gotoAndStop("weapon_greatsword");
+					break;
+				} else if (a_entryObject.subType == Defines.WEAPON_TYPE_WARAXE) {
+					a_entryField.gotoAndStop("weapon_waraxe");
+					break;
+				} else if (a_entryObject.subType == Defines.WEAPON_TYPE_MACE) {
+					a_entryField.gotoAndStop("weapon_mace");
+					break;
+				} else if (a_entryObject.subType == Defines.WEAPON_TYPE_LONGSWORD) {
+					a_entryField.gotoAndStop("weapon_sword");
+					break;
+				} else if (a_entryObject.subType == Defines.WEAPON_TYPE_HAMMER) {
+					a_entryField.gotoAndStop("weapon_hammer");
+					break;
+				} else if (a_entryObject.subType == Defines.WEAPON_TYPE_STAFF) {
+					a_entryField.gotoAndStop("weapon_staff");
+					break;
+				}
 			
-					a_entryField.gotoAndStop("default_weapon");
-					break;
-				case InventoryDefines.ICT_ARMOR :
-					a_entryField.gotoAndStop("default_armor");
-					break;
-				case InventoryDefines.ICT_POTION :
-					a_entryField.gotoAndStop("default_potion");
-					break;
-				case InventoryDefines.ICT_SPELL :
-					a_entryField.gotoAndStop("default_scroll");
-					break;
-				case InventoryDefines.ICT_FOOD :
-					a_entryField.gotoAndStop("default_food");
-					break;
-				case InventoryDefines.ICT_INGREDIENT :
-					a_entryField.gotoAndStop("default_ingredient");
-					break;
-				case InventoryDefines.ICT_BOOK :
-					a_entryField.gotoAndStop("default_book");
-					break;
-				case InventoryDefines.ICT_KEY :
-					a_entryField.gotoAndStop("default_key");
-					break;
-				case InventoryDefines.ICT_MISC :
-				default :
-					if (a_entryObject.formType == Defines.FORMTYPE_SOULGEM) {
-						a_entryField.gotoAndStop("misc_soulgem");
-					} else {
-						a_entryField.gotoAndStop("default_misc");
-					}
-			}
+				a_entryField.gotoAndStop("default_weapon");
+				break;
+			case InventoryDefines.ICT_ARMOR :
+				a_entryField.gotoAndStop("default_armor");
+				break;
+			case InventoryDefines.ICT_POTION :
+				a_entryField.gotoAndStop("default_potion");
+				break;
+			case InventoryDefines.ICT_SPELL :
+				a_entryField.gotoAndStop("default_scroll");
+				break;
+			case InventoryDefines.ICT_FOOD :
+				a_entryField.gotoAndStop("default_food");
+				break;
+			case InventoryDefines.ICT_INGREDIENT :
+				a_entryField.gotoAndStop("default_ingredient");
+				break;
+			case InventoryDefines.ICT_BOOK :
+				a_entryField.gotoAndStop("default_book");
+				break;
+			case InventoryDefines.ICT_KEY :
+				a_entryField.gotoAndStop("default_key");
+				break;
+			case InventoryDefines.ICT_MISC :
+			default :
+				if (a_entryObject.formType == Defines.FORMTYPE_SOULGEM) {
+					a_entryField.gotoAndStop("misc_soulgem");
+				} else {
+					a_entryField.gotoAndStop("default_misc");
+				}
+		}
 	}
 
 	function formatName(a_entryField:Object, a_entryObject:Object, a_entryClip:MovieClip)
@@ -193,6 +192,10 @@ class skyui.InventoryColumnFormatter implements IColumnFormatter
 
 	function formatText(a_entryField:Object, a_entryObject:Object)
 	{
-		// Do nothing. Those require no special formating and the value has already been set
+		if (a_entryObject.negativeEffect == true) {
+			a_entryField.textColor = a_entryObject.enabled == false ? 0x800000 : 0xFF0000;
+		} else {
+			a_entryField.textColor = a_entryObject.enabled == false ? 0x4C4C4C : 0xFFFFFF;
+		}
 	}
 }

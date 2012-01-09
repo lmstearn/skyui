@@ -2,6 +2,10 @@
 {
 	function processEntry(a_entryObject:Object, a_itemInfo:Object)
 	{
+		if (DEBUG_LEVEL > 1) _global.skse.Log("processing entry " + a_entryObject.text + "...");
+		if (DEBUG_LEVEL > 1)
+			for (var key:String in a_entryObject)
+				_global.skse.Log(key + " : " + a_entryObject[key]);
 		switch (a_itemInfo.type) {
 			// Spell
 			case InventoryDefines.ICT_SPELL :
@@ -97,7 +101,7 @@
 				a_entryObject.infoItem = a_itemInfo["name"];
 				a_entryObject.infoTimeRemaining = Math.round(a_itemInfo["timeRemaining"]);
 				
-				if (! a_entryObject.infoTimeRemaining) {
+				if (! a_entryObject.infoTimeRemaining || a_entryObject.infoTimeRemaining <= 0) {
 					a_entryObject.infoTimeRemainingStr = "-";
 					a_entryObject.infoTimeRemainingValid = 0;
 				} else {

@@ -19,7 +19,7 @@ class MagicMenu extends ItemMenu
 
 	// ?
 	var bPCControlsReady = true;
-	
+
 
 	function MagicMenu()
 	{
@@ -48,18 +48,18 @@ class MagicMenu extends ItemMenu
 		
 		DataFetcher = new MagicDataFetcher();
 	}
-	
+
 	function InitExtensions()
 	{
 		super.InitExtensions();
 		
 		GameDelegate.addCallBack("DragonSoulSpent", this, "DragonSoulSpent");
-		GameDelegate.addCallBack("AttemptEquip", this, "AttemptEquip");
+		GameDelegate.addCallBack("AttemptEquip", this , "AttemptEquip");
 		
-		BottomBar_mc.UpdatePerItemInfo({type: InventoryDefines.ICT_SPELL_DEFAULT});
+		BottomBar_mc.UpdatePerItemInfo({type:InventoryDefines.ICT_SPELL_DEFAULT});
 		
-		BottomBar_mc.SetButtonsArt(MagicButtonArt);	
-
+		BottomBar_mc.SetButtonsArt(MagicButtonArt);
+		
 		InventoryLists_mc.CategoriesList.setIconArt(CategoryListIconArt);
 		
 		InventoryLists_mc.ItemsList.entryClassName = "ItemsListEntryMagic";
@@ -67,156 +67,136 @@ class MagicMenu extends ItemMenu
 		InventoryLists_mc.ItemsList.dataFetcher = DataFetcher;
 		InventoryLists_mc.ItemsList.setConfigSection("MagicList");
 	}
-	
-	function handleInput(details, pathToFocus)
+
+	function handleInput(details,pathToFocus)
 	{
-		if (DEBUG_LEVEL > 0)
-			_global.skse.Log("MagicMenu handleInput()");
+		if (DEBUG_LEVEL > 0) _global.skse.Log("MagicMenu handleInput()");
 		if (bFadedIn && ! pathToFocus[0].handleInput(details,pathToFocus.slice(1))) {
 			if (Shared.GlobalFunc.IsKeyPressed(details)) {
 				if (InventoryLists_mc.currentState == InventoryLists.SHOW_PANEL && details.navEquivalent == NavigationCode.RIGHT) {
 					StartMenuFade();
-					GameDelegate.call("ShowTweenMenu", []);
+					GameDelegate.call("ShowTweenMenu",[]);
 				} else if (details.navEquivalent == NavigationCode.TAB) {
 					StartMenuFade();
-					GameDelegate.call("CloseTweenMenu", []);
-				} else if (details.navEquivalent == NavigationCode.GAMEPAD_BACK && details.code != 8) {
-					_global.skse.OpenMenu("Inventory Menu");
-					GameDelegate.call("CloseMenu", []);
-				}	
-			} 
+					GameDelegate.call("CloseTweenMenu",[]);
+				} else if (!InventoryLists_mc.ItemsList.disableInput)  {
+					if (details.navEquivalent == NavigationCode.GAMEPAD_BACK && details.code != 8 && _platform != 0) {
+						openInventoryMenu();
+					}
+				}
+			}
 		}
 		return true;
 	}
 	
+	// currently only used for controller users when pressing the BACK button
+	function openInventoryMenu()
+	{
+			SaveIndices();
+			GameDelegate.call("CloseMenu",[]);
+			GameDelegate.call("CloseTweenMenu",[]);
+			_global.skse.OpenMenu("Inventory Menu");
+	}
+
 	function onExitMenuRectClick()
 	{
-		if (DEBUG_LEVEL > 0)
-			_global.skse.Log("MagicMenu onExitMenuClick()");
+		if (DEBUG_LEVEL > 0) _global.skse.Log("MagicMenu onExitMenuClick()");
 		StartMenuFade();
-		GameDelegate.call("ShowTweenMenu", []);
+		GameDelegate.call("ShowTweenMenu",[]);
 	}
-	
+
 	function StartMenuFade()
 	{
-		if (DEBUG_LEVEL > 0)
-			_global.skse.Log("MagicMenu StartMenuFade()");
+		if (DEBUG_LEVEL > 0) _global.skse.Log("MagicMenu StartMenuFade()");
 		InventoryLists_mc.HideCategoriesList();
 		ToggleMenuFade();
 		SaveIndices();
 		_bMenuClosing = true;
 	}
-	
+
 	function onFadeCompletion()
 	{
-		if (DEBUG_LEVEL > 0)
-			_global.skse.Log("MagicMenu onFadeCompletion()");
+		if (DEBUG_LEVEL > 0) _global.skse.Log("MagicMenu onFadeCompletion()");
 		if (_bMenuClosing) {
-			GameDelegate.call("CloseMenu", []);
+			GameDelegate.call("CloseMenu",[]);
 		}
 	}
-	
+
 	function onShowItemsList(event)
 	{
 		super.onShowItemsList(event);
-		if (DEBUG_LEVEL > 0)
-			_global.skse.Log("MagicMenu onShowItemsList()");
+		if (DEBUG_LEVEL > 0) _global.skse.Log("MagicMenu onShowItemsList()");
 		if (event.index != -1) {
 			UpdateButtonText();
 		}
 	}
-	
+
 	function onItemHighlightChange(event)
 	{
-		if (DEBUG_LEVEL > 0)
-			_global.skse.Log("MagicMenu onItemHighlightChange()");
+		if (DEBUG_LEVEL > 0) _global.skse.Log("MagicMenu onItemHighlightChange()");
 		super.onItemHighlightChange(event);
 		
 		if (event.index != -1) {
 			UpdateButtonText();
 		}
 	}
-	
+
 	function DragonSoulSpent()
 	{
-		if (DEBUG_LEVEL > 0)
-			_global.skse.Log("MagicMenu DragonSoulSpent()");
+		if (DEBUG_LEVEL > 0) _global.skse.Log("MagicMenu DragonSoulSpent()");
 		ItemCard_mc.itemInfo.soulSpent = true;
 		UpdateButtonText();
 	}
-	
+
 	function get hideButtonFlag()
 	{
 		return _hideButtonFlag;
 	}
-	
+
 	function set hideButtonFlag(a_hideFlag)
 	{
 		_hideButtonFlag = a_hideFlag;
 	}
-	
+
 	function UpdateButtonText()
 	{
-		if (DEBUG_LEVEL > 0)
-			_global.skse.Log("MagicMenu UpdateButtonText()");
+		if (DEBUG_LEVEL > 0) _global.skse.Log("MagicMenu UpdateButtonText()");
 		if (InventoryLists_mc.ItemsList.selectedEntry != undefined) {
-			var favStr = (InventoryLists_mc.ItemsList.selectedEntry.filterFlag & InventoryLists_mc.CategoriesList.entryList[0].flag) == 0 ? "$Favorite":"$Unfavorite";
-			var unlockStr = ItemCard_mc.itemInfo.showUnlocked == true ? "$Unlock":"";
+			var favStr = (InventoryLists_mc.ItemsList.selectedEntry.filterFlag & InventoryLists_mc.CategoriesList.entryList[0].flag) != 0 ? "$Unfavorite" : "$Favorite";
+			var unlockStr = ItemCard_mc.itemInfo.showUnlocked ? "$Unlock":"";
 			
 			if ((InventoryLists_mc.ItemsList.selectedEntry.filterFlag & _hideButtonFlag) != 0) {
 				BottomBar_mc.HideButtons();
-				return;
+			} else {
+				BottomBar_mc.SetButtonsText("$Equip", favStr, unlockStr);
 			}
-			BottomBar_mc.SetButtonsText("$Equip", favStr, unlockStr);
 		}
 	}
 
-	/*function UpdateButtonText()
-	{
-		if (DEBUG_LEVEL > 0)
-			_global.skse.Log("MagicMenu UpdateButtonText()");
-		if (InventoryLists_mc.ItemsList.selectedEntry != undefined)
-		{
-			var _loc3 = (InventoryLists_mc.ItemsList.selectedEntry.filterFlag & InventoryLists_mc.CategoriesList.entryList[0].flag) != 0 ? ("$Unfavorite") : ("$Favorite");
-			var _loc2 = ItemCard_mc.itemInfo.showUnlocked == true ? ("$Unlock") : ("");
-			if ((InventoryLists_mc.ItemsList.selectedEntry.filterFlag & _hideButtonFlag) != 0)
-			{
-				BottomBar_mc.HideButtons();
-			}
-			else
-			{
-				BottomBar_mc.SetButtonsText("$Equip", _loc3, _loc2);
-			}
-		}
-	}*/
-	
 	function onHideItemsList(event)
 	{
 		super.onHideItemsList(event);
-		if (DEBUG_LEVEL > 0)
-			_global.skse.Log("MagicMenu onHideItemsList()");
-		BottomBar_mc.UpdatePerItemInfo({type: InventoryDefines.ICT_SPELL_DEFAULT});
+		if (DEBUG_LEVEL > 0) _global.skse.Log("MagicMenu onHideItemsList()");
+		BottomBar_mc.UpdatePerItemInfo({type:InventoryDefines.ICT_SPELL_DEFAULT});
 	}
-	
+
 	function AttemptEquip(aiSlot)
 	{
-		if (DEBUG_LEVEL > 0)
-			_global.skse.Log("MagicMenu AttemptEquip()");
+		if (DEBUG_LEVEL > 0) _global.skse.Log("MagicMenu AttemptEquip()");
 		if (ShouldProcessItemsListInput(true) && ConfirmSelectedEntry()) {
-			GameDelegate.call("ItemSelect", [aiSlot]);
-		} 
+			GameDelegate.call("ItemSelect",[aiSlot]);
+		}
 	}
-	
+
 	function onItemSelect(event)
 	{
-		if (DEBUG_LEVEL > 0)
-			_global.skse.Log("MagicMenu onItemSelect()");
+		if (DEBUG_LEVEL > 0) _global.skse.Log("MagicMenu onItemSelect()");
 		if (event.entry.enabled) {
 			if (event.keyboardOrMouse != 0) {
-				GameDelegate.call("ItemSelect", []);
-			} 
+				GameDelegate.call("ItemSelect",[]);
+			}
 			return;
 		}
-			GameDelegate.call("ShowShoutFail", []);
+		GameDelegate.call("ShowShoutFail",[]);
 	}
 }

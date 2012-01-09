@@ -10,7 +10,7 @@ class skyui.TabBar extends MovieClip
 	
 	static var DEBUG_LEVEL = 0;
 	private var _activeTab:Number;
-	
+
 	// Children
 	var image:MovieClip;
 	var leftLabel:TextField;
@@ -19,7 +19,7 @@ class skyui.TabBar extends MovieClip
 	var rightIcon:MovieClip;
 	var leftButton:MovieClip;
 	var rightButton:MovieClip;
-	
+
 	//Mixin
 	var dispatchEvent:Function;
 	var addEventListener:Function;
@@ -32,7 +32,7 @@ class skyui.TabBar extends MovieClip
 
 		activeTab = LEFT_TAB;
 	}
-
+	
 	function setIcons(a_leftName:String, a_rightName:String)
 	{
 		leftIcon.gotoAndStop(a_leftName);
@@ -44,11 +44,11 @@ class skyui.TabBar extends MovieClip
 		leftLabel.SetText(a_leftText.toUpperCase());
 		rightLabel.SetText(a_rightText.toUpperCase());
 	}
-	
+
 	function tabPress(a_tabIndex:Number)
 	{
 		if (DEBUG_LEVEL > 0) _global.skse.Log("TabBar tabPress " + a_tabIndex);
-		dispatchEvent({type:"tabPress", index: a_tabIndex});
+		dispatchEvent({type:"tabPress", index:a_tabIndex});
 	}
 	
 	function tabToggle()
@@ -60,7 +60,7 @@ class skyui.TabBar extends MovieClip
 	{
 		return _activeTab;
 	}
-	
+
 	function set activeTab(a_index:Number)
 	{
 		_activeTab = a_index;
@@ -79,7 +79,7 @@ class skyui.TabBar extends MovieClip
 			image.gotoAndStop("right");
 		}
 	}
-	
+
 	function onLoad()
 	{
 		leftLabel.textAutoSize = "shrink";
@@ -88,14 +88,14 @@ class skyui.TabBar extends MovieClip
 		
 		leftButton.onPress = function(a_mouseIndex, a_keyboardOrMouse, a_buttonIndex)
 		{
-				_parent.tabPress(LEFT_TAB);
+			_parent.tabPress(LEFT_TAB);
 		};
 
 		leftButton.onPressAux = function(a_mouseIndex, a_keyboardOrMouse, a_buttonIndex)
 		{
-				_parent.tabPress(LEFT_TAB);
+			_parent.tabPress(LEFT_TAB);
 		};
-		
+
 		leftButton.onRollOver = function()
 		{
 			if (_parent._activeTab != LEFT_TAB) {
@@ -114,24 +114,24 @@ class skyui.TabBar extends MovieClip
 
 		rightButton.onPress = function(a_mouseIndex, a_keyboardOrMouse, a_buttonIndex)
 		{
-				_parent.tabPress(RIGHT_TAB);
+			_parent.tabPress(RIGHT_TAB);
 		};
 
 		rightButton.onPressAux = function(a_mouseIndex, a_keyboardOrMouse, a_buttonIndex)
 		{
-				_parent.tabPress(RIGHT_TAB);
+			_parent.tabPress(RIGHT_TAB);
 		};
-		
+
 		rightButton.onRollOver = function()
 		{
 			if (_parent._activeTab != RIGHT_TAB) {
 				_parent.rightIcon._alpha = 75;
 				_parent.rightLabel._alpha = 75;
-	}
+			}
 		};
-	
+
 		rightButton.onRollOut = function()
-	{
+		{
 			if (_parent._activeTab != RIGHT_TAB) {
 				_parent.rightIcon._alpha = 50;
 				_parent.rightLabel._alpha = 50;

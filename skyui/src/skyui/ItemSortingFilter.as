@@ -19,8 +19,7 @@ class skyui.ItemSortingFilter implements skyui.IFilter
 	// Set both at once so we don't create 2 filter change events
 	function setSortBy(a_sortAttributes:Array, a_sortOptions:Array, a_bNoUpdate:Boolean)
 	{
-		if (DEBUG_LEVEL > 0)
-			_global.skse.Log("ItemSortingFilter setSortBy()");
+		if (DEBUG_LEVEL > 0) _global.skse.Log("ItemSortingFilter setSortBy()");
 		if (a_bNoUpdate == undefined) {
 			a_bNoUpdate = false;
 		}
@@ -37,6 +36,6 @@ class skyui.ItemSortingFilter implements skyui.IFilter
 	function process(a_filteredList:Array)
 	{
 		if (DEBUG_LEVEL > 0) _global.skse.Log("ItemSortingFilter process()");
-			a_filteredList.sortOn(_sortAttributes, _sortOptions);
+		a_filteredList.sortOn(_sortAttributes, _sortOptions);
 	}
 }

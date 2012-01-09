@@ -3,11 +3,11 @@
 	static var DEBUG_LEVEL = 1;
 	function processEntry(a_entryObject:Object, a_itemInfo:Object)
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("InventoryDataFetcher processEntry() entry " + a_entryObject.text + "...");
+		if (DEBUG_LEVEL > 0) _global.skse.Log("InventoryDataFetcher processEntry() entry " + a_entryObject.text + ", count = " + a_entryObject.count + "...");
 		switch (a_itemInfo.type) {
 			case InventoryDefines.ICT_ARMOR :
 				if (a_itemInfo.armor) {
-				a_entryObject.infoArmor = a_itemInfo.armor;
+					a_entryObject.infoArmor = a_itemInfo.armor;
 					a_entryObject.infoArmorValid = 1;
 				} else {
 					a_entryObject.infoArmor = "-";
@@ -21,7 +21,7 @@
 				
 			case InventoryDefines.ICT_WEAPON :
 				if (a_itemInfo.damage) {
-				a_entryObject.infoDamage = a_itemInfo.damage;
+					a_entryObject.infoDamage = a_itemInfo.damage;
 					a_entryObject.infoDamageValid = 1;
 				} else {
 					a_entryObject.infoDamage = "-";

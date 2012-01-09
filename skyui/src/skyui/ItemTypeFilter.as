@@ -36,13 +36,6 @@ class skyui.ItemTypeFilter implements skyui.IFilter
 			dispatchEvent({type:"filterChange"});
 	}
 	
-	function changeFilterFlag(a_newFilter:Number, a_bUpdate:Boolean)
-	{
-		if (a_bUpdate)
-			itemFilter = a_newFilter;
-		else _itemFilter = a_newFilter;
-	}
-
 	function setPartitionedFilterMode(a_bPartition:Boolean)
 	{
 		if (DEBUG_LEVEL > 0)

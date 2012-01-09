@@ -9,10 +9,10 @@ class skyui.ConfigurableList extends skyui.FilteredList
 
 	private var _views:Array;
 	private var _activeViewIndex:Number;
-	private var _activeCategory:Object;
 	
 	private var _activeColumnIndex:Number;
 	private var _lastViewIndex:Number;
+	private var _activeColumn:Object;
 	
 	// 1 .. n
 	private var _activeColumnState:Number;
@@ -42,8 +42,8 @@ class skyui.ConfigurableList extends skyui.FilteredList
 	private var _defaultEntryFormat:TextFormat;
 	private var _defaultLabelFormat:TextFormat;
 	
-	private var _categoryColumnInfo:Array;
-	
+	private var _columnInfo:Array;
+
 	// Children
 	var header:MovieClip;
 
@@ -55,7 +55,7 @@ class skyui.ConfigurableList extends skyui.FilteredList
 		_columnPositions = new Array();
 		_columnSizes = new Array();
 		_columnNames = new Array();
-		_categoryColumnInfo = new Array();
+		_columnInfo = new Array();
 		_hiddenColumnNames = new Array();
 		_columnEntryValues = new Array();
 		_customEntryFormats = new Array();
@@ -69,13 +69,13 @@ class skyui.ConfigurableList extends skyui.FilteredList
 		_entryWidth = 525;
 		_entryHeight = 28;
 		_activeViewIndex = -1;
+		_activeColumn = undefined;
 		_lastViewIndex = -1;
 		_bEnableItemIcon = false;
 		_bEnableEquipIcon = false;
 		_activeColumnState = 1;
 		_activeColumnIndex = 0;
-		_activeCategory = undefined;
-		
+
 		Config.instance.addEventListener("configLoad", this, "onConfigLoad");
 		
 		Util.addArrayFunctions();
@@ -90,29 +90,9 @@ class skyui.ConfigurableList extends skyui.FilteredList
 		}
 	}
 	
-	function generateInitialColumnInfo(a_array)
+	function get columnInfo():Array
 	{
-		if (a_array == undefined)
-			return;
-		_categoryColumnInfo = a_array;
-		for (var i = 0; i < _categoryColumnInfo.length; i++)
-		{
-			var entry = _categoryColumnInfo[i];
-			entry.columnIndex = -1;
-			entry.columnState = -1;
-		}
-	}
-	
-	function getCategoryEntry(a_flag)
-	{
-		for (var index = 0; index < _categoryColumnInfo.length; index++)
-			if (_categoryColumnInfo[index].flag == a_flag)
-				return _categoryColumnInfo[index];
-	}
-	
-	function get categoryColumnInfo():Array
-	{
-		return _categoryColumnInfo;
+		return _columnInfo;
 	}
 	
 	function get currentView()
@@ -122,9 +102,6 @@ class skyui.ConfigurableList extends skyui.FilteredList
 
 	function onConfigLoad(event)
 	{
-		super.onConfigLoad(event);
-		if (DEBUG_LEVEL > 0)
-			_global.skse.Log("ConfigurableList onConfigLoad " + event.config);
 		_config = event.config;
 	}
 	
@@ -150,8 +127,7 @@ class skyui.ConfigurableList extends skyui.FilteredList
 
 	function createEntryClip(a_index:Number):MovieClip
 	{
-		if (DEBUG_LEVEL > 0)
-			_global.skse.Log("ConfigurableList createEntryClip " + a_index);
+		if (DEBUG_LEVEL > 0) _global.skse.Log("ConfigurableList createEntryClip " + a_index);
 		var entryClip = attachMovie(_entryClassName, "Entry" + a_index, getNextHighestDepth());
 
 		for (var i = 0; entryClip["textField" + i] != undefined; i++) {
@@ -159,7 +135,7 @@ class skyui.ConfigurableList extends skyui.FilteredList
 		}
 		entryClip["itemIcon"]._visible = false;
 		entryClip["equipIcon"]._visible = false;
-
+		
 		entryClip.viewIndex = -1;
 
 		return entryClip;
@@ -167,15 +143,14 @@ class skyui.ConfigurableList extends skyui.FilteredList
 	
 	function setEntry(a_entryClip:MovieClip, a_entryObject:Object)
 	{
-		if (DEBUG_LEVEL > 0)
-			_global.skse.Log("ConfigurableList setEntry " + a_entryObject.text + " at clipIndex " + a_entryClip.clipIndex);
+		if (DEBUG_LEVEL > 0) _global.skse.Log("ConfigurableList setEntry " + a_entryObject.text + " at clipIndex " + a_entryClip.clipIndex);
 		if (_activeViewIndex != -1 && a_entryClip.viewIndex != _activeViewIndex) {
 			a_entryClip.viewIndex = _activeViewIndex;
 			
 			var columns = currentView.columns;
 			
 			a_entryClip.border._width = a_entryClip.selectArea._width = _entryWidth;
-			a_entryClip.border._height = a_entryClip.selectArea._height =  _entryHeight;
+			a_entryClip.border._height = a_entryClip.selectArea._height = _entryHeight;
 			
 			var iconY = _entryHeight * 0.25;
 			var iconSize = _entryHeight * 0.5;
@@ -243,41 +218,60 @@ class skyui.ConfigurableList extends skyui.FilteredList
 			}
 		}
 
-		_activeCategory = getCategoryEntry(a_flag);
-		if (DEBUG_LEVEL > 0) _global.skse.Log("ACTIVE CATEGORY = " + _activeCategory.text);
 		if (_activeViewIndex == -1)  
 			return;
 		
 		_lastViewIndex = _activeViewIndex;
-
-		if (_activeCategory.columnState != -1)
-			_activeColumnState = _activeCategory.columnState;
-		else
-		{
-			_activeColumnState = 1;
-			_activeCategory.columnState = _activeColumnState;
-		}
 		
-		if (_activeCategory.columnIndex != -1)
-			_activeColumnIndex = _activeCategory.columnIndex;
-		else 
-		{
-			_activeColumnIndex = _views[_activeViewIndex].columns.indexOf(_views[_activeViewIndex].primaryColumn);
-			_activeCategory.columnIndex = _activeColumnIndex;
-		}
+				// set active column to primary when switching categories
+		_activeColumnIndex = _views[_activeViewIndex].columns.indexOf(_views[_activeViewIndex].primaryColumn);
+		
 		if (DEBUG_LEVEL > 1)
 			_global.skse.Log("ConfigurableList changeFilterFlag " + a_flag + ", activeColumnIndex = " + _activeColumnIndex + ", activeColumnState = " + _activeColumnState + ", activeViewIndex = " + _activeViewIndex);
 		if (_activeColumnIndex == undefined) {
 			_activeColumnIndex = 0;
+		} else {
+			var _nextActiveColumn = currentView.columns[_activeColumnIndex];
+			var _bFound = false;
+			
+			// check if view contains last active column
+			for (var i = 0; i < currentView.columns.length; i++)
+			{
+				// last column found in new view, set new index
+				if (currentView.columns[i].id == _activeColumn.id)
+				{
+					_global.skse.Log("Found last column in new view, setting activeColumIndex to pos " + i);
+					_activeColumnIndex = i;
+					_bFound = true;
+				}
+			}
+			if (!_bFound)
+			{
+				// check if current column has been added to array
+				for (var i = 0; i < _columnInfo.length; i++)
+				{
+					if (_columnInfo[i].id == _activeColumn.id)
+					{
+						_global.skse.Log("1 Found column with id " + _activeColumn.id);
+						_bFound = true;
+						break;
+					}
+				}
+				if (!_bFound)
+					_columnInfo.push({id:_nextActiveColumn.id, activeState:1});
+			}
 		}
-		
+		if (_activeColumnState == undefined)
+		{
+			_activeColumnState = 1;
+			_global.skse.Log("1 adding column id " + _activeColumn.id + " to array.");
+		}
 		updateView();
 	}
 	
 	function onColumnPress(event)
 	{
-		if (DEBUG_LEVEL > 0)
-			_global.skse.Log("ConfigurableList onColumnPress " + event.index);
+		if (DEBUG_LEVEL > 0) _global.skse.Log("ConfigurableList onColumnPress " + event.index);
 		if (event.index != undefined) {
 			selectColumn(event.index);
 		}
@@ -285,45 +279,78 @@ class skyui.ConfigurableList extends skyui.FilteredList
 	
 	function selectColumn(a_index:Number)
 	{
-		if (DEBUG_LEVEL > 0)
-			_global.skse.Log("ConfigurableList selectColumn()");
+		if (DEBUG_LEVEL > 0) _global.skse.Log("ConfigurableList selectColumn()");
 			
-		if (DEBUG_LEVEL > 1)
-			_global.skse.Log("ConfigurableList selected column " + a_index);
+		if (DEBUG_LEVEL > 1) _global.skse.Log("ConfigurableList selected column " + a_index);
 		// Invalid column
 		if (currentView.columns[a_index] == undefined) {
 			return;
 		}
 		
-		// save category column index
-		_activeCategory.columnIndex = a_index;
-		
-			// Don't process for passive columns
+		var _bFound = false;
+		// set current selected column
+		_activeColumn = currentView.columns[a_index];
+		var _columnInfoIndex = undefined;
+
+		_global.skse.Log("_activeColumn id = " + _activeColumn.id);
+		// check if current column state has been added to column info array
+		for (var i = 0; i < _columnInfo.length; i++)
+        {
+			if (_columnInfo[i].id == _activeColumn.id)
+			{
+				_global.skse.Log("2 Found column with id " + _activeColumn.id);
+				_bFound = true;
+				_columnInfoIndex = i;
+				break;
+			}
+        }
+		// if not found, add to column info array
+		if (!_bFound)
+		{
+			_global.skse.Log("2 adding column id " + _activeColumn.id + " to array.");
+			_columnInfo.push({id:_activeColumn.id, activeState:1});
+		}
+		// Don't process for passive columns
 		if (currentView.columns[a_index].passive) {
+			_global.skse.Log("Found passive column, returning...");
 				return;
 			}
 		
 		// change active state for column
-		if (_activeColumnIndex != a_index) {
-			_activeColumnIndex = a_index;
-				_activeColumnState = 1;
-			} else {
-				if (_activeColumnState < currentView.columns[_activeColumnIndex].states) {
-					_activeColumnState++;
-				} else {
-					_activeColumnState = 1;
-				}
-			}
+		var _nextColumnState = nextColumnState(a_index);
+		_global.skse.Log("nextColumnState = " + _nextColumnState);
+		if (_nextColumnState != -1 && _columnInfoIndex != undefined)
+		{
 			// save column state
-			_activeCategory.columnState = _activeColumnState;
+			_global.skse.Log("setting column id " + _columnInfo[_columnInfoIndex].id + " activeState to " + _nextColumnState);
+			_columnInfo[_columnInfoIndex].activeState = _nextColumnState;
+			_activeColumnState = _nextColumnState
 			
 			updateView();
 		}
+	}
+		
+	
+	function nextColumnState(a_index):Number
+	{
+		// change active state for column
+		if (_activeColumnIndex != a_index) {
+			_activeColumnIndex = a_index;
+			_activeColumnState = 1;
+		} else {
+			if (_activeColumnState < currentView.columns[_activeColumnIndex].states) {
+				_activeColumnState++;
+			} else {
+				_activeColumnState = 1;
+			}
+			return _activeColumnState;
+		}
+		return -1;
+	}
 	
 	function handleInput(details, pathToFocus):Boolean
 	{
-		if (DEBUG_LEVEL > 0)
-			_global.skse.Log("ConfigurableList handleInput()");
+		if (DEBUG_LEVEL > 0) _global.skse.Log("ConfigurableList handleInput()");
 		var processed = super.handleInput(details, pathToFocus);;
 
 		if (!_bDisableInput && !processed && _platform != 0) {
@@ -347,8 +374,7 @@ class skyui.ConfigurableList extends skyui.FilteredList
 	/* Calculate new column positions and widths for current view */
 	function updateView()
 	{
-		if (DEBUG_LEVEL > 0)
-			_global.skse.Log("ConfigurableList updateView()");
+		if (DEBUG_LEVEL > 0) _global.skse.Log("ConfigurableList updateView()");
 		_bEnableItemIcon = false;
 		_bEnableEquipIcon = false;
 		
@@ -370,12 +396,10 @@ class skyui.ConfigurableList extends skyui.FilteredList
 		
 		// Set bit at position i if column is weighted
 		var weightedFlags = 0;
-		if (DEBUG_LEVEL > 1)
-			_global.skse.Log("ConfigurableList columns length = " + columns.length);
+		if (DEBUG_LEVEL > 1) _global.skse.Log("ConfigurableList columns length = " + columns.length);
 		// Move some data from current state to root of the column so we can access single- and multi-state columns in the same manner
 		for (var i = 0; i < columns.length; i++) {
-			if (DEBUG_LEVEL > 1)
-				_global.skse.Log("ConfigurableList configuring states for column " + columns[i].text);
+			if (DEBUG_LEVEL > 1) _global.skse.Log("ConfigurableList configuring states for column " + columns[i].text);
 			// Single-state
 			if (columns[i].states == undefined || columns[i].states < 2) {
 				continue;
@@ -406,8 +430,7 @@ class skyui.ConfigurableList extends skyui.FilteredList
 
 		// Subtract fixed widths to get weighted width & summ up weights & already set as much as possible
 		for (var i = 0; i < columns.length; i++) {
-			if (DEBUG_LEVEL > 1)
-				_global.skse.Log("ConfigurableList configuring widths for column " + columns[i].text);
+			if (DEBUG_LEVEL > 1) _global.skse.Log("ConfigurableList configuring widths for column " + columns[i].text);
 			if (columns[i].weight != undefined) {
 				weightSum += columns[i].weight;
 				weightedFlags = (weightedFlags | 1) << 1;
@@ -599,17 +622,19 @@ class skyui.ConfigurableList extends skyui.FilteredList
 		_maxListIndex = Math.floor((_listHeight / _entryHeight) + 0.05);
 		
 		updateSortParams();
+		
+		// sortChange might not always trigger an update, so we have to make sure the list is updated,
+		// even if that means we update it twice.
+		UpdateList();
 	}
 	
 	function updateSortParams()
 	{
-		if (DEBUG_LEVEL > 0)
-			_global.skse.Log("ConfigurableList updateSortParams()");
+		if (DEBUG_LEVEL > 0) _global.skse.Log("ConfigurableList updateSortParams()");
 		var columns = currentView.columns;
 		var sortAttributes = columns[_activeColumnIndex].sortAttributes;
 		var sortOptions = columns[_activeColumnIndex].sortOptions;
-		if (DEBUG_LEVEL > 1)
-			_global.skse.Log("ConfigurableList updateSortParams(), columns length = " + columns.length + ", sortAttributes = " + sortAttributes + ", sortOptions = " + sortOptions + ", activeColumnIndex = " + _activeColumnIndex);
+		if (DEBUG_LEVEL > 1) _global.skse.Log("ConfigurableList updateSortParams(), columns length = " + columns.length + ", sortAttributes = " + sortAttributes + ", sortOptions = " + sortOptions + ", activeColumnIndex = " + _activeColumnIndex);
 		if (sortOptions == undefined) {
 			return;
 		}
