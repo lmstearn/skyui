@@ -99,6 +99,7 @@ class skyui.DynamicList extends MovieClip
 		entryClip.onRollOver = function()
 		{
 			if (!_parent.listAnimating && !_parent._bDisableInput && this.itemIndex != undefined) {
+				if (DEBUG_LEVEL > 1) _global.skse.Log("onRollOver for entry " + this.text + " at index " + this.itemIndex + " at clip index " + this.clipIndex);
 				_parent.doSetSelectedIndex(this.itemIndex, 0);
 				_parent._bMouseDrivenNav = true;
 			}

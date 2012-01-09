@@ -445,7 +445,7 @@ class InventoryLists extends MovieClip
 		 *	if it gets called before calling InvalidateListData().
 		 *
 		 */
-		_ItemsList._bGetInvCalled = false;
+		_ItemsList.invItemListCalled = false;
 		var flag = _CategoriesList.selectedEntry.flag;
 
 		for (var i = 0; i < _CategoriesList.entryList.length; i++) {

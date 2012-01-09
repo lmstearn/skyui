@@ -1,5 +1,6 @@
 ﻿class skyui.MagicDataFetcher implements skyui.IDataFetcher
 {
+	static var DEBUG_LEVEL = 0;
 	function processEntry(a_entryObject:Object, a_itemInfo:Object)
 	{
 		if (DEBUG_LEVEL > 1) _global.skse.Log("processing entry " + a_entryObject.text + "...");

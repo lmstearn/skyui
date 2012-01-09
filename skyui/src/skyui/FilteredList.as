@@ -8,7 +8,7 @@ class skyui.FilteredList extends skyui.DynamicScrollingList
 
 	private var _curClipIndex:Number;
 	
-	private var _bGetInvCalled:Boolean;
+	private var _bInvItemListCalled:Boolean;
 	
 
 	function FilteredList()
@@ -17,7 +17,7 @@ class skyui.FilteredList extends skyui.DynamicScrollingList
 		_filteredList = new Array();
 		_filterChain = new Array();
 		_curClipIndex = -1;
-		_bGetInvCalled = false;
+		_bInvItemListCalled = false;
 	}
 
 	function addFilter(a_filter:IFilter)
@@ -36,6 +36,16 @@ class skyui.FilteredList extends skyui.DynamicScrollingList
 	function get numUnfilteredItems():Number
 	{
 		return _filteredList.length;
+	}
+
+	function get invItemListCalled():Boolean
+	{
+		return _bInvItemListCalled;
+	}
+
+	function set invItemListCalled(a_bCall:Boolean)
+	{
+		_bInvItemListCalled = a_bCall;
 	}
 
 	function generateFilteredList()
@@ -195,9 +205,9 @@ class skyui.FilteredList extends skyui.DynamicScrollingList
 		if (DEBUG_LEVEL > 0) _global.skse.Log("FilteredList doSetSelectedIndex()");
 		if (DEBUG_LEVEL > 0) _global.skse.Log("FilteredList doSetSelectedIndex entry " + _entryList[a_newIndex].text + " at index " + a_newIndex + " count = " + _entryList[a_newIndex].count + " , lastSelectedEntry = " + _entryList[_selectedIndex].text + " at index " + _selectedIndex + " , bDisableSelection = " + _bDisableSelection);
 		
-		if (DEBUG_LEVEL > 0) if (_bGetInvCalled) _global.skse.Log("GetInventoryItemList CALLED DIRECTLY!");
+		if (DEBUG_LEVEL > 0) if (_bInvItemListCalled) _global.skse.Log("GetInventoryItemList CALLED DIRECTLY!");
 		// if new selected index is the same and GetInventoryItemList has not been called, ignore
-		if (!_bDisableSelection && a_newIndex != _selectedIndex && !_bGetInvCalled) {
+		if (!_bDisableSelection && a_newIndex != _selectedIndex && !_bInvItemListCalled) {
 			var oldIndex = _selectedIndex;
 			_selectedIndex = a_newIndex;
 
