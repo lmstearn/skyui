@@ -176,11 +176,13 @@ class InventoryLists extends MovieClip
 
 	function get CategoriesList()
 	{
+		if (DEBUG_LEVEL > 0) _global.skse.Log("InventoryLists get CategoriesList()");
 		return _CategoriesList;
 	}
 
 	function get ItemsList()
 	{
+		if (DEBUG_LEVEL > 0) _global.skse.Log("InventoryLists get ItemsList()");
 		return _ItemsList;
 	}
 	
@@ -438,14 +440,6 @@ class InventoryLists extends MovieClip
 	{
 	if (DEBUG_LEVEL > 0) _global.skse.Log("<========================InventoryLists InvalidateListData==================================" + "\n");
 
-		/*	Temporary FIX for selection scroll jump bug
-		 *
-		 *	This is the first call when an entry is updated on list. There is a random selection bug
-		 *	that occurs when GetInventoryLists() is called before this. Lets set the bool to false so we can watch
-		 *	if it gets called before calling InvalidateListData().
-		 *
-		 */
-		_ItemsList.invItemListCalled = false;
 		var flag = _CategoriesList.selectedEntry.flag;
 
 		for (var i = 0; i < _CategoriesList.entryList.length; i++) {

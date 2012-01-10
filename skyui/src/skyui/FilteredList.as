@@ -7,9 +7,6 @@ class skyui.FilteredList extends skyui.DynamicScrollingList
 	private var _filterChain:Array;
 
 	private var _curClipIndex:Number;
-	
-	private var _bInvItemListCalled:Boolean;
-	
 
 	function FilteredList()
 	{
@@ -17,7 +14,6 @@ class skyui.FilteredList extends skyui.DynamicScrollingList
 		_filteredList = new Array();
 		_filterChain = new Array();
 		_curClipIndex = -1;
-		_bInvItemListCalled = false;
 	}
 
 	function addFilter(a_filter:IFilter)
@@ -36,16 +32,6 @@ class skyui.FilteredList extends skyui.DynamicScrollingList
 	function get numUnfilteredItems():Number
 	{
 		return _filteredList.length;
-	}
-
-	function get invItemListCalled():Boolean
-	{
-		return _bInvItemListCalled;
-	}
-
-	function set invItemListCalled(a_bCall:Boolean)
-	{
-		_bInvItemListCalled = a_bCall;
 	}
 
 	function generateFilteredList()
@@ -67,7 +53,6 @@ class skyui.FilteredList extends skyui.DynamicScrollingList
 		if (DEBUG_LEVEL > 1) _global.skse.Log("generating new filteredList..."); 
 		for (var i = 0; i < _filteredList.length; i++) {
 			_filteredList[i].filteredIndex = i;
-			if (DEBUG_LEVEL > 1) _global.skse.Log("added entry " + _filteredList[i].text + " count = " + _filteredList[i].count + " to pos " + i + ".");
 		}
 
 		if (selectedEntry.filteredIndex == undefined) {
@@ -141,7 +126,7 @@ class skyui.FilteredList extends skyui.DynamicScrollingList
 			}
 			
 			var entryClip = getClipByIndex(_curClipIndex);
-			if (DEBUG_LEVEL > 0) _global.ske.Log("Restoring entry " + entryClip.text + " at clip index " + entryClip.clipIndex);
+			if (DEBUG_LEVEL > 0) _global.skse.Log("Restoring entry " + entryClip.text + " at clip index " + entryClip.clipIndex);
 			doSetSelectedIndex(entryClip.itemIndex, 1);
 		}
 		_global.skse.Log("========================END FilteredList InvalidateData==================================>" + "\n");
@@ -202,12 +187,16 @@ class skyui.FilteredList extends skyui.DynamicScrollingList
 
 	function doSetSelectedIndex(a_newIndex:Number, a_keyboardOrMouse:Number)
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("FilteredList doSetSelectedIndex()");
-		if (DEBUG_LEVEL > 0) _global.skse.Log("FilteredList doSetSelectedIndex entry " + _entryList[a_newIndex].text + " at index " + a_newIndex + " count = " + _entryList[a_newIndex].count + " , lastSelectedEntry = " + _entryList[_selectedIndex].text + " at index " + _selectedIndex + " , bDisableSelection = " + _bDisableSelection);
-		
-		if (DEBUG_LEVEL > 0) if (_bInvItemListCalled) _global.skse.Log("GetInventoryItemList CALLED DIRECTLY!");
-		// if new selected index is the same and GetInventoryItemList has not been called, ignore
-		if (!_bDisableSelection && a_newIndex != _selectedIndex && !_bInvItemListCalled) {
+		if (DEBUG_LEVEL > 0) _global.skse.Log("FilteredList doSetSelectedIndex entry " + _entryList[a_newIndex].text + "filterFlag = " + _entryList[a_newIndex].filterFlag + " at index " + a_newIndex + " count = " + _entryList[a_newIndex].count + " , lastSelectedEntry = " + _entryList[_selectedIndex].text + "filterFlag = " + _entryList[_selectedIndex].filterFlag + " at index " + _selectedIndex + " , bDisableSelection = " + _bDisableSelection);
+
+		/* There are 2 checks that must be performed before we allow entries to be set :
+		* 1. if new selected index is the same and input is disabled, ignore
+		* reason: if the same entry was selected, then there is nothing to update so we can safely ignore.
+		* 2. if both the new and old selected entries do not have filteredIndex defined, ignore
+		* reason: The game seems to randomly call GetInventoryItemList() which triggers this method without an InvalidListData() call
+		* which would result in an updateScrollPosition call with the wrong values and cause the list to jump.
+		*/
+		if ((!_bDisableSelection && a_newIndex != _selectedIndex) && (_entryList[a_newIndex].filteredIndex != undefined || _entryList[_selectedIndex].filteredIndex != undefined)) { //&& !_bInvItemListCalled) {
 			var oldIndex = _selectedIndex;
 			_selectedIndex = a_newIndex;
 
@@ -225,12 +214,11 @@ class skyui.FilteredList extends skyui.DynamicScrollingList
 				} else {
 					setEntry(getClipByIndex(_entryList[_selectedIndex].clipIndex),_entryList[_selectedIndex]);
 				}
-				
 				_curClipIndex = _entryList[_selectedIndex].clipIndex;
 			} else {
 				_curClipIndex = -1;
 			}
-			
+
 			dispatchEvent({type:"selectionChange", index:_selectedIndex, keyboardOrMouse:a_keyboardOrMouse});
 		}
 	}

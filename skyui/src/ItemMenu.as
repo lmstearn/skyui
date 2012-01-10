@@ -196,8 +196,6 @@ class ItemMenu extends MovieClip
 	function GetInventoryItemList()
 	{
 		if (DEBUG_LEVEL > 0) _global.skse.Log("ItemMenu GetInventoryItemList()");
-		// Set flag to true so we can watch if this method is called directly somehow
-		InventoryLists_mc.ItemsList.invItemListCalled = true;
 		return InventoryLists_mc.ItemsList;
 	}
 
