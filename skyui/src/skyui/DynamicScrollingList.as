@@ -39,7 +39,6 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 		_maxListIndex = Math.floor(_listHeight / _entryHeight);
 		
 		_scrollTmp = 0;
-		_scrollDelta = 1;
 		
 		Config.instance.addEventListener("configLoad", this, "onConfigLoad");
 	}
@@ -60,13 +59,19 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 			_global.skse.Log("DynamicScrollingList onConfigLoad()");
 			
 		_config = event.config;
+		setScrollDelta(_maxListIndex);
+	}
+	
+	function setScrollDelta(maxPosition: Number): Void {
 		var scrollDelta: Number = _config.General.scrollDelta;
 		if (scrollDelta != undefined && scrollDelta != 0) {
-			if (Math.abs(scrollDelta) < _maxListIndex) {
+			if (Math.abs(scrollDelta) < maxPosition) {
 				_scrollDelta = scrollDelta;
 			} else {
-				_scrollDelta = _maxListIndex;
+				_scrollDelta = (Math.abs(scrollDelta)/scrollDelta) * maxPosition;
 			}
+		} else {
+			_scrollDelta = 1;
 		}
 	}
 
@@ -118,7 +123,7 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 					} else {
 						_scrollTmp = _scrollTmp - _scrollDelta;
 					}
-					entriesToScroll = Math.floor(_scrollTmp)
+					entriesToScroll = Math.floor(_scrollTmp);
 					_scrollTmp = _scrollTmp - entriesToScroll;
 					if (entriesToScroll <= -1 || entriesToScroll >= 1) {
 						scrollPosition = scrollPosition + entriesToScroll;
@@ -170,8 +175,14 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 	function set scrollPosition(a_newPosition:Number)
 	{
 		if (DEBUG_LEVEL > 0) _global.skse.Log("DynamicScrollingList set scrollPosition "  + a_newPosition);
-		if (a_newPosition != _scrollPosition && a_newPosition >= 0 && a_newPosition <= _maxScrollPosition) {
-
+		if (a_newPosition != _scrollPosition) {
+		
+			if (a_newPosition < 0) {
+				a_newPosition = 0;
+			} else if (a_newPosition > _maxScrollPosition) {
+				a_newPosition = _maxScrollPosition;
+			}
+			
 			if (scrollbar != undefined) {
 				if (DEBUG_LEVEL > 1) _global.skse.Log("old scrollbar position = " + scrollbar.position);
 				scrollbar.position = a_newPosition;

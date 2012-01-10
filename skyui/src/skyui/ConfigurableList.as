@@ -102,6 +102,7 @@ class skyui.ConfigurableList extends skyui.FilteredList
 
 	function onConfigLoad(event)
 	{
+        super.onConfigLoad(event);
 		_config = event.config;
 	}
 	
@@ -621,6 +622,8 @@ class skyui.ConfigurableList extends skyui.FilteredList
 		_entryHeight = maxHeight;
 		_maxListIndex = Math.floor((_listHeight / _entryHeight) + 0.05);
 		
+        setScrollDelta(_maxListIndex);
+        
 		updateSortParams();
 		
 		// sortChange might not always trigger an update, so we have to make sure the list is updated,
