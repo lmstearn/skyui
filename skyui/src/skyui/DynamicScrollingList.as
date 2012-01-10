@@ -17,8 +17,10 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 	private var _entryHeight:Number;
 	
 	
-	private var _scrollTmp: Number;
-	private var _scrollDelta: Number;
+	private var _scrollTmp: Number = 0;
+	private var _scrollDelta: Number = 1;
+	private var _scrollMultiplier: Number = 0;
+	private var _scrollAccel: Number = 0.5;
 	
 	private var _config: Config;
 
@@ -37,8 +39,6 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 		_entryHeight = 28;
 		_listHeight = border._height;
 		_maxListIndex = Math.floor(_listHeight / _entryHeight);
-		
-		_scrollTmp = 0;
 		
 		Config.instance.addEventListener("configLoad", this, "onConfigLoad");
 	}
@@ -94,19 +94,28 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 			var entry = getClipByIndex(selectedIndex - scrollPosition);
 
 			processed = entry != undefined && entry.handleInput != undefined && entry.handleInput(details, pathToFocus.slice(1));
-
-			if (!processed && GlobalFunc.IsKeyPressed(details)) {
-				if (details.navEquivalent == NavigationCode.UP || details.navEquivalent == NavigationCode.PAGE_UP) {
-					moveSelectionUp(details.navEquivalent == NavigationCode.PAGE_UP);
-					processed = true;
-				} else if (details.navEquivalent == NavigationCode.DOWN || details.navEquivalent == NavigationCode.PAGE_DOWN) {
-					moveSelectionDown(details.navEquivalent == NavigationCode.PAGE_DOWN);
-					processed = true;
-				} else if (!_bDisableSelection && details.navEquivalent == NavigationCode.ENTER) {
-					onItemPress();
-					processed = true;
+			
+			if (!processed) {
+				if (details.navEquivalent == NavigationCode.UP || details.navEquivalent == NavigationCode.DOWN || details.navEquivalent == NavigationCode.PAGE_UP || details.navEquivalent == NavigationCode.PAGE_DOWN) {
+					var _scrollPage: Boolean  = details.navEquivalent == NavigationCode.PAGE_DOWN || details.navEquivalent == NavigationCode.PAGE_UP;
+					var _scrollUp : Boolean = details.navEquivalent == NavigationCode.UP || details.navEquivalent == NavigationCode.PAGE_UP;
+					if (details.value == "keyDown")  {
+						_scrollMultiplier = 0;
+						_scrollUp ? moveSelectionUp(_scrollPage) : moveSelectionDown(_scrollPage);
+						processed = true;
+					} else if (details.value == "keyHold") {
+						var i: Number = 0;
+						while (i <= Math.floor(_scrollPage ? 0 : _scrollMultiplier)) {
+							_scrollUp ? moveSelectionUp(_scrollPage) : moveSelectionDown(_scrollPage);
+							i++;
+						}
+						_scrollMultiplier = _scrollMultiplier + _scrollAccel;
+						processed = true;
+					}
 				}
 			}
+			
+			
 		}
 		return processed;
 	}
