@@ -239,7 +239,7 @@ class InventoryLists extends MovieClip
 		_currCategoryIndex = _CategoriesList.selectedIndex;
 
 		_CategoryLabel.textField.SetText(_CategoriesList.selectedEntry.text);
-
+		_global.skse.Log("Category " + _CategoriesList.selectedEntry.text + " savedItemIndex = " + _CategoriesList.selectedEntry.savedItemIndex);
 		// Let's do this more elegant at some point.. :)
 		// Changing the sort filter might already trigger an update, so the final UpdateList is redudant
 
@@ -250,12 +250,10 @@ class InventoryLists extends MovieClip
 			// Set filter type before update
 			if (DEBUG_LEVEL > 1) _global.skse.Log("CHANGE DETECTED! Setting filter flags to sort");
 			_typeFilter.itemFilter = _CategoriesList.selectedEntry.flag;
-
 			_currCategoryIndex = _CategoriesList.selectedIndex;
+			_ItemsList.disableScrollUpdate = true;
+			_ItemsList.RestoreScrollPosition(_CategoriesList.selectedEntry.savedItemIndex);
 			_ItemsList.changeFilterFlag(_CategoriesList.selectedEntry.flag);
-
-
-			//  _ItemsList.RestoreScrollPosition(_CategoriesList.selectedEntry.savedItemIndex);
 		} else {
 			_ItemsList.UpdateList();
 		}
@@ -363,7 +361,7 @@ class InventoryLists extends MovieClip
 	function doItemsSelectionChange(event)
 	{
 		if (DEBUG_LEVEL > 0) _global.skse.Log("InventoryLists onItemsSelectionChange()");
-		_CategoriesList.selectedEntry.savedItemIndex = _ItemsList.scrollPosition;
+		//_CategoriesList.selectedEntry.savedItemIndex = _ItemsList.scrollPosition;
 
 		dispatchEvent({type:"itemHighlightChange", index:event.index});
 

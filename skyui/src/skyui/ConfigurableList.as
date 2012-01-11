@@ -12,7 +12,6 @@ class skyui.ConfigurableList extends skyui.FilteredList
 	
 	private var _activeColumnIndex:Number;
 	private var _lastViewIndex:Number;
-	private var _activeColumn:Object;
 	
 	// 1 .. n
 	private var _activeColumnState:Number;
@@ -42,8 +41,6 @@ class skyui.ConfigurableList extends skyui.FilteredList
 	private var _defaultEntryFormat:TextFormat;
 	private var _defaultLabelFormat:TextFormat;
 	
-	private var _columnInfo:Array;
-
 	// Children
 	var header:MovieClip;
 
@@ -55,7 +52,6 @@ class skyui.ConfigurableList extends skyui.FilteredList
 		_columnPositions = new Array();
 		_columnSizes = new Array();
 		_columnNames = new Array();
-		_columnInfo = new Array();
 		_hiddenColumnNames = new Array();
 		_columnEntryValues = new Array();
 		_customEntryFormats = new Array();
@@ -69,7 +65,6 @@ class skyui.ConfigurableList extends skyui.FilteredList
 		_entryWidth = 525;
 		_entryHeight = 28;
 		_activeViewIndex = -1;
-		_activeColumn = undefined;
 		_lastViewIndex = -1;
 		_bEnableItemIcon = false;
 		_bEnableEquipIcon = false;
@@ -90,11 +85,6 @@ class skyui.ConfigurableList extends skyui.FilteredList
 		}
 	}
 	
-	function get columnInfo():Array
-	{
-		return _columnInfo;
-	}
-	
 	function get currentView()
 	{
 		return _views[_activeViewIndex];
@@ -102,13 +92,14 @@ class skyui.ConfigurableList extends skyui.FilteredList
 
 	function onConfigLoad(event)
 	{
-        super.onConfigLoad(event);
+		super.onConfigLoad(event);
 		_config = event.config;
 	}
 	
 	// Has to be called before the list can be used
 	function setConfigSection(a_section:String)
 	{
+		_global.skse.Log("ConfigurableList setConfigSection()");
 		_views = _config[a_section].views;
 		_entryWidth = _config[a_section].entry.width;
 
@@ -218,55 +209,19 @@ class skyui.ConfigurableList extends skyui.FilteredList
 				break;
 			}
 		}
-
-		if (_activeViewIndex == -1)  
+		
+		if (_activeViewIndex == -1 || _lastViewIndex == _activeViewIndex) {
 			return;
+		}
 		
 		_lastViewIndex = _activeViewIndex;
-		
-				// set active column to primary when switching categories
+		_activeColumnState = 1;
 		_activeColumnIndex = _views[_activeViewIndex].columns.indexOf(_views[_activeViewIndex].primaryColumn);
-		
-		if (DEBUG_LEVEL > 1)
-			_global.skse.Log("ConfigurableList changeFilterFlag " + a_flag + ", activeColumnIndex = " + _activeColumnIndex + ", activeColumnState = " + _activeColumnState + ", activeViewIndex = " + _activeViewIndex);
+					
 		if (_activeColumnIndex == undefined) {
 			_activeColumnIndex = 0;
-		} else {
-			var _nextActiveColumn = currentView.columns[_activeColumnIndex];
-			var _bFound = false;
-			
-			// check if view contains last active column
-			for (var i = 0; i < currentView.columns.length; i++)
-			{
-				// last column found in new view, set new index
-				if (currentView.columns[i].id == _activeColumn.id)
-				{
-					_global.skse.Log("Found last column in new view, setting activeColumIndex to pos " + i);
-					_activeColumnIndex = i;
-					_bFound = true;
-				}
-			}
-			if (!_bFound)
-			{
-				// check if current column has been added to array
-				for (var i = 0; i < _columnInfo.length; i++)
-				{
-					if (_columnInfo[i].id == _activeColumn.id)
-					{
-						_global.skse.Log("1 Found column with id " + _activeColumn.id);
-						_bFound = true;
-						break;
-					}
-				}
-				if (!_bFound)
-					_columnInfo.push({id:_nextActiveColumn.id, activeState:1});
-			}
 		}
-		if (_activeColumnState == undefined)
-		{
-			_activeColumnState = 1;
-			_global.skse.Log("1 adding column id " + _activeColumn.id + " to array.");
-		}
+		
 		updateView();
 	}
 	
@@ -288,53 +243,11 @@ class skyui.ConfigurableList extends skyui.FilteredList
 			return;
 		}
 		
-		var _bFound = false;
-		// set current selected column
-		_activeColumn = currentView.columns[a_index];
-		var _columnInfoIndex = undefined;
-
-		_global.skse.Log("_activeColumn id = " + _activeColumn.id);
-		// check if current column state has been added to column info array
-		for (var i = 0; i < _columnInfo.length; i++)
-        {
-			if (_columnInfo[i].id == _activeColumn.id)
-			{
-				_global.skse.Log("2 Found column with id " + _activeColumn.id);
-				_bFound = true;
-				_columnInfoIndex = i;
-				break;
-			}
-        }
-		// if not found, add to column info array
-		if (!_bFound)
-		{
-			_global.skse.Log("2 adding column id " + _activeColumn.id + " to array.");
-			_columnInfo.push({id:_activeColumn.id, activeState:1});
-		}
 		// Don't process for passive columns
 		if (currentView.columns[a_index].passive) {
-			_global.skse.Log("Found passive column, returning...");
-				return;
-			}
-		
-		// change active state for column
-		var _nextColumnState = nextColumnState(a_index);
-		_global.skse.Log("nextColumnState = " + _nextColumnState);
-		if (_nextColumnState != -1 && _columnInfoIndex != undefined)
-		{
-			// save column state
-			_global.skse.Log("setting column id " + _columnInfo[_columnInfoIndex].id + " activeState to " + _nextColumnState);
-			_columnInfo[_columnInfoIndex].activeState = _nextColumnState;
-			_activeColumnState = _nextColumnState
-			
-			updateView();
+			return;
 		}
-	}
-		
-	
-	function nextColumnState(a_index):Number
-	{
-		// change active state for column
+			
 		if (_activeColumnIndex != a_index) {
 			_activeColumnIndex = a_index;
 			_activeColumnState = 1;
@@ -344,9 +257,9 @@ class skyui.ConfigurableList extends skyui.FilteredList
 			} else {
 				_activeColumnState = 1;
 			}
-			return _activeColumnState;
 		}
-		return -1;
+			
+		updateView();
 	}
 	
 	function handleInput(details, pathToFocus):Boolean
@@ -622,7 +535,7 @@ class skyui.ConfigurableList extends skyui.FilteredList
 		_entryHeight = maxHeight;
 		_maxListIndex = Math.floor((_listHeight / _entryHeight) + 0.05);
 		
-        setScrollDelta(_maxListIndex);
+		setScrollDelta(_maxListIndex);
         
 		updateSortParams();
 		

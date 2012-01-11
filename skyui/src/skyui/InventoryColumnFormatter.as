@@ -1,5 +1,6 @@
 ﻿import skyui.IColumnFormatter;
 import skyui.Defines;
+import skyui.Config;
 
 
 class skyui.InventoryColumnFormatter implements IColumnFormatter
@@ -7,12 +8,26 @@ class skyui.InventoryColumnFormatter implements IColumnFormatter
 	private static var STATES = ["None", "Equipped", "LeftEquip", "RightEquip", "LeftAndRightEquip"];
 
 	private var _maxTextLength:Number;
+	private var _entryFormatColor:Number;
+	
+	private var _config;
 	
 	static var DEBUG_LEVEL = 1;
 	
 	function InventoryColumnFormatter()
 	{
 		_maxTextLength = 50;
+		_entryFormatColor = 0xFFFFFF;
+		
+		Config.instance.addEventListener("configLoad", this, "onConfigLoad");
+	}
+
+	function onConfigLoad(event)
+	{
+		_config = event.config;
+		var _customColor = _config.ItemList.entry.format.color;
+		if (_customColor != undefined)
+			entryFormatColor = _customColor;
 	}
 	
 	function set maxTextLength(a_length:Number)
@@ -27,6 +42,16 @@ class skyui.InventoryColumnFormatter implements IColumnFormatter
 	{
 		if (DEBUG_LEVEL > 0) _global.skse.Log("InventoryColumnFormatter get maxTextLength()");
 		return _maxTextLength;
+	}
+	
+	function set entryFormatColor(a_color:Number)
+	{
+		_entryFormatColor = a_color;
+	}
+	
+	function get entryFormatColor():Number
+	{
+		return _entryFormatColor;
 	}
 
 	function formatEquipIcon(a_entryField:Object, a_entryObject:Object)
@@ -128,10 +153,11 @@ class skyui.InventoryColumnFormatter implements IColumnFormatter
 			a_entryField.autoSize = "left";
 			a_entryField.SetText(text);
 
+			_global.skse.Log("InventoryColumnFormatter color = " + _entryFormatColor);
 			if (a_entryObject.negativeEffect == true) {
 				a_entryField.textColor = a_entryObject.enabled == false ? 0x800000 : 0xFF0000;
 			} else {
-				a_entryField.textColor = a_entryObject.enabled == false ? 0x4C4C4C : 0xFFFFFF;
+				a_entryField.textColor = a_entryObject.enabled == false ? 0x4C4C4C : _entryFormatColor;
 			}
 
 			// BestInClass icon
@@ -195,7 +221,7 @@ class skyui.InventoryColumnFormatter implements IColumnFormatter
 		if (a_entryObject.negativeEffect == true) {
 			a_entryField.textColor = a_entryObject.enabled == false ? 0x800000 : 0xFF0000;
 		} else {
-			a_entryField.textColor = a_entryObject.enabled == false ? 0x4C4C4C : 0xFFFFFF;
+			a_entryField.textColor = a_entryObject.enabled == false ? 0x4C4C4C : _entryFormatColor;
 		}
 	}
 }

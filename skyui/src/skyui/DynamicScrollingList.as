@@ -7,6 +7,8 @@ import skyui.Config;
 
 class skyui.DynamicScrollingList extends skyui.DynamicList
 {
+	private var _bDoNotUpdate:Boolean;
+	
 	private var _scrollPosition:Number;
 	private var _maxScrollPosition:Number;
 
@@ -173,12 +175,23 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 
 	function get scrollPosition()
 	{
+		if (DEBUG_LEVEL > 1) _global.skse.Log("DynamicScrollingList get scrollPosition() " + _scrollPosition);
 		return _scrollPosition;
 	}
 
 	function get maxScrollPosition()
 	{
 		return _maxScrollPosition;
+	}
+	
+	function get disableScrollUpdate()
+	{
+		return _bDoNotUpdate;
+	}
+	
+	function set disableScrollUpdate(a_bFlag)
+	{
+		_bDoNotUpdate = a_bFlag;		
 	}
 
 	function set scrollPosition(a_newPosition:Number)
@@ -207,7 +220,9 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 	{
 		if (DEBUG_LEVEL > 0) _global.skse.Log("DynamicScrollingList updateScrollPosition()" + " currentScrollPos = " + _scrollPosition + ", new scroll pos = " + a_position);
 		_scrollPosition = a_position;
-		UpdateList();
+		if (_bDoNotUpdate == false)
+			UpdateList();
+		_bDoNotUpdate = false;
 	}
 
 	function updateScrollbar()
@@ -355,17 +370,15 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 		updateScrollPosition(Math.floor(event.position + 0.500000));
 	}
 
-	// Don't think we need this for the new panel style. Resetting it to 0 is probably more convenient since we can search and stuff
 	function RestoreScrollPosition(a_newPosition)
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("DynamicScrollingList RestoreScrollPosition()");
-		scrollPosition = 0;
-//		if (a_newPosition < 0) {
-//			a_newPosition = 0;
-//		} else if (a_newPosition > _maxScrollPosition) {
-//			a_newPosition = _maxScrollPosition;
-//		}
-//		
-//		scrollPosition = a_newPosition;
+		if (DEBUG_LEVEL > 0) _global.skse.Log("DynamicScrollingList RestoreScrollPosition() pos = " + a_newPosition);
+		if (a_newPosition < 0) {
+			a_newPosition = 0;
+		} else if (a_newPosition > _maxScrollPosition) {
+			a_newPosition = _maxScrollPosition;
+		}
+		
+		scrollPosition = a_newPosition;
 	}
 }

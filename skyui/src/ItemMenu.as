@@ -428,17 +428,20 @@ class ItemMenu extends MovieClip
 	{
 		if (DEBUG_LEVEL > 0) _global.skse.Log("<================================ItemMenu RestoreIndices==================================" + "\n");
 		if (DEBUG_LEVEL > 0) _global.skse.Log("ItemMenu RestoreIndices() argument[0] = " + arguments[0] + " size = " + arguments.length);
+		
 		if (arguments[0] != undefined && arguments[0] != -1 && arguments.length != 1) {
 			InventoryLists_mc.CategoriesList.restoreSelectedEntry(arguments[0]);
-			InventoryLists_mc.CategoriesList.UpdateList();
+			// Restore Scroll Position
+			if (DEBUG_LEVEL > 0) _global.skse.Log("ItemMenu RestoreIndices restoring scrollposition " + arguments[1]);
+			InventoryLists_mc.ItemsList.RestoreScrollPosition(arguments[1]);			
 		} else {
 			InventoryLists_mc.CategoriesList.restoreSelectedEntry(1); // ALL
 		}
-
+		
 		var index;
 
 		// Saved category indices
-		for (index = 1; index < arguments.length && index < InventoryLists_mc.CategoriesList.entryList.length; index++) {
+		for (index = 2; index < arguments.length && index < InventoryLists_mc.CategoriesList.entryList.length; index++) {
 			InventoryLists_mc.CategoriesList.entryList[index - 1].savedItemIndex = arguments[index];
 		}
 		
@@ -451,6 +454,7 @@ class ItemMenu extends MovieClip
 				skseWarningMsg.gotoAndStop("show");
 			}			
 		}
+		InventoryLists_mc.CategoriesList.UpdateList();
 		_global.skse.Log("============================END ItemMenu RestoreIndices==================================>" + "\n");
 		
 	}
@@ -460,10 +464,19 @@ class ItemMenu extends MovieClip
 		if (DEBUG_LEVEL > 0) _global.skse.Log("ItemMenu SaveIndices()");
 		var a = new Array();
 		
+		// save current selected category
 		a.push(InventoryLists_mc.CategoriesList.selectedIndex);
-		_global.skse.Log("saving category entry " + InventoryLists_mc.CategoriesList.selectedIndex);
-		for (var i = 0; i < InventoryLists_mc.CategoriesList.entryList.length; i++) {
-			a.push(InventoryLists_mc.CategoriesList.entryList[i].savedItemIndex);
+		// save current selected category scroll position
+		_global.skse.Log("Saving category " + InventoryLists_mc.CategoriesList.selectedEntry.text);
+		a.push(InventoryLists_mc.ItemsList.scrollPosition);
+		
+		for (var i = 0; i < InventoryLists_mc.CategoriesList.entryList.length; i++)
+		{
+			if (InventoryLists_mc.CategoriesList.selectedIndex != i)
+			{
+				_global.skse.Log("Saving category " + InventoryLists_mc.CategoriesList.entryList[i].text + " scroll position " + InventoryLists_mc.CategoriesList.entryList[i].savedItemIndex);
+				a.push(0);
+			}
 		}
 		
 		// Restarted == false

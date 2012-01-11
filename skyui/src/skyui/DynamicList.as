@@ -128,14 +128,17 @@ class skyui.DynamicList extends MovieClip
 
 	function get selectedIndex()
 	{
+		if (DEBUG_LEVEL > 0) _global.skse.Log("DynamicList get selectedIndex " + _selectedIndex);
 		return _selectedIndex;
 	}
 
 	function set selectedIndex(a_newIndex)
 	{
+		if (DEBUG_LEVEL > 0) _global.skse.Log("DynamicList set selectedIndex " + a_newIndex);
 		doSetSelectedIndex(a_newIndex);
 	}
 
+	// called by categories
 	function doSetSelectedIndex(a_newIndex:Number, a_keyboardOrMouse:Number)
 	{
 		if (DEBUG_LEVEL > 0) _global.skse.Log("DynamicList doSetSelectedIndex()");
@@ -146,6 +149,13 @@ class skyui.DynamicList extends MovieClip
 
 			if (oldIndex != -1) {
 				setEntry(getClipByIndex(_entryList[oldIndex].clipIndex),_entryList[oldIndex]);
+				// save last known item index
+				if (_entryList[oldIndex].savedItemIndex != undefined)
+				{
+					_global.skse.Log("DynamicScrollingList setting category " + _entryList[oldIndex].savedItemIndex + " to " + _parent._parent.ItemsList.scrollPosition);
+					_entryList[oldIndex].savedItemIndex = _parent._parent.ItemsList.scrollPosition;
+				}
+				_global.skse.Log("DynamicList doSetSelectedIndex category " + _entryList[oldIndex].text + " savedItemIndex = " + _entryList[oldIndex].savedItemIndex);
 			}
 
 			if (_selectedIndex != -1) {
