@@ -19,10 +19,14 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 	private var _entryHeight:Number;
 	
 	
-	private var _scrollTmp: Number = 0;
-	private var _scrollDelta: Number = 1;
-	private var _scrollMultiplier: Number = 0;
-	private var _scrollAccel: Number = 0.5;
+	private var _scrollTmp: Number;
+	private var _scrollDelta: Number;
+	
+	private var _isScrolling: Number;
+	private var _isFastScrolling: Number;
+
+	
+	private var _scrollDelay: Number;
 	
 	private var _config: Config;
 
@@ -37,6 +41,10 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 		_scrollPosition = 0;
 		_maxScrollPosition = 0;
 		_listIndex = 0;
+
+		_scrollTmp = 0;
+		// Time in ms before fast scroll is instantiated
+		_scrollDelay = 500;
 
 		_entryHeight = 28;
 		_listHeight = border._height;
@@ -61,16 +69,16 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 			_global.skse.Log("DynamicScrollingList onConfigLoad()");
 			
 		_config = event.config;
+		_scrollDelta = _config.General.scrollDelta;
+		
 		setScrollDelta(_maxListIndex);
 	}
 	
 	function setScrollDelta(maxPosition: Number): Void {
-		var scrollDelta: Number = _config.General.scrollDelta;
-		if (scrollDelta != undefined && scrollDelta != 0) {
-			if (Math.abs(scrollDelta) < maxPosition) {
-				_scrollDelta = scrollDelta;
-			} else {
-				_scrollDelta = (Math.abs(scrollDelta)/scrollDelta) * maxPosition;
+		if (_scrollDelta != undefined && _scrollDelta != 0) {
+			if (Math.abs(_scrollDelta) > maxPosition) {
+				// sign(scrollDelta) * maxPosition
+				_scrollDelta = (Math.abs(_scrollDelta)/_scrollDelta) * maxPosition;
 			}
 		} else {
 			_scrollDelta = 1;
@@ -97,28 +105,38 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 
 			processed = entry != undefined && entry.handleInput != undefined && entry.handleInput(details, pathToFocus.slice(1));
 			
-			if (!processed && GlobalFunc.IsKeyPressed(details)) {
+			if (!processed && (details.value == "keyDown" || details.value == "keyHold" || details.value == "keyUp")) {
 				
-				var _scroll : Boolean = details.navEquivalent == NavigationCode.UP || details.navEquivalent == NavigationCode.DOWN;
-				var _scrollPage: Boolean  = details.navEquivalent == NavigationCode.PAGE_UP || details.navEquivalent == NavigationCode.PAGE_DOWN;
-				var _scrollUp : Boolean = details.navEquivalent == NavigationCode.UP || details.navEquivalent == NavigationCode.PAGE_UP;
+				var scroll : Boolean = details.navEquivalent == NavigationCode.UP || details.navEquivalent == NavigationCode.DOWN;
+				var scrollPage: Boolean  = details.navEquivalent == NavigationCode.PAGE_UP || details.navEquivalent == NavigationCode.PAGE_DOWN;
+				var scrollUp : Boolean = details.navEquivalent == NavigationCode.UP || details.navEquivalent == NavigationCode.PAGE_UP;
 				
 				var _changeCat : Boolean = details.navEquivalent == NavigationCode.LEFT || details.navEquivalent == NavigationCode.RIGHT;
 				
 				if (details.value == "keyDown")  {
-					if (_scroll || _scrollPage) {
-						_scrollMultiplier = 0;
-						_scrollUp ? moveSelectionUp(_scrollPage) : moveSelectionDown(_scrollPage);
+				
+					if (scroll || scrollPage) {
+						// Scroll up or down once
+						scrollUp ? moveSelectionUp(scrollPage) : moveSelectionDown(scrollPage);
+						if (_isScrolling == undefined) {
+							// Start fast scrolling after a delay of _scrollDelay milliseconds
+							// _global.setTimeout(objectReference:Object, methodName:String, interval:Number, [param1:Object, param2, ..., paramN]) : Number
+							// Undocumented
+							_isScrolling = _global.setTimeout(this, "scrollingStart", _scrollDelay, scrollUp, scrollPage);
+						} else {
+							// Stop scrolling if another scroll button is pressed
+							scrollingStop();
+						}
 						processed = true;
+						
 					} else if (!_bDisableSelection && details.navEquivalent == NavigationCode.ENTER) {
+						scrollingStop();
 						onItemPress();
 						processed = true;
 					}
-				} else if (details.value == "keyHold") {
-					if (_scroll || _scrollPage) {
-						var _ammountToScroll = Math.floor(_scrollMultiplier)
-						_scrollUp ? moveSelectionUp(_scrollPage, _ammountToScroll) : moveSelectionDown(_scrollPage, _ammountToScroll);
-						_scrollMultiplier = _scrollMultiplier + _scrollAccel;
+				} else if (details.value == "keyUp") {
+					if (scroll || scrollPage) {
+						scrollingStop();
 						processed = true;
 					}
 				}
@@ -126,6 +144,24 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 		}
 		return processed;
 	}
+
+function scrollingStart(scrollUp: Boolean, scrollPage: Boolean) {
+	var scrollDirection: String = (scrollUp) ? "moveSelectionUp" : "moveSelectionDown";
+	_isFastScrolling = setInterval(this, scrollDirection, 0, scrollPage);
+}
+
+function scrollingStop(): Void {
+	if (_isScrolling  != undefined) {
+		// Interrupts the _isScrolling timeout if it's started
+		_global.clearTimeout(_isScrolling);
+		delete(_isScrolling);
+	}
+	if (_isFastScrolling  != undefined) {
+		// Stops fast scrolling from continuing
+		clearInterval(_isFastScrolling);
+		delete(_isFastScrolling);
+	}
+}
 	
 	function onMouseWheel(delta)
 	{
