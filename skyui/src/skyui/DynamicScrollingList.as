@@ -98,45 +98,42 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 			processed = entry != undefined && entry.handleInput != undefined && entry.handleInput(details, pathToFocus.slice(1));
 			
 			if (!processed && GlobalFunc.IsKeyPressed(details)) {
-				if (details.navEquivalent == NavigationCode.UP || details.navEquivalent == NavigationCode.DOWN || details.navEquivalent == NavigationCode.PAGE_UP || details.navEquivalent == NavigationCode.PAGE_DOWN) {
-					var _scrollPage: Boolean  = details.navEquivalent == NavigationCode.PAGE_DOWN || details.navEquivalent == NavigationCode.PAGE_UP;
-					var _scrollUp : Boolean = details.navEquivalent == NavigationCode.UP || details.navEquivalent == NavigationCode.PAGE_UP;
-					if (details.value == "keyDown")  {
+				
+				var _scroll : Boolean = details.navEquivalent == NavigationCode.UP || details.navEquivalent == NavigationCode.DOWN;
+				var _scrollPage: Boolean  = details.navEquivalent == NavigationCode.PAGE_UP || details.navEquivalent == NavigationCode.PAGE_DOWN;
+				var _scrollUp : Boolean = details.navEquivalent == NavigationCode.UP || details.navEquivalent == NavigationCode.PAGE_UP;
+				
+				var _changeCat : Boolean = details.navEquivalent == NavigationCode.LEFT || details.navEquivalent == NavigationCode.RIGHT;
+				
+				if (details.value == "keyDown")  {
+					if (_scroll || _scrollPage) {
 						_scrollMultiplier = 0;
 						_scrollUp ? moveSelectionUp(_scrollPage) : moveSelectionDown(_scrollPage);
 						processed = true;
-					} else if (details.value == "keyHold") {
-						var i: Number = 0;
-						while (i <= Math.floor(_scrollPage ? 0 : _scrollMultiplier)) {
-							_scrollUp ? moveSelectionUp(_scrollPage) : moveSelectionDown(_scrollPage);
-							i++;
-						}
+					} else if (!_bDisableSelection && details.navEquivalent == NavigationCode.ENTER) {
+						onItemPress();
+						processed = true;
+					}
+				} else if (details.value == "keyHold") {
+					if (_scroll || _scrollPage) {
+						var _ammountToScroll = Math.floor(_scrollMultiplier)
+						_scrollUp ? moveSelectionUp(_scrollPage, _ammountToScroll) : moveSelectionDown(_scrollPage, _ammountToScroll);
 						_scrollMultiplier = _scrollMultiplier + _scrollAccel;
 						processed = true;
 					}
-				} else if (!_bDisableSelection && details.navEquivalent == NavigationCode.ENTER) {
-					// Handles E (Activate)
-					onItemPress();
-					processed = true;
 				}
 			}
 		}
 		return processed;
 	}
-
+	
 	function onMouseWheel(delta)
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("DynamicScrollingList onMouseWheel()");
 		if (!_bDisableInput) {
 			for (var target = Mouse.getTopMostEntity(); target && target != undefined; target = target._parent) {
 				if (target == this && delta != 0) {
-					var entriesToScroll: Number;
-					if (delta < 0) {
-						_scrollTmp = _scrollTmp + _scrollDelta;
-					} else {
-						_scrollTmp = _scrollTmp - _scrollDelta;
-					}
-					entriesToScroll = Math.floor(_scrollTmp);
+					_scrollTmp = (delta < 0) ? _scrollTmp + _scrollDelta : _scrollTmp - _scrollDelta;
+					var entriesToScroll: Number = Math.floor(_scrollTmp);
 					_scrollTmp = _scrollTmp - entriesToScroll;
 					if (entriesToScroll <= -1 || entriesToScroll >= 1) {
 						scrollPosition = scrollPosition + entriesToScroll;
@@ -146,6 +143,7 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 			_bMouseDrivenNav = true;
 		}
 	}
+	
 
 	function doSetSelectedIndex(a_newIndex:Number, a_keyboardOrMouse:Number)
 	{
@@ -291,9 +289,11 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 		updateScrollbar();
 	}
 
+	// These need to be updated
+	//-------------------------------------//
 	function moveSelectionUp(a_bNextPage:Boolean)
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("DynamicScrollingList moveSelecttionUp()");		
+		if (DEBUG_LEVEL > 0) _global.skse.Log("DynamicScrollingList moveSelecttionUp()");
 		var lastPosition = _scrollPosition;
 		var d = a_bNextPage? _listIndex : 1;
 
@@ -327,6 +327,7 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 		_bMouseDrivenNav = false;
 		dispatchEvent({type:"listMovedDown", index:_selectedIndex, scrollChanged:lastPosition != _scrollPosition});
 	}
+	//----------------------------//
 
 	function selectDefaultIndex(a_bBottom:Boolean)
 	{

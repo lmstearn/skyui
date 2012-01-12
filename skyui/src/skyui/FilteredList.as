@@ -147,16 +147,27 @@ class skyui.FilteredList extends skyui.DynamicScrollingList
 		updateScrollbar();
 	}
 	
-	function moveSelectionUp(a_bScrollPage:Boolean)
+	// Could make these into one function...
+	function moveSelectionUp(a_bScrollPage:Boolean, ammountToScroll: Number)
 	{
 		if (DEBUG_LEVEL > 0) _global.skse.Log("FilteredList moveSelectionUp()");
+		
+		ammountToScroll = (!ammountToScroll || ammountToScroll <= 0) ? 1 : ammountToScroll; //Math.abs(Math.floor(ammountToScroll));
+		
 		if (!_bDisableSelection && !a_bScrollPage) {
 			if (_selectedIndex == -1) {
 				selectDefaultIndex(false);
-			} else if (selectedEntry.filteredIndex > 0) {
-				doSetSelectedIndex(_filteredList[selectedEntry.filteredIndex - 1].unfilteredIndex,1);
-				_bMouseDrivenNav = false;
-				dispatchEvent({type:"listMovedUp", index:_selectedIndex, scrollChanged:true});
+			} else if (_selectedIndex != _filteredList[0].unfilteredIndex) {
+				// If you're not already at the top of the list.....
+				if (selectedEntry.filteredIndex - ammountToScroll > 0) {
+					doSetSelectedIndex(_filteredList[selectedEntry.filteredIndex - ammountToScroll].unfilteredIndex,1);
+					_bMouseDrivenNav = false;
+					dispatchEvent({type:"listMovedUp", index:_selectedIndex, scrollChanged:true});
+				} else {
+					doSetSelectedIndex(_filteredList[0].unfilteredIndex,1);
+					_bMouseDrivenNav = false;
+					dispatchEvent({type:"listMovedUp", index:_selectedIndex, scrollChanged:true});
+				}
 			}
 		} else if (a_bScrollPage) {
 			var t = scrollPosition - _listIndex;
@@ -167,16 +178,27 @@ class skyui.FilteredList extends skyui.DynamicScrollingList
 		}
 	}
 
-	function moveSelectionDown(a_bScrollPage:Boolean)
+	function moveSelectionDown(a_bScrollPage:Boolean, ammountToScroll: Number)
 	{
 		if (DEBUG_LEVEL > 0) _global.skse.Log("FilteredList moveSelectionDown()");
+		
+		ammountToScroll = (!ammountToScroll || ammountToScroll <= 0) ? 1 : ammountToScroll; //Math.abs(Math.floor(ammountToScroll));
+		
 		if (!_bDisableSelection && !a_bScrollPage) {
 			if (_selectedIndex == -1) {
 				selectDefaultIndex(true);
-			} else if (selectedEntry.filteredIndex < _filteredList.length - 1) {
-				doSetSelectedIndex(_filteredList[selectedEntry.filteredIndex + 1].unfilteredIndex,1);
-				_bMouseDrivenNav = false;
-				dispatchEvent({type:"listMovedDown", index:_selectedIndex, scrollChanged:true});
+			} else if (_selectedIndex != _filteredList[_filteredList.length - 1].unfilteredIndex) {
+				// If you're not already at the bottom of the list.....
+				if (selectedEntry.filteredIndex + ammountToScroll < _filteredList.length) {
+					doSetSelectedIndex(_filteredList[selectedEntry.filteredIndex + ammountToScroll].unfilteredIndex,1);
+					_bMouseDrivenNav = false;
+					dispatchEvent({type:"listMovedDown", index:_selectedIndex, scrollChanged:true});
+				} else {
+					// Select last selectable item
+					doSetSelectedIndex(_filteredList[_filteredList.length - 1].unfilteredIndex,1);
+					_bMouseDrivenNav = false;
+					dispatchEvent({type:"listMovedDown", index:_selectedIndex, scrollChanged:true});
+				}
 			}
 		} else if (a_bScrollPage) {
 			var t = scrollPosition + _listIndex;
