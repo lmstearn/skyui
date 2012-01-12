@@ -97,7 +97,7 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 
 			processed = entry != undefined && entry.handleInput != undefined && entry.handleInput(details, pathToFocus.slice(1));
 			
-			if (!processed) {
+			if (!processed && GlobalFunc.IsKeyPressed(details)) {
 				if (details.navEquivalent == NavigationCode.UP || details.navEquivalent == NavigationCode.DOWN || details.navEquivalent == NavigationCode.PAGE_UP || details.navEquivalent == NavigationCode.PAGE_DOWN) {
 					var _scrollPage: Boolean  = details.navEquivalent == NavigationCode.PAGE_DOWN || details.navEquivalent == NavigationCode.PAGE_UP;
 					var _scrollUp : Boolean = details.navEquivalent == NavigationCode.UP || details.navEquivalent == NavigationCode.PAGE_UP;
@@ -114,10 +114,12 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 						_scrollMultiplier = _scrollMultiplier + _scrollAccel;
 						processed = true;
 					}
+				} else if (!_bDisableSelection && details.navEquivalent == NavigationCode.ENTER) {
+					// Handles E (Activate)
+					onItemPress();
+					processed = true;
 				}
 			}
-			
-			
 		}
 		return processed;
 	}
