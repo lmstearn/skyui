@@ -430,14 +430,15 @@ class ItemMenu extends MovieClip
 		if (DEBUG_LEVEL > 0) _global.skse.Log("ItemMenu RestoreIndices() argument[0] = " + arguments[0] + " size = " + arguments.length);
 		
 		if (arguments[0] != undefined && arguments[0] != -1 && arguments.length != 1) {
+			_global.skse.Log("Setting entry " + InventoryLists_mc.CategoriesList._entryList[arguments[0]].text + " savedItemIndex to " + arguments[2]);
+			InventoryLists_mc.CategoriesList._entryList[arguments[0]].savedItemIndex = arguments[2];
+			_global.skse.Log("Setting entry " + InventoryLists_mc.CategoriesList._entryList[arguments[0]].text + " savedScrollPosition to " + arguments[1]);
+			InventoryLists_mc.CategoriesList._entryList[arguments[0]].savedScrollPosition = arguments[1];
 			InventoryLists_mc.CategoriesList.restoreSelectedEntry(arguments[0]);
-			// Restore Scroll Position
-			if (DEBUG_LEVEL > 0) _global.skse.Log("ItemMenu RestoreIndices restoring scrollposition " + arguments[1]);
-			InventoryLists_mc.ItemsList.RestoreScrollPosition(arguments[1]);			
 		} else {
 			InventoryLists_mc.CategoriesList.restoreSelectedEntry(1); // ALL
 		}
-		
+
 		var index;
 
 		// Saved category indices
@@ -469,7 +470,9 @@ class ItemMenu extends MovieClip
 		// save current selected category scroll position
 		_global.skse.Log("Saving category " + InventoryLists_mc.CategoriesList.selectedEntry.text);
 		a.push(InventoryLists_mc.ItemsList.scrollPosition);
-		
+		_global.skse.Log("Saving item list index " + InventoryLists_mc.ItemsList._selectedIndex);
+		// save current selected item
+		a.push(InventoryLists_mc.ItemsList._selectedIndex);
 		for (var i = 0; i < InventoryLists_mc.CategoriesList.entryList.length; i++)
 		{
 			if (InventoryLists_mc.CategoriesList.selectedIndex != i)

@@ -8,7 +8,6 @@ class skyui.InventoryColumnFormatter implements IColumnFormatter
 	private static var STATES = ["None", "Equipped", "LeftEquip", "RightEquip", "LeftAndRightEquip"];
 
 	private var _maxTextLength:Number;
-	private var _entryFormatColor:Number;
 	
 	private var _config;
 	
@@ -17,19 +16,8 @@ class skyui.InventoryColumnFormatter implements IColumnFormatter
 	function InventoryColumnFormatter()
 	{
 		_maxTextLength = 50;
-		_entryFormatColor = 0xFFFFFF;
-		
-		Config.instance.addEventListener("configLoad", this, "onConfigLoad");
 	}
 
-	function onConfigLoad(event)
-	{
-		_config = event.config;
-		var _customColor = _config.ItemList.entry.format.color;
-		if (_customColor != undefined)
-			entryFormatColor = _customColor;
-	}
-	
 	function set maxTextLength(a_length:Number)
 	{
 		if (DEBUG_LEVEL > 0) _global.skse.Log("InventoryColumnFormatter set maxTextLength()");
@@ -43,20 +31,10 @@ class skyui.InventoryColumnFormatter implements IColumnFormatter
 		if (DEBUG_LEVEL > 0) _global.skse.Log("InventoryColumnFormatter get maxTextLength()");
 		return _maxTextLength;
 	}
-	
-	function set entryFormatColor(a_color:Number)
-	{
-		_entryFormatColor = a_color;
-	}
-	
-	function get entryFormatColor():Number
-	{
-		return _entryFormatColor;
-	}
 
 	function formatEquipIcon(a_entryField:Object, a_entryObject:Object)
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("InventoryColumnFormatter formatEquipIcon()");
+		if (DEBUG_LEVEL > 1) _global.skse.Log("InventoryColumnFormatter formatEquipIcon()");
 		if (a_entryObject != undefined && a_entryObject.equipState != undefined) {
 			a_entryField.gotoAndStop(STATES[a_entryObject.equipState]);
 		} else {
@@ -132,7 +110,7 @@ class skyui.InventoryColumnFormatter implements IColumnFormatter
 
 	function formatName(a_entryField:Object, a_entryObject:Object, a_entryClip:MovieClip)
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("InventoryColumnFormatter formatName()");
+		if (DEBUG_LEVEL > 1) _global.skse.Log("InventoryColumnFormatter formatName()");
 		if (a_entryObject.text != undefined) {
 
 			// Text
@@ -153,11 +131,10 @@ class skyui.InventoryColumnFormatter implements IColumnFormatter
 			a_entryField.autoSize = "left";
 			a_entryField.SetText(text);
 
-			_global.skse.Log("InventoryColumnFormatter color = " + _entryFormatColor);
 			if (a_entryObject.negativeEffect == true) {
 				a_entryField.textColor = a_entryObject.enabled == false ? 0x800000 : 0xFF0000;
-			} else {
-				a_entryField.textColor = a_entryObject.enabled == false ? 0x4C4C4C : _entryFormatColor;
+			} else if (a_entryObject.enabled == false) {
+				a_entryField.textColor = 0x4C4C4C;
 			}
 
 			// BestInClass icon
@@ -220,8 +197,8 @@ class skyui.InventoryColumnFormatter implements IColumnFormatter
 	{
 		if (a_entryObject.negativeEffect == true) {
 			a_entryField.textColor = a_entryObject.enabled == false ? 0x800000 : 0xFF0000;
-		} else {
-			a_entryField.textColor = a_entryObject.enabled == false ? 0x4C4C4C : _entryFormatColor;
+		} else if (a_entryObject.enabled == false) {
+				a_entryField.textColor = 0x4C4C4C;
 		}
 	}
 }

@@ -176,13 +176,13 @@ class InventoryLists extends MovieClip
 
 	function get CategoriesList()
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("InventoryLists get CategoriesList()");
+		if (DEBUG_LEVEL > 1) _global.skse.Log("InventoryLists get CategoriesList()");
 		return _CategoriesList;
 	}
 
 	function get ItemsList()
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("InventoryLists get ItemsList()");
+		if (DEBUG_LEVEL > 1) _global.skse.Log("InventoryLists get ItemsList()");
 		return _ItemsList;
 	}
 	
@@ -204,12 +204,6 @@ class InventoryLists extends MovieClip
 		}
 
 		_currentState = a_newState;
-	}
-
-	function RestoreCategoryIndex()
-	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("InventoryLists RestoreCategoryIndex()");
-		_CategoriesList.selectedIndex = _currCategoryIndex;
 	}
 
 	function ShowCategoriesList(a_bPlayBladeSound:Boolean)
@@ -236,33 +230,23 @@ class InventoryLists extends MovieClip
 	function showItemsList()
 	{
 		if (DEBUG_LEVEL > 0) _global.skse.Log("InventoryLists ShowItemsList()");
-		_currCategoryIndex = _CategoriesList.selectedIndex;
-
+		// set category label
 		_CategoryLabel.textField.SetText(_CategoriesList.selectedEntry.text);
-		_global.skse.Log("Category " + _CategoriesList.selectedEntry.text + " savedItemIndex = " + _CategoriesList.selectedEntry.savedItemIndex);
-		// Let's do this more elegant at some point.. :)
-		// Changing the sort filter might already trigger an update, so the final UpdateList is redudant
 
-		// Start with no selection
-		_ItemsList.selectedIndex = -1;
 		if (DEBUG_LEVEL > 1) _global.skse.Log("Category selectedEntry = " + _CategoriesList.selectedEntry.text);
 		if (_CategoriesList.selectedEntry != undefined) {
 			// Set filter type before update
 			if (DEBUG_LEVEL > 1) _global.skse.Log("CHANGE DETECTED! Setting filter flags to sort");
 			_typeFilter.itemFilter = _CategoriesList.selectedEntry.flag;
-			_currCategoryIndex = _CategoriesList.selectedIndex;
 			_ItemsList.disableScrollUpdate = true;
-			_ItemsList.RestoreScrollPosition(_CategoriesList.selectedEntry.savedItemIndex);
+			_ItemsList.RestoreScrollPosition(_CategoriesList.selectedEntry.savedScrollPosition);
 			_ItemsList.changeFilterFlag(_CategoriesList.selectedEntry.flag);
-		} else {
-			_ItemsList.UpdateList();
-		}
+			_ItemsList.doSetSelectedIndex(_CategoriesList.selectedEntry.savedItemIndex);
+		} 
 
-//		dispatchEvent({type:"showItemsList", index:_ItemsList.selectedIndex});
 		dispatchEvent({type:"itemHighlightChange", index:_ItemsList.selectedIndex});
 
 		_ItemsList.disableInput = false;
-		GameDelegate.call("PlaySound",["UIMenuFocus"]);
 	}
 
 	// Not needed anymore, items list always visible
@@ -361,8 +345,6 @@ class InventoryLists extends MovieClip
 	function doItemsSelectionChange(event)
 	{
 		if (DEBUG_LEVEL > 0) _global.skse.Log("InventoryLists onItemsSelectionChange()");
-		//_CategoriesList.selectedEntry.savedItemIndex = _ItemsList.scrollPosition;
-
 		dispatchEvent({type:"itemHighlightChange", index:event.index});
 
 		if (event.index != -1) {
@@ -410,7 +392,7 @@ class InventoryLists extends MovieClip
 		_CategoriesList.clearList();
 
 		for (var i = 0, index = 0; i < arguments.length; i = i + len, index++) {
-			var entry = {text:arguments[i + textOffset], flag:arguments[i + flagOffset], bDontHide:arguments[i + bDontHideOffset], savedItemIndex:0, filterFlag:arguments[i + bDontHideOffset] == true ? (1) : (0)};
+			var entry = {text:arguments[i + textOffset], flag:arguments[i + flagOffset], bDontHide:arguments[i + bDontHideOffset], savedItemIndex:-1, savedScrollPosition:0, filterFlag:arguments[i + bDontHideOffset] == true ? (1) : (0)};
 			_CategoriesList.entryList.push(entry);
 
 			if (entry.flag == 0) {

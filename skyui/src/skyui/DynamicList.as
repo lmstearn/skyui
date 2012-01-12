@@ -128,7 +128,7 @@ class skyui.DynamicList extends MovieClip
 
 	function get selectedIndex()
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("DynamicList get selectedIndex " + _selectedIndex);
+		if (DEBUG_LEVEL > 1) _global.skse.Log("DynamicList get selectedIndex " + _selectedIndex);
 		return _selectedIndex;
 	}
 
@@ -152,10 +152,13 @@ class skyui.DynamicList extends MovieClip
 				// save last known item index
 				if (_entryList[oldIndex].savedItemIndex != undefined)
 				{
-					_global.skse.Log("DynamicScrollingList setting category " + _entryList[oldIndex].savedItemIndex + " to " + _parent._parent.ItemsList.scrollPosition);
-					_entryList[oldIndex].savedItemIndex = _parent._parent.ItemsList.scrollPosition;
+					_global.skse.Log("DynamicScrollingList saving category " + _entryList[oldIndex].text + " scrollPosition to " + _parent._parent.ItemsList.scrollPosition);
+					_global.skse.Log("DynamicScrollingList saving ItemList selectedIndex = " + _parent._parent.ItemsList.selectedIndex);
+					if (_parent._parent.ItemsList.scrollPosition != undefined)
+						_entryList[oldIndex].savedScrollPosition = _parent._parent.ItemsList.scrollPosition;
+					_entryList[oldIndex].savedItemIndex = _parent._parent.ItemsList._selectedIndex;
 				}
-				_global.skse.Log("DynamicList doSetSelectedIndex category " + _entryList[oldIndex].text + " savedItemIndex = " + _entryList[oldIndex].savedItemIndex);
+				_global.skse.Log("DynamicList category " + _entryList[oldIndex].text + " savedItemIndex = " + _entryList[oldIndex].savedItemIndex + " scrollPosition = " + _entryList[oldIndex].savedScrollPosition);
 			}
 
 			if (_selectedIndex != -1) {
