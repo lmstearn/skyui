@@ -209,8 +209,8 @@ class skyui.ConfigurableList extends skyui.FilteredList
 				break;
 			}
 		}
-		
-		if (_activeViewIndex == -1 || _lastViewIndex == _activeViewIndex) {
+		// Since columns are updated last, we must always update view
+		if (_activeViewIndex == -1) {
 			return;
 		}
 		
@@ -265,7 +265,7 @@ class skyui.ConfigurableList extends skyui.FilteredList
 	function handleInput(details, pathToFocus):Boolean
 	{
 		if (DEBUG_LEVEL > 0) _global.skse.Log("ConfigurableList handleInput()");
-		var processed = super.handleInput(details, pathToFocus);;
+		var processed = super.handleInput(details, pathToFocus);
 
 		if (!_bDisableInput && !processed && _platform != 0) {
 
@@ -541,7 +541,7 @@ class skyui.ConfigurableList extends skyui.FilteredList
 		
 		// sortChange might not always trigger an update, so we have to make sure the list is updated,
 		// even if that means we update it twice.
-		UpdateList();
+		//UpdateList();
 	}
 	
 	function updateSortParams()

@@ -4,6 +4,7 @@ class skyui.ItemTypeFilter implements skyui.IFilter
 {
 	private var _itemFilter;
 	private var _filterArray:Array;
+	private var _bDoNotUpdate:Boolean;
 
 	private var _matcherFunc:Function;
 
@@ -17,6 +18,7 @@ class skyui.ItemTypeFilter implements skyui.IFilter
 	{
 		_itemFilter = 0xFFFFFFFF;
 		_matcherFunc = entryMatchesFilter;
+		_bDoNotUpdate = false;
 		
 		EventDispatcher.initialize(this);
 	}
@@ -33,7 +35,15 @@ class skyui.ItemTypeFilter implements skyui.IFilter
 		}
 		
 		_itemFilter = a_newFilter;
+		if (_bDoNotUpdate == false)
 			dispatchEvent({type:"filterChange"});
+		_bDoNotUpdate = false;
+	}
+	
+	function changeFilterFlag(a_newFilter:Number, a_bDoNotUpdate:Boolean)
+	{
+		_bDoNotUpdate = a_bDoNotUpdate;
+		itemFilter = a_newFilter;
 	}
 	
 	function setPartitionedFilterMode(a_bPartition:Boolean)

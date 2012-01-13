@@ -339,7 +339,7 @@ class ItemMenu extends MovieClip
 	{
 		if (DEBUG_LEVEL > 0) _global.skse.Log("ItemMenu ShouldProcessItemsListInput()");
 		var process = bFadedIn == true && InventoryLists_mc.currentState == InventoryLists.SHOW_PANEL && InventoryLists_mc.ItemsList.numUnfilteredItems > 0 && !InventoryLists_mc.ItemsList.disableSelection && !InventoryLists_mc.ItemsList.disableInput;
-
+		
 		if (process && _platform == 0 && abCheckIfOverRect) {
 			var e = Mouse.getTopMostEntity();
 			var found = false;
@@ -353,7 +353,7 @@ class ItemMenu extends MovieClip
 			}
 			
 			process = process && found;
-			if (DEBUG_LEVEL > 1) _global.skse.Log("ItemMenu ShouldProcessItemsListInput() process =  " + process + ", found = " + found);
+			if (DEBUG_LEVEL > 0) _global.skse.Log("ItemMenu ShouldProcessItemsListInput() process =  " + process + ", found = " + found);
 		}
 		return process;
 	}

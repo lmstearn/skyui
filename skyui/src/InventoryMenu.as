@@ -196,6 +196,7 @@ class InventoryMenu extends ItemMenu
 		}
 	}
 
+	// called when pressing E(Activate) or pressing scrollbar
 	function AttemptEquip(a_slot, a_bCheckOverList)
 	{
 		if (DEBUG_LEVEL > 0) _global.skse.Log("InventoryMenu AttemptEquip()");
@@ -220,8 +221,16 @@ class InventoryMenu extends ItemMenu
 	function AttemptChargeItem()
 	{
 		if (DEBUG_LEVEL > 0) _global.skse.Log("InventoryMenu AttemptChargeItem()");
+		/*
+		 *	Fix for RB crash.
+		 *  If we press RB to charge an item, cancel then switch categories(no item selected)
+		 *	and press RB again, the game will attempt to charge the same item again and crash because 
+		 *  it is not part of the new category.
+		 */
+		 if (InventoryLists_mc.ItemsList.selectedEntry.filterFlag != InventoryLists_mc.CategoriesList.selectedEntry.flag)
+		 	return;
 		if (ShouldProcessItemsListInput(false) && ItemCard_mc.itemInfo.charge != undefined && ItemCard_mc.itemInfo.charge < 100) {
-			if (DEBUG_LEVEL > 1) _global.skse.Log("InventoryMenu AttemtChargeItem() GameDelegate.call ShowSoulGemList");
+			if (DEBUG_LEVEL > 0) _global.skse.Log("InventoryMenu AttemtChargeItem() GameDelegate.call ShowSoulGemList");
 			GameDelegate.call("ShowSoulGemList", []);
 		}
 	}

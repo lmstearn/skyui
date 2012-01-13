@@ -149,16 +149,6 @@ class skyui.DynamicList extends MovieClip
 
 			if (oldIndex != -1) {
 				setEntry(getClipByIndex(_entryList[oldIndex].clipIndex),_entryList[oldIndex]);
-				// save last known item index
-				if (_entryList[oldIndex].savedItemIndex != undefined)
-				{
-					_global.skse.Log("DynamicScrollingList saving category " + _entryList[oldIndex].text + " scrollPosition to " + _parent._parent.ItemsList.scrollPosition);
-					_global.skse.Log("DynamicScrollingList saving ItemList selectedIndex = " + _parent._parent.ItemsList.selectedIndex);
-					if (_parent._parent.ItemsList.scrollPosition != undefined)
-						_entryList[oldIndex].savedScrollPosition = _parent._parent.ItemsList.scrollPosition;
-					_entryList[oldIndex].savedItemIndex = _parent._parent.ItemsList._selectedIndex;
-				}
-				_global.skse.Log("DynamicList category " + _entryList[oldIndex].text + " savedItemIndex = " + _entryList[oldIndex].savedItemIndex + " scrollPosition = " + _entryList[oldIndex].savedScrollPosition);
 			}
 
 			if (_selectedIndex != -1) {

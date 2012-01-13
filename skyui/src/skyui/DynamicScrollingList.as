@@ -7,7 +7,7 @@ import skyui.Config;
 
 class skyui.DynamicScrollingList extends skyui.DynamicList
 {
-	private var _bDoNotUpdate:Boolean;
+	private var _savedScrollPosition:Number;
 	
 	private var _scrollPosition:Number;
 	private var _maxScrollPosition:Number;
@@ -37,7 +37,8 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 	function DynamicScrollingList()
 	{
 		super();
-
+		
+		_savedScrollPosition = 0;
 		_scrollPosition = 0;
 		_maxScrollPosition = 0;
 		_listIndex = 0;
@@ -73,6 +74,12 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 		
 		setScrollDelta(_maxListIndex);
 	}
+
+	function onScroll(event)
+	{
+		if (DEBUG_LEVEL > 1) _global.skse.Log("DynamicScrollingList onScroll()");
+		updateScrollPosition(Math.floor(event.position + 0.500000));
+	}
 	
 	function setScrollDelta(maxPosition: Number): Void {
 		if (_scrollDelta != undefined && _scrollDelta != 0) {
@@ -107,9 +114,9 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 			
 			if (!processed && (details.value == "keyDown" || details.value == "keyHold" || details.value == "keyUp")) {
 				
-				var scroll : Boolean = details.navEquivalent == NavigationCode.UP || details.navEquivalent == NavigationCode.DOWN;
-				var scrollPage: Boolean  = details.navEquivalent == NavigationCode.PAGE_UP || details.navEquivalent == NavigationCode.PAGE_DOWN;
-				var scrollUp : Boolean = details.navEquivalent == NavigationCode.UP || details.navEquivalent == NavigationCode.PAGE_UP;
+				var scroll:Boolean = details.navEquivalent == NavigationCode.UP || details.navEquivalent == NavigationCode.DOWN;
+				var scrollPage:Boolean  = details.navEquivalent == NavigationCode.PAGE_UP || details.navEquivalent == NavigationCode.PAGE_DOWN;
+				var scrollUp:Boolean = details.navEquivalent == NavigationCode.UP || details.navEquivalent == NavigationCode.PAGE_UP;
 				
 				var _changeCat : Boolean = details.navEquivalent == NavigationCode.LEFT || details.navEquivalent == NavigationCode.RIGHT;
 				
@@ -219,15 +226,10 @@ function scrollingStop(): Void {
 	{
 		return _maxScrollPosition;
 	}
-	
-	function get disableScrollUpdate()
+
+	function set savedScrollPosition(a_position:Number)
 	{
-		return _bDoNotUpdate;
-	}
-	
-	function set disableScrollUpdate(a_bFlag)
-	{
-		_bDoNotUpdate = a_bFlag;		
+		_savedScrollPosition = a_position;
 	}
 
 	function set scrollPosition(a_newPosition:Number)
@@ -242,7 +244,9 @@ function scrollingStop(): Void {
 			}
 			
 			if (scrollbar != undefined) {
-				if (DEBUG_LEVEL > 1) _global.skse.Log("old scrollbar position = " + scrollbar.position);
+				if (DEBUG_LEVEL > 1) _global.skse.Log("updating scroll position = " + _scrollPosition);
+				// this is responsible for updating the thumb position on scrollbar 
+				// so it's important we call this
 				scrollbar.position = a_newPosition;
 			} else {
 				if (DEBUG_LEVEL > 1) _global.skse.Log("scrollbar is undefined, calling updateScrollPosition");
@@ -252,21 +256,26 @@ function scrollingStop(): Void {
 	}
 
 	// called when pressing mouse button on scrollbar and moving up or down
+	// Note: if this is called directly, it will break onScroll
 	function updateScrollPosition(a_position:Number)
 	{
 		if (DEBUG_LEVEL > 0) _global.skse.Log("DynamicScrollingList updateScrollPosition()" + " currentScrollPos = " + _scrollPosition + ", new scroll pos = " + a_position);
 		_scrollPosition = a_position;
-		if (_bDoNotUpdate == false)
-			UpdateList();
-		_bDoNotUpdate = false;
+		UpdateList();
 	}
 
 	function updateScrollbar()
 	{
 		if (DEBUG_LEVEL > 0) _global.skse.Log("DynamicScrollingList updateScrollbar()");
 		if (scrollbar != undefined) {
-			scrollbar._visible = _maxScrollPosition > 0;
+			if (DEBUG_LEVEL > 1) _global.skse.Log("updating scrollbar properties...");
+			scrollbar._visible = false;
 			scrollbar.setScrollProperties(_maxListIndex,0,_maxScrollPosition);
+			scrollbar._visible = _maxScrollPosition > 0;
+			// if category has saved scroll position, restore it
+			if (_savedScrollPosition > 0)
+				_scrollPosition = _savedScrollPosition;
+			scrollbar.position = _scrollPosition;
 		}
 	}
 
@@ -403,12 +412,8 @@ function scrollingStop(): Void {
 		}
 	}
 
-	function onScroll(event)
-	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("DynamicScrollingList onScroll()");
-		updateScrollPosition(Math.floor(event.position + 0.500000));
-	}
-
+	// this function needs to be called after calculateMaxScrollPosition or else it will reset the saved
+	// scrollposition to 0
 	function RestoreScrollPosition(a_newPosition)
 	{
 		if (DEBUG_LEVEL > 0) _global.skse.Log("DynamicScrollingList RestoreScrollPosition() pos = " + a_newPosition);
