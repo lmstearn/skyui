@@ -6,7 +6,7 @@ import gfx.managers.FocusHandler;
 import Shared.GlobalFunc;
 
 import skyui.CategoryList;
-import skyui.FormattedItemList; // This scrollingStop(); on any key press
+import skyui.FormattedItemList;
 import skyui.ItemTypeFilter;
 import skyui.ItemNameFilter;
 import skyui.ItemSortingFilter;
@@ -144,20 +144,20 @@ class InventoryLists extends MovieClip
 			if (GlobalFunc.IsKeyPressed(details)) {
 				
 				if (details.navEquivalent == NavigationCode.LEFT) {
-                    _ItemsList.scrollingRepeatStop();
+					_ItemsList.scrollingRepeatStop();
 					_CategoriesList.moveSelectionLeft();
 					bCaught = true;
 
 				} else if (details.navEquivalent == NavigationCode.RIGHT) {
-                    _ItemsList.scrollingRepeatStop();
+					_ItemsList.scrollingRepeatStop();
 					_CategoriesList.moveSelectionRight();
 					bCaught = true;
 
 				// Search hotkey (default space)
 				} else if (details.code == _searchKey) {
-                    _ItemsList.scrollingRepeatStop();
-					bCaught = true;
+					_ItemsList.scrollingRepeatStop();
 					_SearchWidget.startInput();
+					bCaught = true;
 					
 				// Toggle tab (default ALT)
 				} else if (_TabBar != undefined && (details.code == _tabToggleKey || (details.navEquivalent == NavigationCode.GAMEPAD_BACK && details.code != 8))) {
