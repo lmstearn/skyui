@@ -176,7 +176,7 @@ class skyui.FilteredList extends skyui.DynamicScrollingList
 			var oldIndex = _selectedIndex;
 			_selectedIndex = a_newIndex;
 
-			if (oldIndex != -1 && _entryList[oldIndex].clipIndex != undefined) {
+			if (oldIndex != -1 && _entryList[oldIndex].clipIndex != undefined && _entryList[oldIndex].filteredIndex != undefined) {
 				setEntry(getClipByIndex(_entryList[oldIndex].clipIndex), _entryList[oldIndex]);
 			}
 

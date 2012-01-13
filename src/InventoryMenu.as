@@ -209,6 +209,14 @@ class InventoryMenu extends ItemMenu
 
 	function AttemptChargeItem()
 	{
+		/*
+		 *	Fix for RB crash.
+		 *  If we press RB to charge an item, cancel then switch categories(no item selected)
+		 *	and press RB again, the game will attempt to charge the same item again and crash because 
+		 *  it is not part of the new category.
+		 */
+		 if (InventoryLists_mc.ItemsList.selectedEntry.filterFlag != InventoryLists_mc.CategoriesList.selectedEntry.flag)
+		 	return;
 		if (ShouldProcessItemsListInput(false) && ItemCard_mc.itemInfo.charge != undefined && ItemCard_mc.itemInfo.charge < 100) {
 			GameDelegate.call("ShowSoulGemList", []);
 		}

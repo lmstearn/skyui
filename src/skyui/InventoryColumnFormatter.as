@@ -8,12 +8,11 @@ class skyui.InventoryColumnFormatter implements IColumnFormatter
 
 	private var _maxTextLength:Number;
 	
-	
 	function InventoryColumnFormatter()
 	{
 		_maxTextLength = 50;
 	}
-	
+
 	function set maxTextLength(a_length:Number)
 	{
 		if (a_length > 3) {
@@ -125,8 +124,8 @@ class skyui.InventoryColumnFormatter implements IColumnFormatter
 
 			if (a_entryObject.negativeEffect == true) {
 				a_entryField.textColor = a_entryObject.enabled == false ? 0x800000 : 0xFF0000;
-			} else {
-				a_entryField.textColor = a_entryObject.enabled == false ? 0x4C4C4C : 0xFFFFFF;
+			} else if (a_entryObject.enabled == false) {
+				a_entryField.textColor = 0x4C4C4C;
 			}
 
 			// BestInClass icon
@@ -189,8 +188,8 @@ class skyui.InventoryColumnFormatter implements IColumnFormatter
 	{
 		if (a_entryObject.negativeEffect == true) {
 			a_entryField.textColor = a_entryObject.enabled == false ? 0x800000 : 0xFF0000;
-		} else {
-			a_entryField.textColor = a_entryObject.enabled == false ? 0x4C4C4C : 0xFFFFFF;
+		} else if (a_entryObject.enabled == false) {
+				a_entryField.textColor = 0x4C4C4C;
 		}
 	}
 }

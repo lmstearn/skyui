@@ -71,8 +71,8 @@ class skyui.MagicColumnFormatter extends InventoryColumnFormatter
 
 			if (a_entryObject.negativeEffect == true || a_entryObject.isStealing == true) {
 				a_entryField.textColor = a_entryObject.enabled == false ? 0x800000 : 0xFF0000;
-			} else {
-				a_entryField.textColor = a_entryObject.enabled == false ? 0x4C4C4C : 0xFFFFFF;
+			} else if (a_entryObject.enabled == false) {
+				a_entryField.textColor = 0x4C4C4C;
 			}
 
 			// Fav icon

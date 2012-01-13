@@ -29,7 +29,6 @@ class ItemMenu extends MovieClip
 
 	// API
 	var bFadedIn:Boolean;
-	
 
 	function ItemMenu()
 	{
@@ -377,6 +376,8 @@ class ItemMenu extends MovieClip
 	function RestoreIndices()
 	{
 		if (arguments[0] != undefined && arguments[0] != -1 && arguments.length != 1) {
+			InventoryLists_mc.CategoriesList._entryList[arguments[0]].savedItemIndex = arguments[2];
+			InventoryLists_mc.CategoriesList._entryList[arguments[0]].savedScrollPosition = arguments[1];
 			InventoryLists_mc.CategoriesList.restoreSelectedEntry(arguments[0]);
 		} else {
 			InventoryLists_mc.CategoriesList.restoreSelectedEntry(1); // ALL
@@ -385,7 +386,7 @@ class ItemMenu extends MovieClip
 		var index;
 
 		// Saved category indices
-		for (index = 1; index < arguments.length && index < InventoryLists_mc.CategoriesList.entryList.length; index++) {
+		for (index = 2; index < arguments.length && index < InventoryLists_mc.CategoriesList.entryList.length; index++) {
 			InventoryLists_mc.CategoriesList.entryList[index - 1].savedItemIndex = arguments[index];
 		}
 		
@@ -406,9 +407,17 @@ class ItemMenu extends MovieClip
 	{
 		var a = new Array();
 		
+		// save current selected category
 		a.push(InventoryLists_mc.CategoriesList.selectedIndex);
+		// save current selected category scroll position
+		a.push(InventoryLists_mc.ItemsList.scrollPosition);
+		// save current selected item
+		a.push(InventoryLists_mc.ItemsList._selectedIndex);
+		
 		for (var i = 0; i < InventoryLists_mc.CategoriesList.entryList.length; i++) {
-			a.push(InventoryLists_mc.CategoriesList.entryList[i].savedItemIndex);
+			if (InventoryLists_mc.CategoriesList.selectedIndex != i) {
+				a.push(0);
+			}
 		}
 		
 		// Restarted == false

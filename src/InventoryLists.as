@@ -131,7 +131,7 @@ class InventoryLists extends MovieClip
 	function handleInput(details, pathToFocus)
 	{
 		var bCaught = false;
-
+		
 		if (_currentState == SHOW_PANEL) {
 			if (GlobalFunc.IsKeyPressed(details)) {
 				
@@ -220,37 +220,24 @@ class InventoryLists extends MovieClip
 		gotoAndPlay("PanelHide");
 		GameDelegate.call("PlaySound",["UIMenuBladeCloseSD"]);
 	}
-	
+
 	function showItemsList()
 	{
 		_currCategoryIndex = _CategoriesList.selectedIndex;
-
+		// set category label
 		_CategoryLabel.textField.SetText(_CategoriesList.selectedEntry.text);
-
-		// Let's do this more elegant at some point.. :)
-		// Changing the sort filter might already trigger an update, so the final UpdateList is redudant
-
-		// Start with no selection
-		_ItemsList.selectedIndex = -1;
-
+		
 		if (_CategoriesList.selectedEntry != undefined) {
-			// Set filter type before update
-			_typeFilter.itemFilter = _CategoriesList.selectedEntry.flag;
-
-			_currCategoryIndex = _CategoriesList.selectedIndex;
+			_typeFilter.changeFilterFlag(_CategoriesList.selectedEntry.flag, true);
+			_ItemsList.savedScrollPosition = _CategoriesList.selectedEntry.savedScrollPosition;
 			_ItemsList.changeFilterFlag(_CategoriesList.selectedEntry.flag);
-
-
-			//  _ItemsList.RestoreScrollPosition(_CategoriesList.selectedEntry.savedItemIndex);
-		} else {
-			_ItemsList.UpdateList();
-		}
-
-//		dispatchEvent({type:"showItemsList", index:_ItemsList.selectedIndex});
+			if (_CategoriesList.selectedEntry.savedItemIndex != -1)
+				_ItemsList.doSetSelectedIndex(_CategoriesList.selectedEntry.savedItemIndex);
+		} 
+		
 		dispatchEvent({type:"itemHighlightChange", index:_ItemsList.selectedIndex});
-
+		
 		_ItemsList.disableInput = false;
-		GameDelegate.call("PlaySound",["UIMenuFocus"]);
 	}
 
 	// Not needed anymore, items list always visible
@@ -274,7 +261,7 @@ class InventoryLists extends MovieClip
 	function onCategoriesListPress()
 	{
 	}
-	
+
 	function onTabPress(event)
 	{
 		if (_CategoriesList.disableSelection || _CategoriesList.disableInput || _ItemsList.disableSelection || _ItemsList.disableInput) {
@@ -329,6 +316,13 @@ class InventoryLists extends MovieClip
 
 	function doCategorySelectionChange(event)
 	{
+		// save current category info before changing
+		if (_CategoriesList.entryList[_currCategoryIndex] != undefined) {
+			if (_ItemsList.scrollPosition != undefined)
+				_CategoriesList.entryList[_currCategoryIndex].savedScrollPosition = _ItemsList.scrollPosition;
+			_CategoriesList.entryList[_currCategoryIndex].savedItemIndex = _ItemsList.selectedIndex;
+		}		
+
 		dispatchEvent({type:"categoryChange", index:event.index});
 
 		if (event.index != -1) {
@@ -338,8 +332,6 @@ class InventoryLists extends MovieClip
 
 	function doItemsSelectionChange(event)
 	{
-		_CategoriesList.selectedEntry.savedItemIndex = _ItemsList.scrollPosition;
-
 		dispatchEvent({type:"itemHighlightChange", index:event.index});
 
 		if (event.index != -1) {
@@ -349,6 +341,12 @@ class InventoryLists extends MovieClip
 
 	function onSortChange(event)
 	{
+		// reset scroll position to top when sorting and unselect item
+		if (_ItemsList.numUnfilteredItems > 0 && _ItemsList.selectedIndex != -1) {
+			_ItemsList.scrollPosition = 0;
+			_ItemsList.selectedIndex = -1;
+			dispatchEvent({type:"itemHighlightChange", index:-1});
+		}
 		_sortFilter.setSortBy(event.attributes, event.options);
 	}
 
@@ -382,7 +380,7 @@ class InventoryLists extends MovieClip
 		_CategoriesList.clearList();
 
 		for (var i = 0, index = 0; i < arguments.length; i = i + len, index++) {
-			var entry = {text:arguments[i + textOffset], flag:arguments[i + flagOffset], bDontHide:arguments[i + bDontHideOffset], savedItemIndex:0, filterFlag:arguments[i + bDontHideOffset] == true ? (1) : (0)};
+			var entry = {text:arguments[i + textOffset], flag:arguments[i + flagOffset], bDontHide:arguments[i + bDontHideOffset], savedItemIndex:-1, savedScrollPosition:0, filterFlag:arguments[i + bDontHideOffset] == true ? (1) : (0)};
 			_CategoriesList.entryList.push(entry);
 
 			if (entry.flag == 0) {
