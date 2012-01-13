@@ -6,7 +6,7 @@ import gfx.managers.FocusHandler;
 import Shared.GlobalFunc;
 
 import skyui.CategoryList;
-import skyui.FormattedItemList;
+import skyui.FormattedItemList; // This scrollingStop(); on any key press
 import skyui.ItemTypeFilter;
 import skyui.ItemNameFilter;
 import skyui.ItemSortingFilter;
