@@ -26,7 +26,9 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 	private var _isFastScrolling: Number;
 
 	
-	private var _scrollDelay: Number;
+	private var _scrollRepeaterDelay: Number;
+	private var _scrollRepeatDelay: Number;
+	private var _scrollRepeatPageDelay: Number;
 	
 	private var _config: Config;
 
@@ -45,7 +47,9 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 
 		_scrollTmp = 0;
 		// Time in ms before fast scroll is instantiated
-		_scrollDelay = 500;
+		_scrollRepeaterDelay = 500;
+		_scrollRepeatDelay = 0;
+		_scrollRepeatPageDelay = 250;
 
 		_entryHeight = 28;
 		_listHeight = border._height;
@@ -125,25 +129,26 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 					if (scroll || scrollPage) {
 						// Scroll up or down once
 						scrollUp ? moveSelectionUp(scrollPage) : moveSelectionDown(scrollPage);
-						if (_isScrolling == undefined) {
-							// Start fast scrolling after a delay of _scrollDelay milliseconds
-							// _global.setTimeout(objectReference:Object, methodName:String, interval:Number, [param1:Object, param2, ..., paramN]) : Number
-							// Undocumented
-							_isScrolling = _global.setTimeout(this, "scrollingStart", _scrollDelay, scrollUp, scrollPage);
-						} else {
-							// Stop scrolling if another scroll button is pressed
-							scrollingStop();
+						if (_isScrolling != undefined) {
+							//Stop previous scrolling, if any
+							scrollingRepeatStop();
 						}
+						// Start fast scrolling after a delay of _scrollRepeaterDelay milliseconds
+						// Undocumented
+						// _global.setTimeout(objectReference:Object, methodName:String, interval:Number, [param1:Object, param2, ..., paramN]) : Number
+						_isScrolling = _global.setTimeout(this, "scrollingRepeatStart", _scrollRepeaterDelay, scrollUp, scrollPage);
 						processed = true;
 						
 					} else if (!_bDisableSelection && details.navEquivalent == NavigationCode.ENTER) {
-						scrollingStop();
+						scrollingRepeatStop();
 						onItemPress();
 						processed = true;
 					}
 				} else if (details.value == "keyUp") {
 					if (scroll || scrollPage) {
-						scrollingStop();
+						// Stop any scrolling on keyUp
+						// This also stops the timeout for scrollingRepeatStart
+						scrollingRepeatStop();
 						processed = true;
 					}
 				}
@@ -152,23 +157,25 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 		return processed;
 	}
 
-function scrollingStart(scrollUp: Boolean, scrollPage: Boolean) {
-	var scrollDirection: String = (scrollUp) ? "moveSelectionUp" : "moveSelectionDown";
-	_isFastScrolling = setInterval(this, scrollDirection, 0, scrollPage);
-}
+	function scrollingRepeatStart(scrollUp: Boolean, scrollPage: Boolean) {
+		var scrollDirection: String = (scrollUp) ? "moveSelectionUp" : "moveSelectionDown";
+		var scrollDelay = (scrollPage) ? _scrollRepeatPageDelay : _scrollRepeatDelay;
+		scrollUp ? moveSelectionUp(scrollPage) : moveSelectionDown(scrollPage);
+		_isFastScrolling = setInterval(this, scrollDirection, scrollDelay, scrollPage);
+	}
 
-function scrollingStop(): Void {
-	if (_isScrolling  != undefined) {
-		// Interrupts the _isScrolling timeout if it's started
-		_global.clearTimeout(_isScrolling);
-		delete(_isScrolling);
+	function scrollingRepeatStop(): Void {
+		if (_isScrolling  != undefined) {
+			// Interrupts the _isScrolling timeout if it's started
+			_global.clearTimeout(_isScrolling);
+			delete(_isScrolling);
+		}
+		if (_isFastScrolling  != undefined) {
+			// Stops fast scrolling from continuing
+			clearInterval(_isFastScrolling);
+			delete(_isFastScrolling);
+		}
 	}
-	if (_isFastScrolling  != undefined) {
-		// Stops fast scrolling from continuing
-		clearInterval(_isFastScrolling);
-		delete(_isFastScrolling);
-	}
-}
 	
 	function onMouseWheel(delta)
 	{

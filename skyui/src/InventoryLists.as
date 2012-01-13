@@ -144,21 +144,24 @@ class InventoryLists extends MovieClip
 			if (GlobalFunc.IsKeyPressed(details)) {
 				
 				if (details.navEquivalent == NavigationCode.LEFT) {
+                    _ItemsList.scrollingRepeatStop();
 					_CategoriesList.moveSelectionLeft();
 					bCaught = true;
 
 				} else if (details.navEquivalent == NavigationCode.RIGHT) {
+                    _ItemsList.scrollingRepeatStop();
 					_CategoriesList.moveSelectionRight();
 					bCaught = true;
 
 				// Search hotkey (default space)
 				} else if (details.code == _searchKey) {
+                    _ItemsList.scrollingRepeatStop();
 					bCaught = true;
 					_SearchWidget.startInput();
 					
 				// Toggle tab (default ALT)
 				} else if (_TabBar != undefined && (details.code == _tabToggleKey || (details.navEquivalent == NavigationCode.GAMEPAD_BACK && details.code != 8))) {
-					
+					_ItemsList.scrollingRepeatStop();
 					bCaught = true;
 					_TabBar.tabToggle();
 				}
