@@ -1,6 +1,6 @@
 ﻿import skyui.IColumnFormatter;
 import skyui.Defines;
-
+import skyui.Config;
 
 class skyui.InventoryColumnFormatter implements IColumnFormatter
 {
@@ -8,9 +8,49 @@ class skyui.InventoryColumnFormatter implements IColumnFormatter
 
 	private var _maxTextLength:Number;
 	
+	// icon vars
+	private var _bShowStolenIcon:Boolean;
+
+	// color vars
+	private var _defaultEnabledColor;
+	private var _defaultDisabledColor;
+	private var _negativeEnabledColor;
+	private var _negativeDisabledColor;
+	private var _stolenEnabledColor;
+	private var _stolenDisabledColor;
+
+	private var _config:Config;
+	
 	function InventoryColumnFormatter()
 	{
 		_maxTextLength = 50;
+		_bShowStolenIcon = true;
+		_defaultEnabledColor = 0xffffff;
+		_defaultDisabledColor = 0x4c4c4c;
+		_negativeEnabledColor = 0xff0000;
+		_negativeDisabledColor = 0x800000;
+		_stolenEnabledColor = 0xff0000;
+		_stolenDisabledColor = 0x800000;
+		Config.instance.addEventListener("configLoad",this,"onConfigLoad");
+	}
+
+	function onConfigLoad(event)
+	{
+		_config = event.config;
+		if (_config.ItemList.entry.icon.stolen != undefined)
+			_bShowStolenIcon = _config.ItemList.entry.icon.stolen;
+		if (_config.ItemList.entry.color.enabled.textDefault != undefined)
+			_defaultEnabledColor = _config.ItemList.entry.color.enabled.textDefault;
+		if (_config.ItemList.entry.color.disabled.textDefault != undefined)
+			_defaultDisabledColor = _config.ItemList.entry.color.disabled.textDefault;
+		if (_config.ItemList.entry.color.enabled.negative != undefined)
+			_negativeEnabledColor = _config.ItemList.entry.color.enabled.negative;
+		if (_config.ItemList.entry.color.disabled.negative != undefined) 
+			_negativeDisabledColor = _config.ItemList.entry.color.disabled.negative;
+		if (_config.ItemList.entry.color.enabled.stolen != undefined)
+			_stolenEnabledColor = _config.ItemList.entry.color.enabled.stolen;
+		if (_config.ItemList.entry.color.disabled.stolen != undefined)
+			_stolenDisabledColor = _config.ItemList.entry.color.disabled.stolen;
 	}
 
 	function set maxTextLength(a_length:Number)
@@ -122,12 +162,8 @@ class skyui.InventoryColumnFormatter implements IColumnFormatter
 			a_entryField.autoSize = "left";
 			a_entryField.SetText(text);
 
-			if (a_entryObject.negativeEffect == true) {
-				a_entryField.textColor = a_entryObject.enabled == false ? 0x800000 : 0xFF0000;
-			} else if (a_entryObject.enabled == false) {
-				a_entryField.textColor = 0x4C4C4C;
-			}
-
+			formatColor(a_entryField, a_entryObject);
+			
 			// BestInClass icon
 			var iconPos = a_entryField._x + a_entryField._width + 5;
 
@@ -162,7 +198,7 @@ class skyui.InventoryColumnFormatter implements IColumnFormatter
 			}
 
 			// Stolen Icon
-			if (a_entryObject.infoIsStolen == true || a_entryObject.isStealing) {
+			if ((a_entryObject.infoIsStolen == true || a_entryObject.isStealing) && _bShowStolenIcon != false) {
 				a_entryClip.stolenIcon._x = iconPos;
 				iconPos = iconPos + iconSpace;
 				a_entryClip.stolenIcon.gotoAndStop("show");
@@ -184,12 +220,24 @@ class skyui.InventoryColumnFormatter implements IColumnFormatter
 		}
 	}
 
+	function formatColor(a_entryField:Object, a_entryObject:Object)
+	{
+		// Negative Effect
+		if (a_entryObject.negativeEffect == true) {
+			a_entryField.textColor = a_entryObject.enabled == false ? _negativeDisabledColor : _negativeEnabledColor;
+			
+		// Stolen
+		} else if (a_entryObject.infoIsStolen == true || a_entryObject.isStealing) {
+			a_entryField.textColor = a_entryObject.enabled == false ? _stolenDisabledColor : _stolenEnabledColor;
+			
+		// Default
+		} else {
+			a_entryField.textColor = a_entryObject.enabled == false ? _defaultDisabledColor : _defaultEnabledColor;
+		}	
+	}
+
 	function formatText(a_entryField:Object, a_entryObject:Object)
 	{
-		if (a_entryObject.negativeEffect == true) {
-			a_entryField.textColor = a_entryObject.enabled == false ? 0x800000 : 0xFF0000;
-		} else if (a_entryObject.enabled == false) {
-				a_entryField.textColor = 0x4C4C4C;
-		}
+		formatColor(a_entryField, a_entryObject);
 	}
 }
