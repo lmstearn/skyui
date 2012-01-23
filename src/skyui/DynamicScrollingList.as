@@ -132,6 +132,11 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 		return _maxScrollPosition;
 	}
 
+	function get savedScrollPosition():Number
+	{
+		return _savedScrollPosition;
+	}
+
 	function set savedScrollPosition(a_position:Number)
 	{
 		_savedScrollPosition = a_position;
@@ -161,7 +166,7 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 			scrollbar.setScrollProperties(_maxListIndex,0,_maxScrollPosition);
 			scrollbar._visible = _maxScrollPosition > 0;
 			// if category has saved scroll position, restore it
-			if (_savedScrollPosition > 0)
+			if (_savedScrollPosition != undefined)
 				_scrollPosition = _savedScrollPosition;
 			scrollbar.position = _scrollPosition;
 		}

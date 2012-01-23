@@ -20,6 +20,7 @@ class skyui.ConfigurableList extends skyui.FilteredList
 	private var _bEnableItemIcon:Boolean;
 	private var _bEnableEquipIcon:Boolean;
 	private var _bRestoreColumnData:Boolean;
+	private var _bColumnPressed:Boolean;
 	
 	// Preset in config
 	private var _entryWidth:Number;
@@ -72,6 +73,7 @@ class skyui.ConfigurableList extends skyui.FilteredList
 		_bRestoreColumnData = false;
 		_bEnableItemIcon = false;
 		_bEnableEquipIcon = false;
+		_bColumnPressed = false;
 		_activeColumnState = 1;
 		_activeColumnIndex = 0;
 
@@ -277,7 +279,7 @@ class skyui.ConfigurableList extends skyui.FilteredList
 				var currentStateData = _views[_activeViewIndex].columns[i]["state" + j];
 				if (currentStateData.entry.text == lastStateData.entry.text)
 				{
-					if (arraysEqual(currentStateData.sortAttributes, lastStateData.sortAttributes) && arraysEqual(currentStateData.sortOptions, lastStateData.sortOptions))
+					if (arraysEqual(currentStateData.sortAttributes, lastStateData.sortAttributes) && arraysEqual(currentStateData.sortOptions, lastStateData.sortOptions) && (currentStateData.label.arrowDown == lastStateData.label.arrowDown))
 					{
 						_activeColumnState = j;
 						_lastViewIndex = _activeViewIndex;
@@ -300,6 +302,8 @@ class skyui.ConfigurableList extends skyui.FilteredList
 	
 	function arraysEqual(a:Array,b:Array):Boolean 
 	{
+		if (a == undefined && b == undefined)
+			return true;
     	if(a.length != b.length) {
         	return false;
     	}
@@ -315,10 +319,12 @@ class skyui.ConfigurableList extends skyui.FilteredList
 	function onColumnPress(event)
 	{
 		if (event.index != undefined) {
+			_bColumnPressed = true;
 			selectColumn(event.index);
 			// save column data
 			saveColumnData();
 			_bRestoreColumnData = false;
+			_bColumnPressed = false;
 		}
 	}
 	
@@ -355,23 +361,26 @@ class skyui.ConfigurableList extends skyui.FilteredList
 
 			if (GlobalFunc.IsKeyPressed(details)) {
 				if (details.navEquivalent == NavigationCode.GAMEPAD_L1) {
-					selectColumn(_activeColumnIndex - 1);
+					onColumnPress({index: _activeColumnIndex - 1});
+					//selectColumn(_activeColumnIndex - 1);
 					processed = true;
 					// save column data
-					saveColumnData();
-					_bRestoreColumnData = false;
+					//saveColumnData();
+					//_bRestoreColumnData = false;
 				} else if (details.navEquivalent == NavigationCode.GAMEPAD_R1) {
-					selectColumn(_activeColumnIndex + 1);
+					onColumnPress({index: _activeColumnIndex + 1});
+					//selectColumn(_activeColumnIndex + 1);
 					processed = true;
 					// save column data
-					saveColumnData();
-					_bRestoreColumnData = false;
+					//saveColumnData();
+					//_bRestoreColumnData = false;
 				} else if (details.navEquivalent == NavigationCode.GAMEPAD_L3) {
-					selectColumn(_activeColumnIndex);
+					onColumnPress({index: _activeColumnIndex});
+					//selectColumn(_activeColumnIndex);
 					processed = true;
 					// save column data
-					saveColumnData();
-					_bRestoreColumnData = false;
+					//saveColumnData();
+					//_bRestoreColumnData = false;
 				}
 			}
 		}
@@ -661,7 +670,6 @@ class skyui.ConfigurableList extends skyui.FilteredList
 		if (! sortOptions instanceof Array) {
 			sortOptions = [sortOptions];
 		}
-		
-		dispatchEvent({type:"sortChange", attributes: sortAttributes, options: sortOptions});
+		dispatchEvent({type:"sortChange", attributes: sortAttributes, options: sortOptions, pressed: _bColumnPressed});
 	}
 }

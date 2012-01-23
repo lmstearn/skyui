@@ -235,7 +235,6 @@ class InventoryLists extends MovieClip
 			if (_CategoriesList.selectedEntry.savedItemIndex != -1)
 				_ItemsList.doSetSelectedIndex(_CategoriesList.selectedEntry.savedItemIndex);
 		}
-		
 		dispatchEvent({type:"itemHighlightChange", index:_ItemsList.selectedIndex});
 		
 		_ItemsList.disableInput = false;
@@ -326,10 +325,6 @@ class InventoryLists extends MovieClip
 		}		
 
 		dispatchEvent({type:"categoryChange", index:event.index});
-
-		//if (event.index != -1) {
-			//GameDelegate.call("PlaySound",["UIMenuFocus"]);
-		//}
 	}
 
 	function doItemsSelectionChange(event)
@@ -343,20 +338,20 @@ class InventoryLists extends MovieClip
 
 	function onSortChange(event)
 	{
-		// reset scroll position to top when sorting and unselect item
-		if (_ItemsList.numUnfilteredItems > 0) {
+		if (event.pressed) {
 			_ItemsList.savedScrollPosition = 0;
 			_ItemsList.scrollPosition = 0;
 			// reset category saved scroll positions
 			for (var i = 0; i < _CategoriesList.entryList.length; i++) {
 				_CategoriesList.entryList[i].savedScrollPosition = 0;
 			}
-			if (_ItemsList.selectedIndex != -1)
-			{
-				_ItemsList.selectedEntry = undefined;
-				_ItemsList.selectedIndex = -1;
-				dispatchEvent({type:"itemHighlightChange", index:-1});
-			}
+		}
+		// reset scroll position to top when sorting and unselect item
+		if (_ItemsList.selectedIndex != -1)
+		{
+			_ItemsList.selectedEntry = undefined;
+			_ItemsList.selectedIndex = -1;
+			dispatchEvent({type:"itemHighlightChange", index:-1});
 		}
 		_sortFilter.setSortBy(event.attributes, event.options);
 	}
