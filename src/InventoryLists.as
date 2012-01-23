@@ -43,6 +43,7 @@ class InventoryLists extends MovieClip
 
 	private var _searchKey:Number;
 	private var _tabToggleKey:Number;
+	private var _allString:String;
 
 	// Children
 	var panelContainer:MovieClip;
@@ -131,7 +132,7 @@ class InventoryLists extends MovieClip
 	function handleInput(details, pathToFocus)
 	{
 		var bCaught = false;
-		
+
 		if (_currentState == SHOW_PANEL) {
 			if (GlobalFunc.IsKeyPressed(details)) {
 				
@@ -233,11 +234,12 @@ class InventoryLists extends MovieClip
 			_ItemsList.changeFilterFlag(_CategoriesList.selectedEntry.flag);
 			if (_CategoriesList.selectedEntry.savedItemIndex != -1)
 				_ItemsList.doSetSelectedIndex(_CategoriesList.selectedEntry.savedItemIndex);
-		} 
+		}
 		
 		dispatchEvent({type:"itemHighlightChange", index:_ItemsList.selectedIndex});
 		
 		_ItemsList.disableInput = false;
+		GameDelegate.call("PlaySound",["UIMenuFocus"]);
 	}
 
 	// Not needed anymore, items list always visible
@@ -325,9 +327,9 @@ class InventoryLists extends MovieClip
 
 		dispatchEvent({type:"categoryChange", index:event.index});
 
-		if (event.index != -1) {
-			GameDelegate.call("PlaySound",["UIMenuFocus"]);
-		}
+		//if (event.index != -1) {
+			//GameDelegate.call("PlaySound",["UIMenuFocus"]);
+		//}
 	}
 
 	function doItemsSelectionChange(event)
@@ -342,10 +344,15 @@ class InventoryLists extends MovieClip
 	function onSortChange(event)
 	{
 		// reset scroll position to top when sorting and unselect item
-		if (_ItemsList.numUnfilteredItems > 0 && _ItemsList.selectedIndex != -1) {
+		if (_ItemsList.numUnfilteredItems > 0) {
+			_ItemsList.savedScrollPosition = 0;
 			_ItemsList.scrollPosition = 0;
-			_ItemsList.selectedIndex = -1;
-			dispatchEvent({type:"itemHighlightChange", index:-1});
+			if (_ItemsList.selectedIndex != -1)
+			{
+				_ItemsList.selectedEntry = undefined;
+				_ItemsList.selectedIndex = -1;
+				dispatchEvent({type:"itemHighlightChange", index:-1});
+			}
 		}
 		_sortFilter.setSortBy(event.attributes, event.options);
 	}
@@ -391,8 +398,8 @@ class InventoryLists extends MovieClip
 		// Initialize tabbar labels and replace text of segment heads (name -> ALL)
 		if (_TabBar != undefined) {
 			if (_CategoriesList.dividerIndex != -1) {
-				 _TabBar.setLabelText(_CategoriesList.entryList[0].text, _CategoriesList.entryList[_CategoriesList.dividerIndex + 1].text);
-				 _CategoriesList.entryList[0].text = _CategoriesList.entryList[_CategoriesList.dividerIndex + 1].text = _config.Strings.all;
+				_TabBar.setLabelText(_CategoriesList.entryList[0].text, _CategoriesList.entryList[_CategoriesList.dividerIndex + 1].text);
+				_CategoriesList.entryList[0].text = _CategoriesList.entryList[_CategoriesList.dividerIndex + 1].text = "$ALL";
 			}
 			
 			// Restore 0 as default index for tabbed lists

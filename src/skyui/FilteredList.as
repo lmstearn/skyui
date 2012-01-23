@@ -109,7 +109,6 @@ class skyui.FilteredList extends skyui.DynamicScrollingList
 		
 		// Restore selection
 		if (_curClipIndex != undefined && _curClipIndex != -1 && _listIndex > 0) {
-			
 			if (_curClipIndex >= _listIndex) {
 				_curClipIndex = _listIndex - 1;
 			}
@@ -121,7 +120,7 @@ class skyui.FilteredList extends skyui.DynamicScrollingList
 	}
 
 	function calculateMaxScrollPosition()
-	{
+ 	{
 		var t = _filteredList.length - _maxListIndex;
 		_maxScrollPosition = (t > 0) ? t : 0;
 
@@ -195,6 +194,11 @@ class skyui.FilteredList extends skyui.DynamicScrollingList
 			}
 			
 			dispatchEvent({type:"selectionChange", index:_selectedIndex, keyboardOrMouse:a_keyboardOrMouse});
+		}
+		else if (a_newIndex == -1)
+		{
+			_selectedIndex = -1;
+			_curClipIndex = -1;
 		}
 	}
 

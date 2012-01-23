@@ -6,6 +6,8 @@ import gfx.ui.NavigationCode;
 
 class ItemMenu extends MovieClip
 {
+	private var SKSE_REQ_VERSION = {major:1, minor:4, beta:4};
+	
 	private var _platform:Number;
 	private var _bItemCardFadedIn:Boolean;
 	
@@ -16,7 +18,7 @@ class ItemMenu extends MovieClip
 	private var _3DIconWideZSettingStr:String;
 	private var _3DIconWideScaleSettingStr:String;
 	
-	private var _config;
+	private var _config:Config;
 	
 	var InventoryLists_mc:MovieClip;
 	var ItemCardFadeHolder_mc:MovieClip;
@@ -25,10 +27,11 @@ class ItemMenu extends MovieClip
 	
 	var MouseRotationRect:MovieClip;
 	var ExitMenuRect:MovieClip;
-	var skseWarningMsg:MovieClip;
+	var skseWarning:MovieClip;
 
 	// API
 	var bFadedIn:Boolean;
+	
 
 	function ItemMenu()
 	{
@@ -80,6 +83,36 @@ class ItemMenu extends MovieClip
 				_parent.onExitMenuRectClick();
 			}
 		};
+		
+		if (skseWarning != undefined) {
+			
+			// Default message
+			if (_global.skse == undefined) {
+				skseWarning._visible = true;
+				skseWarning.message.text = "SkyUI could not detect the Skyrim Script Extender (SKSE).\n"
+					+ "SkyUI will not work correctly!\n"
+					+ "\n"
+					+ "This message may also appear if a new Skyrim Patch has been released.\n"
+					+ "In this case, wait until SKSE has been updated, then install the new version.\n"
+					+ "\n"
+					+ "For more information, refer to the Readme.";
+					
+			} else if (_global.skse.version.major < SKSE_REQ_VERSION.major ||
+						(_global.skse.version.major == SKSE_REQ_VERSION.major && _global.skse.version.minor < SKSE_REQ_VERSION.minor) ||
+						(_global.skse.version.major == SKSE_REQ_VERSION.major && _global.skse.version.minor == SKSE_REQ_VERSION.minor && _global.skse.version.beta < SKSE_REQ_VERSION.beta)) {
+				skseWarning._visible = true;
+				skseWarning.message.text = "Your Skyrim Script Extender (SKSE) is outdated.\n"
+					+ "SkyUI will not work correctly!\n"
+					+ "\n"
+					+ "Installed version: " + _global.skse.version.major + "." + _global.skse.version.minor + "." + _global.skse.version.beta + "\n"
+					+ "Required version: " + SKSE_REQ_VERSION.major + "." + SKSE_REQ_VERSION.minor + "." + SKSE_REQ_VERSION.beta + "\n"
+					+ "\n"
+					+ "For more information, refer to the Readme.";
+					
+			} else {
+				skseWarning._visible = false;
+			}
+		}
 	}
 	
 	function onConfigLoad(event)
@@ -130,7 +163,7 @@ class ItemMenu extends MovieClip
 		ExitMenuRect._y = ExitMenuRect._y - Stage.safeRect.y;
 		
 		
-		var iconX = GlobalFunc.Lerp(0, 128, Stage.visibleRect.x, (Stage.visibleRect.x + Stage.visibleRect.width), (itemCardContainer._x + (itemCardContainer._width / 2)), 0);
+		var iconX = GlobalFunc.Lerp(0, 128, Stage.visibleRect.x, (Stage.visibleRect.x + Stage.visibleRect.width), (itemCardContainer._x + (itemCardContainer._width / 2)));
 		iconX = -(iconX - 64);
 		
 		skse.SetINISetting(_3DIconWideScaleSettingStr, (itemiconPosition.scale));
@@ -147,8 +180,8 @@ class ItemMenu extends MovieClip
 			MouseRotationRect._height = 0.55 * Stage.visibleRect.height;
 		}
 		
-		if (skseWarningMsg != undefined) {
-			skseWarningMsg.Lock("TR");
+		if (skseWarning != undefined) {
+			skseWarning.Lock("TR");
 		}
 	}
 
@@ -390,16 +423,6 @@ class ItemMenu extends MovieClip
 			InventoryLists_mc.CategoriesList.entryList[index - 1].savedItemIndex = arguments[index];
 		}
 		
-		// Extra state information. Cleared after game restart.
-		var bRestarted = arguments[index] == undefined;
-		
-		if (bRestarted) {
-			// Display SKSE warning if necessary after restart
-			if (_global.skse == undefined && skseWarningMsg != undefined) {
-				skseWarningMsg.gotoAndStop("show");
-			}			
-		}
-		
 		InventoryLists_mc.CategoriesList.UpdateList();
 	}
 
@@ -420,8 +443,6 @@ class ItemMenu extends MovieClip
 			}
 		}
 		
-		// Restarted == false
-		a.push(1);
 		
 		GameDelegate.call("SaveIndices", [a]);
 	}

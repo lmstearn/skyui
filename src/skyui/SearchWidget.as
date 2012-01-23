@@ -5,6 +5,7 @@ import Shared.GlobalFunc;
 
 import skyui.Config;
 
+
 class skyui.SearchWidget extends MovieClip
 {
 	private var _previousFocus:Object;
@@ -18,7 +19,7 @@ class skyui.SearchWidget extends MovieClip
 	
 	private var _updateTimerId:Number;
 	
-	private var _config;
+	private var _config:Config;
 	
 	// Children
 	var textField:TextField;
@@ -41,7 +42,7 @@ class skyui.SearchWidget extends MovieClip
 		{
 			_parent.endInput();
 		};
-		
+
 		Config.instance.addEventListener("configLoad", this, "onConfigLoad");
 	}
 	
@@ -50,9 +51,7 @@ class skyui.SearchWidget extends MovieClip
 		_config = event.config;
 		_bEnableAutoupdate = _config.SearchBox.autoupdate.enable;
 		_updateDelay = _config.SearchBox.autoupdate.delay;
-		_filterString = _config.Strings.filter;
-		
-		textField.SetText(_filterString);
+		_filterString = textField.text;
 	}
 	
 	function onPress(a_mouseIndex, a_keyboardOrMouse)
