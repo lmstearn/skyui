@@ -411,15 +411,20 @@ class ItemMenu extends MovieClip
 		if (arguments[0] != undefined && arguments[0] != -1 && arguments.length != 1) {
 			InventoryLists_mc.CategoriesList._entryList[arguments[0]].savedItemIndex = arguments[2];
 			InventoryLists_mc.CategoriesList._entryList[arguments[0]].savedScrollPosition = arguments[1];
+			// restore column data
+			if (arguments[3] != undefined) {
+				InventoryLists_mc.ItemsList.columnData[0] = arguments[3];
+				InventoryLists_mc.ItemsList.columnData[1] = arguments[4];
+				InventoryLists_mc.ItemsList.columnData[2] = arguments[5];
+				InventoryLists_mc.ItemsList.restoreColumnData = true;
+			}
 			InventoryLists_mc.CategoriesList.restoreCategory(arguments[0]);
 		} else {
 			InventoryLists_mc.CategoriesList.restoreCategory(1); // ALL
 		}
 
-		var index;
-
 		// Saved category indices
-		for (index = 2; index < arguments.length && index < InventoryLists_mc.CategoriesList.entryList.length; index++) {
+		for (var index = 6; index < arguments.length && index < InventoryLists_mc.CategoriesList.entryList.length; index++) {
 			InventoryLists_mc.CategoriesList.entryList[index - 1].savedItemIndex = arguments[index];
 		}
 		
@@ -437,12 +442,16 @@ class ItemMenu extends MovieClip
 		// save current selected item
 		a.push(InventoryLists_mc.ItemsList._selectedIndex);
 		
+		// save current column data
+		a.push(InventoryLists_mc.ItemsList.columnData[0]);
+		a.push(InventoryLists_mc.ItemsList.columnData[1]);
+		a.push(InventoryLists_mc.ItemsList.columnData[2]);
+		
 		for (var i = 0; i < InventoryLists_mc.CategoriesList.entryList.length; i++) {
 			if (InventoryLists_mc.CategoriesList.selectedIndex != i) {
 				a.push(0);
 			}
 		}
-		
 		
 		GameDelegate.call("SaveIndices", [a]);
 	}

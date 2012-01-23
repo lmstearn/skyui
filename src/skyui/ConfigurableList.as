@@ -93,6 +93,16 @@ class skyui.ConfigurableList extends skyui.FilteredList
 	{
 		return _views[_activeViewIndex];
 	}
+	
+	function get columnData()
+	{
+		return _savedColumnData;
+	}
+	
+	function set restoreColumnData(a_flag:Boolean)
+	{
+		_bRestoreColumnData = a_flag;
+	}
 
 	function onConfigLoad(event)
 	{
