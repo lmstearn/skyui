@@ -208,7 +208,13 @@ class skyui.ConfigurableList extends skyui.FilteredList
 			}
 		}
 		
-		if (_activeViewIndex == -1 || _lastViewIndex == _activeViewIndex) {
+		if (_activeViewIndex == -1) {
+			return;
+		}
+		
+		if (_lastViewIndex == _activeViewIndex) {
+			// since no sort parameters have changed we must trigger a filter change
+			onFilterChange();
 			return;
 		}
 	
@@ -221,8 +227,13 @@ class skyui.ConfigurableList extends skyui.FilteredList
 				_activeColumnIndex = 0;
 			}
 			_bRestoreColumnData = true;
+			updateView();
 		}
-		updateView();
+		else {
+			updateView();
+			// since no sort parameters have changed we must trigger a filter change
+			onFilterChange();
+		}
 	}
 	
 	function findSortMatch():Boolean 
@@ -335,13 +346,22 @@ class skyui.ConfigurableList extends skyui.FilteredList
 			if (GlobalFunc.IsKeyPressed(details)) {
 				if (details.navEquivalent == NavigationCode.GAMEPAD_L1) {
 					selectColumn(_activeColumnIndex - 1);
-					processed = true;					
+					processed = true;
+					// save column data
+					saveColumnData();
+					_bRestoreColumnData = false;
 				} else if (details.navEquivalent == NavigationCode.GAMEPAD_R1) {
 					selectColumn(_activeColumnIndex + 1);
 					processed = true;
+					// save column data
+					saveColumnData();
+					_bRestoreColumnData = false;
 				} else if (details.navEquivalent == NavigationCode.GAMEPAD_L3) {
 					selectColumn(_activeColumnIndex);
 					processed = true;
+					// save column data
+					saveColumnData();
+					_bRestoreColumnData = false;
 				}
 			}
 		}
