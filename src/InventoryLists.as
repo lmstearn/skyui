@@ -347,6 +347,10 @@ class InventoryLists extends MovieClip
 		if (_ItemsList.numUnfilteredItems > 0) {
 			_ItemsList.savedScrollPosition = 0;
 			_ItemsList.scrollPosition = 0;
+			// reset category saved scroll positions
+			for (var i = 0; i < _CategoriesList.entryList.length; i++) {
+				_CategoriesList.entryList[i].savedScrollPosition = 0;
+			}
 			if (_ItemsList.selectedIndex != -1)
 			{
 				_ItemsList.selectedEntry = undefined;

@@ -411,9 +411,9 @@ class ItemMenu extends MovieClip
 		if (arguments[0] != undefined && arguments[0] != -1 && arguments.length != 1) {
 			InventoryLists_mc.CategoriesList._entryList[arguments[0]].savedItemIndex = arguments[2];
 			InventoryLists_mc.CategoriesList._entryList[arguments[0]].savedScrollPosition = arguments[1];
-			InventoryLists_mc.CategoriesList.restoreSelectedEntry(arguments[0]);
+			InventoryLists_mc.CategoriesList.restoreCategory(arguments[0]);
 		} else {
-			InventoryLists_mc.CategoriesList.restoreSelectedEntry(1); // ALL
+			InventoryLists_mc.CategoriesList.restoreCategory(1); // ALL
 		}
 
 		var index;
