@@ -8,6 +8,7 @@ class skyui.ConfigurableList extends skyui.FilteredList
 	private var _config:Config;
 
 	private var _views:Array;
+	private var _savedColumnData:Array;
 	private var _activeViewIndex:Number;
 	
 	private var _activeColumnIndex:Number;
@@ -18,6 +19,7 @@ class skyui.ConfigurableList extends skyui.FilteredList
 	
 	private var _bEnableItemIcon:Boolean;
 	private var _bEnableEquipIcon:Boolean;
+	private var _bRestoreColumnData:Boolean;
 	
 	// Preset in config
 	private var _entryWidth:Number;
@@ -55,6 +57,7 @@ class skyui.ConfigurableList extends skyui.FilteredList
 		_hiddenColumnNames = new Array();
 		_columnEntryValues = new Array();
 		_customEntryFormats = new Array();
+		_savedColumnData = new Array();
 		
 		_defaultEntryFormat = new TextFormat(); 
 		_defaultLabelFormat = new TextFormat();
@@ -66,6 +69,7 @@ class skyui.ConfigurableList extends skyui.FilteredList
 		_entryHeight = 28;
 		_activeViewIndex = -1;
 		_lastViewIndex = -1;
+		_bRestoreColumnData = false;
 		_bEnableItemIcon = false;
 		_bEnableEquipIcon = false;
 		_activeColumnState = 1;
@@ -203,26 +207,97 @@ class skyui.ConfigurableList extends skyui.FilteredList
 				break;
 			}
 		}
-		// Since columns are updated last, we must always update view
-		if (_activeViewIndex == -1) {
+		
+		if (_activeViewIndex == -1 || _lastViewIndex == _activeViewIndex) {
 			return;
 		}
-		
-		_lastViewIndex = _activeViewIndex;
-		_activeColumnState = 1;
-		_activeColumnIndex = _views[_activeViewIndex].columns.indexOf(_views[_activeViewIndex].primaryColumn);
-					
-		if (_activeColumnIndex == undefined) {
-			_activeColumnIndex = 0;
+	
+		if (!findSortMatch()) {
+			_lastViewIndex = _activeViewIndex;
+			_activeColumnState = 1;
+			_activeColumnIndex = _views[_activeViewIndex].columns.indexOf(_views[_activeViewIndex].primaryColumn);
+			
+			if (_activeColumnIndex == undefined) {
+				_activeColumnIndex = 0;
+			}
+			_bRestoreColumnData = true;
+		}
+		updateView();
+	}
+	
+	function findSortMatch():Boolean 
+	{
+		// restore old data if column header has not been pressed
+		if (_savedColumnData.length > 0 && _bRestoreColumnData)
+		{
+			_lastViewIndex = _savedColumnData[0];
+			_activeColumnIndex= _savedColumnData[1];
+			_activeColumnState = _savedColumnData[2];
+		}
+		// Check if columns match
+		for (var i = 0; i < _views[_activeViewIndex].columns.length; i++)
+		{
+			if (_views[_activeViewIndex].columns[i] == _views[_lastViewIndex].columns[_activeColumnIndex])
+			{
+				_activeColumnIndex = i;
+				_lastViewIndex = _activeViewIndex;
+				return true;
+			}
 		}
 		
-		updateView();
+		// Check if sortoptions and sortattributes match
+		var lastStateData = _views[_lastViewIndex].columns[_activeColumnIndex]["state" + _activeColumnState];
+		for (var i = 0; i < _views[_activeViewIndex].columns.length; i++)
+		{
+			if ( _views[_activeViewIndex].columns[i].states == undefined)
+				continue;
+			for (var j = 1; j <=  _views[_activeViewIndex].columns[i].states; j++)
+			{
+				var currentStateData = _views[_activeViewIndex].columns[i]["state" + j];
+				if (currentStateData.entry.text == lastStateData.entry.text)
+				{
+					if (arraysEqual(currentStateData.sortAttributes, lastStateData.sortAttributes) && arraysEqual(currentStateData.sortOptions, lastStateData.sortOptions))
+					{
+						_activeColumnState = j;
+						_lastViewIndex = _activeViewIndex;
+						return true;
+					}
+				}
+			}
+		}
+
+		return false;
+	
+	}
+	
+	function saveColumnData()
+	{
+		_savedColumnData[0] = _lastViewIndex;
+		_savedColumnData[1] = _activeColumnIndex;
+		_savedColumnData[2] = _activeColumnState;
+	}
+	
+	function arraysEqual(a:Array,b:Array):Boolean 
+	{
+    	if(a.length != b.length) {
+        	return false;
+    	}
+    	var len = a.length;
+    	for(var i = 0; i < len; i++) {
+        	if(a[i] !== b[i]) {
+          	  return false;
+        	}
+    	}
+    	return true;
 	}
 	
 	function onColumnPress(event)
 	{
 		if (event.index != undefined) {
 			selectColumn(event.index);
+			// save column data
+			saveColumnData();
+			_bRestoreColumnData = false;
 		}
 	}
 	
@@ -248,7 +323,6 @@ class skyui.ConfigurableList extends skyui.FilteredList
 				_activeColumnState = 1;
 			}
 		}
-			
 		updateView();
 	}
 	
