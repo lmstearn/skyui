@@ -8,7 +8,7 @@ class skyui.ConfigurableList extends skyui.FilteredList
 	private var _config:Config;
 
 	private var _views:Array;
-	private var _prefData:Array;
+	private var _prefData:Object;
 	private var _categoryData:Array;
 	private var _categoryFlag:Number;
 	private var _activeViewIndex:Number;
@@ -63,7 +63,7 @@ class skyui.ConfigurableList extends skyui.FilteredList
 		_hiddenColumnNames = new Array();
 		_columnEntryValues = new Array();
 		_customEntryFormats = new Array();
-		_prefData = new Array();
+		//_prefData = new Array();
 		_categoryData = new Array();
 
 		_defaultEntryFormat = new TextFormat();
@@ -253,53 +253,57 @@ class skyui.ConfigurableList extends skyui.FilteredList
 		}
 
 		if (_lastViewIndex == _activeViewIndex && _saveSortHeaders != 1) {
-			// since no sort parameters have changed we must trigger a filter change
-			InvalidateData();
+			// since no sort parameters have changed we must invalidatedata
+			super.InvalidateData();
 			return;
 		}
 
-		var _bResult = false;
-		if (_saveSortHeaders == 1) {
-			_bResult = findCategoryMatch(a_flag);
-		} else if (_saveSortHeaders == 2) {
-			_bResult = findSortMatch();
+		_lastViewIndex = _activeViewIndex;
 
-		}
-		if (!_bResult) {
-			_lastViewIndex = _activeViewIndex;
-			_activeColumnState = 1;
+		// Restoring a previous state was not necessary or failed? Then use default
+		if (!restorePrefState()) {
 			_activeColumnIndex = _views[_activeViewIndex].columns.indexOf(_views[_activeViewIndex].primaryColumn);
-
 			if (_activeColumnIndex == undefined) {
 				_activeColumnIndex = 0;
 			}
-			_bRestoreColumnData = true;
+			_activeColumnState = 1;
 			updateView();
 		} else {
 			updateView();
 			// since no sort parameters have changed we must invalidatedata
-			InvalidateData();
+			super.InvalidateData();
 		}
 	}
 
-	function findCategoryMatch(a_flag):Boolean
+	function restorePrefState():Boolean
+	{
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("ConfigurableList restorePrefState()");
+		}
+		// No preference to restore yet 
+		if (_prefData == undefined) {
+			return false;
+		}
+		if (_saveSortHeaders == 1 && findCategoryMatch()) {
+			return true;
+		} else if (_saveSortHeaders == 2 && findSortMatch()) {
+			return true;
+		}
+		return false;
+	}
+
+	function findCategoryMatch():Boolean
 	{
 		if (DEBUG_LEVEL > 0) {
 			_global.skse.Log("ConfigurableList findCategoryMatch()");
 		}
 		for (var i = 0; i < _categoryData.length; i++) {
-			if (a_flag == _categoryData[i][3]) {
-				_global.skse.Log("found category match " + _categoryData[i][3]);
-				if (_categoryData[i].length > 0) {
-					for (var j = 0; j < _categoryData[i].length; j++) {
-						_global.skse.Log("restoring category data " + _categoryData[i][j] + " in pos " + i);
-					}
-
-					_lastViewIndex = _categoryData[i][0];
-					_activeColumnIndex = _categoryData[i][1];
-					_activeColumnState = _categoryData[i][2];
-					return true;
-				}
+			if (_categoryFlag == _categoryData[i].flag) {
+				_global.skse.Log("found category match " + _categoryData[i].flag);
+				_lastViewIndex = _categoryData[i].viewIndex;
+				_activeColumnIndex = _categoryData[i].columnIndex;
+				_activeColumnState = _categoryData[i].stateIndex;
+				return true;
 			}
 		}
 		return false;
@@ -310,41 +314,40 @@ class skyui.ConfigurableList extends skyui.FilteredList
 		if (DEBUG_LEVEL > 0) {
 			_global.skse.Log("ConfigurableList findSortMatch()");
 		}
-		// restore old data if column header has not been pressed 
-		if (_prefData.length > 0 && _bRestoreColumnData) {
-			_lastViewIndex = _prefData[0];
-			_activeColumnIndex = _prefData[1];
-			_activeColumnState = _prefData[2];
-		}
-		// Check if columns match 
-		for (var i = 0; i < _views[_activeViewIndex].columns.length; i++) {
-			if (_views[_activeViewIndex].columns[i] == _views[_lastViewIndex].columns[_activeColumnIndex]) {
-				_activeColumnIndex = i;
-				_lastViewIndex = _activeViewIndex;
-				return true;
-			}
-		}
+		// First check if current view contains preferred column 
+		var prefColumn = _views[_prefData.viewIndex].columns[_prefData.columnIndex];
 
-		// Check if sortoptions and sortattributes match
-		var lastStateData = _views[_lastViewIndex].columns[_activeColumnIndex]["state" + _activeColumnState];
+		var index = _views[_activeViewIndex].columns.indexOf(prefColumn);
+		if (prefColumn != undefined && index != undefined) {
+			_activeColumnIndex = index;
+			_activeColumnState = _prefData.stateIndex;
+			return true;
+		}
+		// Next, try to search all columns for a similar state by comparing text, sort options and sort attributes 
+		var prefState = _views[_prefData.viewIndex].columns[_prefData.columnIndex]["state" + _prefData.stateIndex];
+
 		for (var i = 0; i < _views[_activeViewIndex].columns.length; i++) {
-			if (_views[_activeViewIndex].columns[i].states == undefined) {
+			var col = _views[_activeViewIndex].columns[i];
+			if (col.states == undefined) {
 				continue;
 			}
-			for (var j = 1; j <= _views[_activeViewIndex].columns[i].states; j++) {
-				var currentStateData = _views[_activeViewIndex].columns[i]["state" + j];
-				if (currentStateData.entry.text == lastStateData.entry.text) {
-					if (arraysEqual(currentStateData.sortAttributes, lastStateData.sortAttributes) && arraysEqual(currentStateData.sortOptions, lastStateData.sortOptions) && (currentStateData.label.arrowDown == lastStateData.label.arrowDown)) {
-						_activeColumnState = j;
-						_lastViewIndex = _activeViewIndex;
-						return true;
-					}
+
+			for (var j = 1; j <= col.states; j++) {
+				var st = col["state" + j];
+				if (st.entry.text != prefState.entry.text) {
+					continue;
+				}
+
+				if (st.sortAttributes.equals(prefState.sortAttributes) && st.sortOptions.equals(prefState.sortOptions) && st.label.arrowDown == prefState.label.arrowDown) {
+					_activeColumnIndex = i;
+					_activeColumnState = j;
+					return true;
 				}
 			}
 		}
 
+		// Found no match
 		return false;
-
 	}
 
 	function saveColumnData()
@@ -359,50 +362,21 @@ class skyui.ConfigurableList extends skyui.FilteredList
 		if (_saveSortHeaders == 1) {
 			for (var i = 0; i < _categoryData.length; i++) {
 				_global.skse.Log("checking categoryData pos " + i + " for match...");
-				if (_categoryData[i][3] == _categoryFlag) {
+				if (_categoryData[i].flag == _categoryFlag) {
 					_global.skkse.Log("Found match for flag " + _categoryFlag);
-					_categoryData[i][0] = _lastViewIndex;
-					_categoryData[i][1] = _activeColumnIndex;
-					_categoryData[i][2] = _activeColumnState;
+					_categoryData[i].viewIndex = _activeViewIndex;
+					_categoryData[i].columnIndex = _activeColumnIndex;
+					_categoryData[i].stateIndex = _activeColumnState;
 					return;
 				}
 			}
 			_global.skse.Log("adding category " + _categoryFlag + " data...");
-			_categoryData.push(new Array(4));
-			var index:Number = _categoryData.length - 1;
-			_categoryData[index][0] = _lastViewIndex;
-			_categoryData[index][1] = _activeColumnIndex;
-			_categoryData[index][2] = _activeColumnState;
-			_categoryData[index][3] = _categoryFlag;
-			for (var i = 0; i < _categoryData.length; i++) {
-				_global.skse.Log("printing category " + _categoryData[i][3]);
-				for (var j = 0; j < _categoryData[i].length; j++) {
-					_global.skse.Log("pos j = " + _categoryData[i][j]);
-				}
-			}
+			var _catPrefData = {viewIndex:_activeViewIndex, columnIndex:_activeColumnIndex, stateIndex:_activeColumnState, flag:_categoryFlag};
+			_categoryData.push(_catPrefData);
 			return;
 		}
-		// saveSortHeaders = 3 
-		_prefData[0] = _lastViewIndex;
-		_prefData[1] = _activeColumnIndex;
-		_prefData[2] = _activeColumnState;
-	}
-
-	function arraysEqual(a:Array, b:Array):Boolean
-	{
-		if (a == undefined && b == undefined) {
-			return true;
-		}
-		if (a.length != b.length) {
-			return false;
-		}
-		var len = a.length;
-		for (var i = 0; i < len; i++) {
-			if (a[i] !== b[i]) {
-				return false;
-			}
-		}
-		return true;
+		// savedSortHeaders = 2 
+		_prefData = {viewIndex:_activeViewIndex, columnIndex:_activeColumnIndex, stateIndex:_activeColumnState, flag:_categoryFlag};
 	}
 
 	function onColumnPress(event)
@@ -424,11 +398,11 @@ class skyui.ConfigurableList extends skyui.FilteredList
 		if (DEBUG_LEVEL > 1) {
 			_global.skse.Log("ConfigurableList selected column " + a_index);
 		}
-		// Invalid column 
+		// Invalid column   
 		if (currentView.columns[a_index] == undefined) {
 			return;
 		}
-		// Don't process for passive columns 
+		// Don't process for passive columns   
 		if (currentView.columns[a_index].passive) {
 			return;
 		}
@@ -446,7 +420,6 @@ class skyui.ConfigurableList extends skyui.FilteredList
 
 		// save column data
 		saveColumnData();
-		_bRestoreColumnData = false;
 		_pressed = 1;
 		updateView();
 	}
@@ -476,7 +449,7 @@ class skyui.ConfigurableList extends skyui.FilteredList
 		return processed;
 	}
 
-	/* Calculate new column positions and widths for current view */
+/* Calculate new column positions and widths for current view */
 	function updateView()
 	{
 		if (DEBUG_LEVEL > 0) {
@@ -506,16 +479,16 @@ class skyui.ConfigurableList extends skyui.FilteredList
 		if (DEBUG_LEVEL > 1) {
 			_global.skse.Log("ConfigurableList columns length = " + columns.length);
 		}
-		// Move some data from current state to root of the column so we can access single- and multi-state columns in the same manner 
+		// Move some data from current state to root of the column so we can access single- and multi-state columns in the same manner   
 		for (var i = 0; i < columns.length; i++) {
 			if (DEBUG_LEVEL > 1) {
 				_global.skse.Log("ConfigurableList configuring states for column " + columns[i].text);
 			}
-			// Single-state 
+			// Single-state   
 			if (columns[i].states == undefined || columns[i].states < 2) {
 				continue;
 			}
-			// Non-active columns always use state 1 
+			// Non-active columns always use state 1   
 			var stateData;
 			if (i == _activeColumnIndex) {
 				stateData = columns[i]["state" + _activeColumnState];
@@ -553,7 +526,7 @@ class skyui.ConfigurableList extends skyui.FilteredList
 			if (columns[i].indent != undefined) {
 				weightedWidth -= columns[i].indent;
 			}
-			// Height including borders for maxHeight 
+			// Height including borders for maxHeight   
 			var curHeight = 0;
 
 			switch (columns[i].type) {
@@ -641,7 +614,7 @@ class skyui.ConfigurableList extends skyui.FilteredList
 				}
 			}
 		}
-		// Set x positions based on calculated widths 
+		// Set x positions based on calculated widths   
 		var xPos = 0;
 
 		for (var i = 0; i < columns.length; i++) {
@@ -672,7 +645,7 @@ class skyui.ConfigurableList extends skyui.FilteredList
 		if (!_bEnableEquipIcon) {
 			_hiddenColumnNames.push("equipIcon");
 		}
-		// Set up header 
+		// Set up header   
 		if (header != undefined) {
 
 			header.clearColumns();
@@ -750,7 +723,7 @@ class skyui.ConfigurableList extends skyui.FilteredList
 		if (sortOptions == undefined) {
 			return;
 		}
-		// No attribute(s) set? Try to use entry value 
+		// No attribute(s) set? Try to use entry value   
 		if (sortAttributes == undefined) {
 			if (_columnEntryValues[_activeColumnIndex] != undefined) {
 
@@ -763,7 +736,7 @@ class skyui.ConfigurableList extends skyui.FilteredList
 		if (sortAttributes == undefined) {
 			return;
 		}
-		// Wrap single attribute in array 
+		// Wrap single attribute in array   
 		if (!sortAttributes instanceof Array) {
 			sortAttributes = [sortAttributes];
 		}

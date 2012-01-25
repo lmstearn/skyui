@@ -15,6 +15,8 @@ class BottomBar extends MovieClip
 
 	var PlayerInfoCard_mc:MovieClip;
 	var PlayerInfoObj:Object;
+	
+	static var DEBUG_LEVEL = 1;
 
 	function BottomBar()
 	{
@@ -32,6 +34,9 @@ class BottomBar extends MovieClip
 
 	function PositionElements(a_leftOffset:Number, a_rightOffset:Number)
 	{
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("BottomBar PositionElements()");
+		}
 		_leftOffset = a_leftOffset;
 		PositionButtons();
 		PlayerInfoCard_mc._x = a_rightOffset - PlayerInfoCard_mc._width;
@@ -39,16 +44,25 @@ class BottomBar extends MovieClip
 
 	function ShowPlayerInfo()
 	{
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("BottomBar ShowPlayerInfo()");
+		}
 		PlayerInfoCard_mc._alpha = 100;
 	}
 
 	function HidePlayerInfo()
 	{
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("BottomBar HidePlayerInfo()");
+		}
 		PlayerInfoCard_mc._alpha = 0;
 	}
 
 	function UpdatePerItemInfo(a_itemUpdateObj)
 	{
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("BottomBar UpdatePerItemInfo()");
+		}
 		var _itemType:Number = a_itemUpdateObj.type;
 		var _bHasWeightandValue = true;
 		if (_itemType == undefined) {
@@ -174,12 +188,18 @@ class BottomBar extends MovieClip
 
 	function UpdatePlayerInfo(a_playerUpdateObj, a_itemUpdateObj)
 	{
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("BottomBar UpdatePlayerInfo()");
+		}
 		PlayerInfoObj = a_playerUpdateObj;
 		UpdatePerItemInfo(a_itemUpdateObj);
 	}
 
 	function UpdateSkillBar(a_skillName:String, a_levelStart:Number, a_levelPercent:Number)
 	{
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("BottomBar UpdateSkillBar()");
+		}
 		PlayerInfoCard_mc.SkillLevelLabel.SetText(a_skillName);
 		PlayerInfoCard_mc.SkillLevelCurrent.SetText(a_levelStart);
 		PlayerInfoCard_mc.SkillLevelNext.SetText(a_levelStart + 1);
@@ -189,12 +209,18 @@ class BottomBar extends MovieClip
 
 	function UpdateCraftingInfo(a_skillName:String, a_levelStart:Number, a_levelPercent:Number)
 	{
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("BottomBar UpdateCraftingInfo()");
+		}
 		PlayerInfoCard_mc.gotoAndStop("Crafting");
 		UpdateSkillBar(a_skillName,a_levelStart,a_levelPercent);
 	}
 
 	function UpdateStatMeter(a_meterRect:MovieClip, a_meterObj:Meter, a_currValue:Number, a_maxValue:Number, a_color:String)
 	{
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("BottomBar UpdateStatMeter()");
+		}
 		if (a_color == undefined) {
 			a_color = "#FFFFFF";
 		}
@@ -211,6 +237,9 @@ class BottomBar extends MovieClip
 
 	function SetBarterInfo(a_playerGold:Number, a_vendorGold:Number, a_goldDelta:Number, a_vendorName:String)
 	{
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("BottomBar SetBarterInfo()");
+		}
 		if (PlayerInfoCard_mc._currentframe == 1) {
 			PlayerInfoCard_mc.gotoAndStop("Barter");
 		}
@@ -235,6 +264,9 @@ class BottomBar extends MovieClip
 
 	function SetBarterPerItemInfo(a_itemUpdateObj, a_playerInfoObj)
 	{
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("BottomBar SetBarterPerItemInfo()");
+		}
 		switch (a_itemUpdateObj.type) {
 
 			case InventoryDefines.ICT_ARMOR :
@@ -276,11 +308,17 @@ class BottomBar extends MovieClip
 
 	function SetGiftInfo(aiFavorPoints:Number)
 	{
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("BottomBar SetGiftInfo()");
+		}
 		PlayerInfoCard_mc.gotoAndStop("Gift");
 	}
 
 	function SetPlatform(a_platform:Number, a_PS3Switch:Boolean)
 	{
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("BottomBar SetPlatform()");
+		}
 		for (var i = 0; i < _buttons.length; i++) {
 			_buttons[i].SetPlatform(a_platform,a_PS3Switch);
 		}
@@ -288,6 +326,9 @@ class BottomBar extends MovieClip
 
 	function ShowButtons()
 	{
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("BottomBar ShowButtons()");
+		}
 		for (var i = 0; i < _buttons.length; i++) {
 			_buttons[i]._visible = _buttons[i].label.length > 0;
 		}
@@ -295,6 +336,9 @@ class BottomBar extends MovieClip
 
 	function HideButtons()
 	{
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("BottomBar HideButtons()");
+		}
 		for (var i = 0; i < _buttons.length; i++) {
 			_buttons[i]._visible = false;
 		}
@@ -302,6 +346,9 @@ class BottomBar extends MovieClip
 
 	function SetButtonsText()
 	{
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("BottomBar SetButtonsText()");
+		}
 		for (var i = 0; i < _buttons.length; i++) {
 			_buttons[i].label = arguments[i];
 			_buttons[i]._visible = _buttons[i].label.length > 0;
@@ -311,6 +358,9 @@ class BottomBar extends MovieClip
 
 	function SetButtonText(aText:String, aIndex:Number)
 	{
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("BottomBar SetButtonText()");
+		}
 		if (aIndex < _buttons.length) {
 			_buttons[aIndex].label = aText;
 			_buttons[aIndex]._visible = aText.length > 0;
@@ -320,6 +370,9 @@ class BottomBar extends MovieClip
 
 	function SetButtonsArt(a_buttonArt)
 	{
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("BottomBar SetButtonsArt()");
+		}
 		for (var i = 0; i < a_buttonArt.length; i++) {
 			SetButtonArt(a_buttonArt[i],i);
 		}
@@ -327,6 +380,9 @@ class BottomBar extends MovieClip
 
 	function AttachDualButton(a_buttonArtObj, a_index:Number)
 	{
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("BottomBar AttachDualButton()");
+		}
 		if (a_index < _buttons.length) {
 			_buttons[a_index].AttachDualButton(a_buttonArtObj);
 		}
@@ -334,6 +390,9 @@ class BottomBar extends MovieClip
 
 	function GetButtonsArt():Array
 	{
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("BottomBar GetButtonsArt()");
+		}
 		var _buttonsArt = new Array(_buttons.length);
 		for (var i = 0; i < _buttonsArt.length; i++) {
 			_buttonsArt[i] = _buttons[i].GetArt();
@@ -343,6 +402,9 @@ class BottomBar extends MovieClip
 
 	function GetButtonArt(a_index:Number)
 	{
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("BottomBar GetButtonArt()");
+		}
 		if (a_index < _buttons.length) {
 			return _buttons[a_index].GetArt();
 		}
@@ -351,6 +413,9 @@ class BottomBar extends MovieClip
 
 	function SetButtonArt(a_platformArt, a_index:Number)
 	{
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("BottomBar SetButtonArt()");
+		}
 		if (a_index < _buttons.length) {
 			var a_button = _buttons[a_index];
 			a_button.PCArt = a_platformArt.PCArt;
@@ -362,6 +427,9 @@ class BottomBar extends MovieClip
 
 	function PositionButtons()
 	{
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("BottomBar PositionButtons()");
+		}
 		var RightOffset:Number = 10;
 		var LeftOffset:Number = _leftOffset;
 		for (var i = 0; i < _buttons.length; i++) {

@@ -271,6 +271,7 @@ class skyui.FilteredList extends skyui.DynamicScrollingList
 		if (DEBUG_LEVEL > 0) {
 			_global.skse.Log("FilteredList onFilterChange()");
 		}
-		InvalidateData();
+		generateFilteredList()
+		super.InvalidateData();
 	}
 }
