@@ -20,7 +20,7 @@ class skyui.DynamicList extends MovieClip
 
 	private var _selectedIndex:Number;
 	private var _itemClipIndex:Number;
-	
+
 	private var _indent:Number;
 
 	// Component settings
@@ -72,7 +72,7 @@ class skyui.DynamicList extends MovieClip
 	{
 		_entryList.splice(0);
 	}
-	
+
 	function createEntryClip(a_index:Number):MovieClip
 	{
 		return attachMovie(_entryClassName, "Entry" + a_index, getNextHighestDepth());
@@ -80,18 +80,19 @@ class skyui.DynamicList extends MovieClip
 
 	function getClipByIndex(a_index:Number)
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("DynamicList getClipByIndex()");
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("DynamicList getClipByIndex()");
+		}
 		if (a_index < 0) {
 			return undefined;
 		}
-		
+
 		var entryClip = this["Entry" + a_index];
 
 		if (entryClip != undefined) {
 			return entryClip;
 		}
-		
-		// Create on-demand
+		// Create on-demand 
 		entryClip = createEntryClip(a_index);
 
 		entryClip.clipIndex = a_index;
@@ -99,8 +100,10 @@ class skyui.DynamicList extends MovieClip
 		entryClip.onRollOver = function()
 		{
 			if (!_parent.listAnimating && !_parent._bDisableInput && this.itemIndex != undefined) {
-				if (DEBUG_LEVEL > 1) _global.skse.Log("onRollOver for entry " + this.text + " at index " + this.itemIndex + " at clip index " + this.clipIndex);
-				_parent.doSetSelectedIndex(this.itemIndex, 0);
+				if (DEBUG_LEVEL > 1) {
+					_global.skse.Log("onRollOver for entry " + this.text + " at index " + this.itemIndex + " at clip index " + this.clipIndex);
+				}
+				_parent.doSetSelectedIndex(this.itemIndex,0);
 				_parent._bMouseDrivenNav = true;
 			}
 		};
@@ -109,7 +112,7 @@ class skyui.DynamicList extends MovieClip
 		{
 			if (this.itemIndex != undefined) {
 				_parent.onItemPress(a_keyboardOrMouse);
-				
+
 				if (!_parent._bDisableInput && onMousePress != undefined) {
 					onMousePress();
 				}
@@ -128,21 +131,29 @@ class skyui.DynamicList extends MovieClip
 
 	function get selectedIndex()
 	{
-		if (DEBUG_LEVEL > 1) _global.skse.Log("DynamicList get selectedIndex " + _selectedIndex);
+		if (DEBUG_LEVEL > 1) {
+			_global.skse.Log("DynamicList get selectedIndex " + _selectedIndex);
+		}
 		return _selectedIndex;
 	}
 
 	function set selectedIndex(a_newIndex)
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("DynamicList set selectedIndex " + a_newIndex);
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("DynamicList set selectedIndex " + a_newIndex);
+		}
 		doSetSelectedIndex(a_newIndex);
 	}
 
 	// called by categories
 	function doSetSelectedIndex(a_newIndex:Number, a_keyboardOrMouse:Number)
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("DynamicList doSetSelectedIndex()");
-		if (DEBUG_LEVEL > 0) _global.skse.Log("DynamicList doSetSelectedIndex " + a_newIndex);
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("DynamicList doSetSelectedIndex()");
+		}
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("DynamicList doSetSelectedIndex " + a_newIndex);
+		}
 		if (!_bDisableSelection && a_newIndex != _selectedIndex) {
 			var oldIndex = _selectedIndex;
 			_selectedIndex = a_newIndex;
@@ -152,7 +163,9 @@ class skyui.DynamicList extends MovieClip
 			}
 
 			if (_selectedIndex != -1) {
-				if (DEBUG_LEVEL > 0) _global.skse.Log("DynamicList doSetSelectedIndex() setting new entry " + _entryList[_selectedIndex].text);
+				if (DEBUG_LEVEL > 0) {
+					_global.skse.Log("DynamicList doSetSelectedIndex() setting new entry " + _entryList[_selectedIndex].text);
+				}
 				setEntry(getClipByIndex(_entryList[_selectedIndex].clipIndex),_entryList[_selectedIndex]);
 			}
 
@@ -223,7 +236,9 @@ class skyui.DynamicList extends MovieClip
 
 	function InvalidateData()
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("<========================DynamicList InvalidateData==================================" + "\n");
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("<========================DynamicList InvalidateData==================================" + "\n");
+		}
 		if (_selectedIndex >= _entryList.length) {
 			_selectedIndex = _entryList.length - 1;
 		}
@@ -234,7 +249,9 @@ class skyui.DynamicList extends MovieClip
 
 	function UpdateList()
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("<========================DynamicList UpdateList==================================" + "\n");
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("<========================DynamicList UpdateList==================================" + "\n");
+		}
 		var yStart = _indent;
 		var yOffset = 0;
 
@@ -255,7 +272,9 @@ class skyui.DynamicList extends MovieClip
 
 	function onItemPress(a_keyboardOrMouse)
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("DynamicList onItemPress()");
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("DynamicList onItemPress()");
+		}
 		if (!_bDisableInput && !_bDisableSelection && _selectedIndex != -1) {
 			dispatchEvent({type:"itemPress", index:_selectedIndex, entry:_entryList[_selectedIndex], keyboardOrMouse:a_keyboardOrMouse});
 		}
@@ -263,7 +282,9 @@ class skyui.DynamicList extends MovieClip
 
 	function onItemPressAux(a_keyboardOrMouse, a_buttonIndex)
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("DynamicList onItemPressAux()");
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("DynamicList onItemPressAux()");
+		}
 		if (!_bDisableInput && !_bDisableSelection && _selectedIndex != -1 && a_buttonIndex == 1) {
 			dispatchEvent({type:"itemPressAux", index:_selectedIndex, entry:_entryList[_selectedIndex], keyboardOrMouse:a_keyboardOrMouse});
 		}
@@ -271,10 +292,12 @@ class skyui.DynamicList extends MovieClip
 
 	function setEntry(a_entryClip:MovieClip, a_entryObject:Object)
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("DynamicList setEntry()");
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("DynamicList setEntry()");
+		}
 		if (a_entryClip != undefined) {
 			if (a_entryObject == selectedEntry) {
-				
+
 				a_entryClip.selectArea._alpha = 40;
 			} else {
 				a_entryClip.selectArea._alpha = 0;
@@ -286,7 +309,9 @@ class skyui.DynamicList extends MovieClip
 
 	function setEntryText(a_entryClip:MovieClip, a_entryObject:Object)
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("DynamicList setEntryText() for category " + a_entryObject.text + " at pos " + a_entryClip.clipIndex);
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("DynamicList setEntryText() for category " + a_entryObject.text + " at pos " + a_entryClip.clipIndex);
+		}
 		if (a_entryClip.textField != undefined) {
 			if (textOption == TEXT_OPTION_SHRINK_TO_FIT) {
 				a_entryClip.textField.textAutoSize = "shrink";
@@ -312,7 +337,9 @@ class skyui.DynamicList extends MovieClip
 
 	function setPlatform(a_platform:Number, a_bPS3Switch:Boolean)
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("DynamicList setPlatform()");
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("DynamicList setPlatform()");
+		}
 		_platform = a_platform;
 		_bMouseDrivenNav = _platform == 0;
 	}

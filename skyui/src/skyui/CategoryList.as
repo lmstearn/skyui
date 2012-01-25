@@ -8,7 +8,7 @@ class skyui.CategoryList extends skyui.DynamicList
 	static var FILL_BORDER = 0;
 	static var FILL_PARENT = 1;
 	static var FILL_STAGE = 2;
-	
+
 	static var LEFT_SEGMENT = 0;
 	static var RIGHT_SEGMENT = 1;
 
@@ -21,9 +21,9 @@ class skyui.CategoryList extends skyui.DynamicList
 	private var _selectorPos:Number;
 	private var _targetSelectorPos:Number;
 	private var _bFastSwitch:Boolean;
-	
+
 	private var _iconArt:Array;
-	
+
 	private var _dividerIndex:Number;
 
 	private var _activeSegment:Number;
@@ -40,12 +40,12 @@ class skyui.CategoryList extends skyui.DynamicList
 	var selectorCenter:MovieClip;
 	var selectorLeft:MovieClip;
 	var selectorRight:MovieClip;
-	
+
 
 	function CategoryList()
 	{
 		super();
-		
+
 		_selectorPos = 0;
 		_targetSelectorPos = 0;
 		_bFastSwitch = false;
@@ -79,53 +79,53 @@ class skyui.CategoryList extends skyui.DynamicList
 		_segmentOffset = 0;
 		_segmentLength = 0;
 	}
-	
+
 	function set dividerIndex(a_index:Number)
 	{
 		_dividerIndex = a_index;
 	}
-	
+
 	function get dividerIndex():Number
 	{
 		return _dividerIndex;
 	}
-	
+
 	function set activeSegment(a_segment:Number)
 	{
 		if (a_segment == _activeSegment) {
 			return;
 		}
-		
+
 		_activeSegment = a_segment;
-		
+
 		calculateSegmentParams();
-		
+
 		if (a_segment == LEFT_SEGMENT && _selectedIndex > _dividerIndex) {
-			doSetSelectedIndex(_selectedIndex - _dividerIndex - 1, 0);
+			doSetSelectedIndex(_selectedIndex - _dividerIndex - 1,0);
 		} else if (a_segment == RIGHT_SEGMENT && _selectedIndex < _dividerIndex) {
-			doSetSelectedIndex(_selectedIndex + _dividerIndex + 1, 0);
+			doSetSelectedIndex(_selectedIndex + _dividerIndex + 1,0);
 		}
-		
+
 		UpdateList();
 	}
-	
+
 	function get activeSegment():Number
 	{
 		return _activeSegment;
 	}
-	
+
 	function clearList()
 	{
 		super.clearList();
 		_dividerIndex = -1;
 	}
-	
-	function restoreSelectedEntry(a_newIndex:Number)
+
+	function restoreCategory(a_newIndex:Number)
 	{
 		doSetSelectedIndex(a_newIndex,1);
 		onItemPress(1);
 	}
-	
+
 	function setIconArt(a_iconArt:Array)
 	{
 		_iconArt = a_iconArt;
@@ -139,8 +139,7 @@ class skyui.CategoryList extends skyui.DynamicList
 		if (entryClip != undefined) {
 			return entryClip;
 		}
-		
-		// Create on-demand	 
+		// Create on-demand  
 		entryClip = attachMovie(_entryClassName, "Entry" + a_index, a_index);
 
 		entryClip.clipIndex = a_index;
@@ -155,7 +154,7 @@ class skyui.CategoryList extends skyui.DynamicList
 				_parent._parent._bMouseDrivenNav = true;
 			}
 		};
-		
+
 		entryClip.buttonArea.onRollOut = function()
 		{
 			if (!_parent._parent.listAnimating && !_parent._parent._bDisableInput && _parent.itemIndex != undefined && _parent.enabled) {
@@ -200,13 +199,13 @@ class skyui.CategoryList extends skyui.DynamicList
 
 		return entryClip;
 	}
-	
+
 	function InvalidateData()
 	{
 		calculateSegmentParams();
 		super.InvalidateData();
 	}
-	
+
 	function calculateSegmentParams()
 	{
 		// Divided
@@ -218,8 +217,8 @@ class skyui.CategoryList extends skyui.DynamicList
 				_segmentOffset = _dividerIndex + 1;
 				_segmentLength = _entryList.length - _segmentOffset;
 			}
-		
-		// Default for non-divided lists
+
+			// Default for non-divided lists
 		} else {
 			_segmentOffset = 0;
 			_segmentLength = _entryList.length;
@@ -278,43 +277,43 @@ class skyui.CategoryList extends skyui.DynamicList
 			xPos = xPos + entryClip.buttonArea._width + spacing;
 			entryClip._visible = true;
 		}
-		
+
 		updateSelector();
 	}
-	
+
 	function onEnterFrame()
 	{
 		if (_bFastSwitch && _selectorPos != _targetSelectorPos) {
 			_selectorPos = _targetSelectorPos;
 			_bFastSwitch = false;
 			refreshSelector();
-			
-		} else  if (_selectorPos < _targetSelectorPos) {
+
+		} else if (_selectorPos < _targetSelectorPos) {
 			_selectorPos = _selectorPos + (_targetSelectorPos - _selectorPos) * 0.2 + 1;
-			
+
 			refreshSelector();
-			
+
 			if (_selectorPos > _targetSelectorPos) {
 				_selectorPos = _targetSelectorPos;
 			}
-			
+
 		} else if (_selectorPos > _targetSelectorPos) {
 			_selectorPos = _selectorPos - (_selectorPos - _targetSelectorPos) * 0.2 - 1;
-			
+
 			refreshSelector();
-			
+
 			if (_selectorPos < _targetSelectorPos) {
 				_selectorPos = _targetSelectorPos;
 			}
 		}
 	}
-	
+
 	function updateSelector()
 	{
 		if (selectorCenter == undefined) {
 			return;
 		}
-			
+
 		if (_selectedIndex == -1) {
 			selectorCenter._visible = false;
 
@@ -331,10 +330,10 @@ class skyui.CategoryList extends skyui.DynamicList
 		var selectedClip = getClipByIndex(_selectedIndex - _segmentOffset);
 
 		_targetSelectorPos = selectedClip._x + (selectedClip.buttonArea._width - selectorCenter._width) / 2;
-		
+
 		selectorCenter._visible = true;
 		selectorCenter._y = selectedClip._y + selectedClip.buttonArea._height;
-		
+
 		if (selectorLeft != undefined) {
 			selectorLeft._visible = true;
 			selectorLeft._x = 0;
@@ -404,18 +403,18 @@ class skyui.CategoryList extends skyui.DynamicList
 		if (!_bDisableSelection) {
 			var curIndex = _selectedIndex;
 			var startIndex = _selectedIndex;
-			
+
 			do {
 				if (curIndex > _segmentOffset) {
 					curIndex--;
 				} else {
 					_bFastSwitch = true;
 					curIndex = _segmentOffset + _segmentLength - 1;
-					
+
 				}
 			} while (curIndex != startIndex && _entryList[curIndex].filterFlag == 0 && !_entryList[curIndex].bDontHide);
-			
-			doSetSelectedIndex(curIndex, 0);
+
+			doSetSelectedIndex(curIndex,0);
 			onItemPress(0);
 		}
 	}
@@ -425,7 +424,7 @@ class skyui.CategoryList extends skyui.DynamicList
 		if (!_bDisableSelection) {
 			var curIndex = _selectedIndex;
 			var startIndex = _selectedIndex;
-			
+
 			do {
 				if (curIndex < _segmentOffset + _segmentLength - 1) {
 					curIndex++;
@@ -434,12 +433,12 @@ class skyui.CategoryList extends skyui.DynamicList
 					curIndex = _segmentOffset;
 				}
 			} while (curIndex != startIndex && _entryList[curIndex].filterFlag == 0 && !_entryList[curIndex].bDontHide);
-			
-			doSetSelectedIndex(curIndex, 0);
+
+			doSetSelectedIndex(curIndex,0);
 			onItemPress(0);
 		}
 	}
-	
+
 	function setEntry(a_entryClip:MovieClip, a_entryObject:Object)
 	{
 		if (a_entryClip != undefined) {

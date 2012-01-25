@@ -1,9 +1,11 @@
 ﻿import gfx.io.GameDelegate;
 import gfx.ui.NavigationCode;
 
+import skyui.Config;
 import skyui.InventoryColumnFormatter;
 import skyui.InventoryDataFetcher;
 import skyui.Translator;
+import skyui.Util;
 
 
 class ContainerMenu extends ItemMenu
@@ -19,6 +21,8 @@ class ContainerMenu extends ItemMenu
 	private var _equipHelpArt:Object;
 	private var _defaultEquipArt:Object;
 
+	private var _config:Config;
+
 	var ContainerButtonArt:Object;
 	var InventoryButtonArt:Object;
 	var CategoryListIconArt:Array;
@@ -28,17 +32,19 @@ class ContainerMenu extends ItemMenu
 
 	// ?
 	var bPCControlsReady:Boolean = true;
-	
+
 	// API
 	var bNPCMode:Boolean;
 
+	var _pcTabKey:Number;
+	var _pcTabKeyArt:String;
+
+	var _xboxTabKey:Number;
+	var _xboxTabKeyArt:String;
 
 	function ContainerMenu()
 	{
 		super();
-		
-		ContainerButtonArt = [{PCArt: "M1M2", XBoxArt: "360_LTRT", PS3Art: "PS3_LBRB"}, {PCArt: "E", XBoxArt: "360_A", PS3Art: "PS3_A"}, {PCArt: "R", XBoxArt: "360_X", PS3Art: "PS3_X"}, {PCArt:"Tab", XBoxArt:"360_B", PS3Art:"PS3_B"}];
-		InventoryButtonArt = [{PCArt: "E", XBoxArt: "360_A", PS3Art: "PS3_A"}, {PCArt: "R", XBoxArt: "360_X", PS3Art: "PS3_X"}, {PCArt: "F", XBoxArt: "360_Y", PS3Art: "PS3_Y"}, {PCArt:"Tab", XBoxArt:"360_B", PS3Art:"PS3_B"}];
 
 		_defaultEquipArt = {PCArt:"E", XBoxArt:"360_A", PS3Art:"PS3_A"};
 		_equipHelpArt = {PCArt:"M1M2", XBoxArt:"360_LTRT", PS3Art:"PS3_LBRB"};
@@ -54,11 +60,15 @@ class ContainerMenu extends ItemMenu
 		ColumnFormatter.maxTextLength = 80;
 
 		DataFetcher = new InventoryDataFetcher();
+
+		Config.instance.addEventListener("configLoad",this,"onConfigLoad");
 	}
 
 	function InitExtensions()
 	{
-		if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu InitExtensions()");
+		if (DEBUG_LEVEL > 0) {
+			skse.Log("ContainerMenu InitExtensions()");
+		}
 		super.InitExtensions(false);
 
 		InventoryLists_mc.CategoriesList.setIconArt(CategoryListIconArt);
@@ -73,7 +83,26 @@ class ContainerMenu extends ItemMenu
 		ItemCardFadeHolder_mc.StealTextInstance._visible = false;
 		updateButtons();
 
+		// configure art
+		_pcTabKeyArt = Util.keyCodeString(_pcTabKey, 0);
+		_xboxTabKeyArt = Util.keyCodeString(_xboxTabKey, 1);
+		ContainerButtonArt = [{PCArt:"M1M2", XBoxArt:"360_LTRT", PS3Art:"PS3_LBRB"}, {PCArt:"E", XBoxArt:"360_A", PS3Art:"PS3_A"}, {PCArt:"R", XBoxArt:"360_X", PS3Art:"PS3_X"}, {PCArt:_pcTabKeyArt, XBoxArt:_xboxTabKeyArt, PS3Art:"PS3_B"}, {PCArt:"Tab", XBoxArt:"360_B", PS3Art:"PS3_B"}];
+		InventoryButtonArt = [{PCArt:"E", XBoxArt:"360_A", PS3Art:"PS3_A"}, {PCArt:"R", XBoxArt:"360_X", PS3Art:"PS3_X"}, {PCArt:"F", XBoxArt:"360_Y", PS3Art:"PS3_Y"}, {PCArt:_pcTabKeyArt, XBoxArt:_xboxTabKeyArt, PS3Art:"PS3_B"}, {PCArt:"Tab", XBoxArt:"360_B", PS3Art:"PS3_B"}];
+
 		InventoryLists_mc.TabBar.setIcons("take","give");
+	}
+
+	function onConfigLoad(event)
+	{
+		super.onConfigLoad(event);
+		_pcTabKey = _config.Input.hotkey.tabToggle;
+		_xboxTabKey = _config.Input.hotkey.xboxTabToggle;
+		if (_pcTabKey == undefined) {
+			_pcTabKey = 18;
+		}
+		if (_xboxTabKey == undefined) {
+			_xboxTabKey = 107;
+		}
 	}
 
 	function ShowItemsList()
@@ -84,9 +113,11 @@ class ContainerMenu extends ItemMenu
 
 	function handleInput(details, pathToFocus)
 	{
-		if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu handleInput() " + details.value + " details.navEquivalent = " + details.navEquivalent);
+		if (DEBUG_LEVEL > 0) {
+			skse.Log("ContainerMenu handleInput() " + details.value + " details.navEquivalent = " + details.navEquivalent);
+		}
 
-		super.handleInput(details, pathToFocus);
+		super.handleInput(details,pathToFocus);
 
 		if (ShouldProcessItemsListInput(false)) {
 			if (_platform == 0 && details.code == 16 && InventoryLists_mc.ItemsList.selectedIndex != -1) {
@@ -95,19 +126,22 @@ class ContainerMenu extends ItemMenu
 			}
 		}
 		/*
-			Handle input for TakeAll.
-		*/
+		Handle input for TakeAll.
+		*/ 
 		if (details.code == _config.hotkey.Input.takeAllHoldKey && isViewingContainer() && !InventoryLists_mc.disableSelection) {
-				_global.skse.Log("takeAllHoldKey code = " + details.code + " nav = " + details.navEquivalent);
-				_bShowTakeAll = details.value != "keyUp";
-				if (InventoryLists_mc.ItemsList.selectedIndex != -1)
-					updateButtons();
-				else BottomBar_mc.SetButtonText("$Take All",1);
-				
-				if (!_bShowTakeAll)
-					BottomBar_mc.SetButtonText("",1);
+			_global.skse.Log("takeAllHoldKey code = " + details.code + " nav = " + details.navEquivalent);
+			_bShowTakeAll = details.value != "keyUp";
+			if (InventoryLists_mc.ItemsList.selectedIndex != -1) {
+				updateButtons();
+			} else {
+				BottomBar_mc.SetButtonText("$Take All",1);
+
 			}
-		
+			if (!_bShowTakeAll) {
+				BottomBar_mc.SetButtonText("",1);
+			}
+		}
+
 
 		return true;
 	}
@@ -115,22 +149,25 @@ class ContainerMenu extends ItemMenu
 	// called when dropping items
 	function onXButtonPress()
 	{
-        if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu onXButtonPress()");
-		
-		// If we are zoomed into an item, do nothing
-		if (!bFadedIn)
+		if (DEBUG_LEVEL > 0) {
+			skse.Log("ContainerMenu onXButtonPress()");
+
+		}
+		// If we are zoomed into an item, do nothing  
+		if (!bFadedIn) {
 			return;
-		
+		}
 		/*
-			This is our take on fixing TakeAll the way it should of been in release.
-			
-			If config takeAll key is held, allow TakeAll.
-			If config takeAll key is not held, prevent TakeAll.
-		*/
+		This is our take on fixing TakeAll the way it should of been in release.
+		
+		If config takeAll key is held, allow TakeAll.
+		If config takeAll key is not held, prevent TakeAll.
+		*/ 
 		if (isViewingContainer() && !bNPCMode) {
-			if (!_bShowTakeAll)
+			if (!_bShowTakeAll) {
 				return;
-				
+			}
+
 			GameDelegate.call("TakeAllItems",[]);
 			return;
 		}
@@ -144,7 +181,9 @@ class ContainerMenu extends ItemMenu
 
 	function UpdateItemCardInfo(a_updateObj:Object)
 	{
-        if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu UpdateItemCardInfo()");
+		if (DEBUG_LEVEL > 0) {
+			skse.Log("ContainerMenu UpdateItemCardInfo()");
+		}
 		super.UpdateItemCardInfo(a_updateObj);
 
 		updateButtons();
@@ -160,15 +199,19 @@ class ContainerMenu extends ItemMenu
 
 	function onItemHighlightChange(event)
 	{
-                if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu onItemHighlightChange()");
+		if (DEBUG_LEVEL > 0) {
+			skse.Log("ContainerMenu onItemHighlightChange()");
+		}
 		updateButtons();
 		super.onItemHighlightChange(event);
 	}
 
 	function onShowItemsList(event)
 	{
-                 if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu onShowItemsList()");
-		         _global.skse.Log("selectedIndex = " + InventoryLists_mc.ItemsList._selectedIndex);
+		if (DEBUG_LEVEL > 0) {
+			skse.Log("ContainerMenu onShowItemsList()");
+		}
+		_global.skse.Log("selectedIndex = " + InventoryLists_mc.ItemsList._selectedIndex);
 		InventoryLists_mc.showItemsList();
 	}
 
@@ -176,7 +219,9 @@ class ContainerMenu extends ItemMenu
 	function onHideItemsList(event)
 	{
 		super.onHideItemsList(event);
-		if (DEBUG_LEVEL > 0) _global.skse.Log("ContainerMenu onHideItemsList()");
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("ContainerMenu onHideItemsList()");
+		}
 		updateButtons();
 	}
 
@@ -186,70 +231,80 @@ class ContainerMenu extends ItemMenu
 			BottomBar_mc.SetButtonText("",0);
 			BottomBar_mc.SetButtonText("",1);
 			BottomBar_mc.SetButtonText(bNPCMode ? "" : "$Take All",2);
-			BottomBar_mc.SetButtonText("$Exit",3);
+			BottomBar_mc.SetButtonText("$Change Tab",3);
+			BottomBar_mc.SetButtonText("$Exit",4);
 		} else {
 			BottomBar_mc.SetButtonText("",0);
 			BottomBar_mc.SetButtonText("",1);
 			BottomBar_mc.SetButtonText("",2);
-			BottomBar_mc.SetButtonText("$Exit",3);
+			BottomBar_mc.SetButtonText("$Change Tab",3);
+			BottomBar_mc.SetButtonText("$Exit",4);
 		}
 	}
 
 	function updateButtons()
 	{
-        if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu updateButtons()");
-		
+		if (DEBUG_LEVEL > 0) {
+			skse.Log("ContainerMenu updateButtons()");
+		}
+
 		if (isViewingContainer()) {
 			BottomBar_mc.SetButtonsArt(ContainerButtonArt);
 		} else {
 			BottomBar_mc.SetButtonsArt(InventoryButtonArt);
 		}
-		
-		if (InventoryLists_mc.ItemsList.selectedIndex == -1 || InventoryLists_mc.currentState != InventoryLists.SHOW_PANEL)
-		{
+
+		if (InventoryLists_mc.ItemsList.selectedIndex == -1 || InventoryLists_mc.currentState != InventoryLists.SHOW_PANEL) {
 			hideButtons();
 			return;
 		}
 
 		if (isViewingContainer()) {
-			
+
 			if (_bShowEquipButtonHelp) {
 				BottomBar_mc.SetButtonText(InventoryDefines.GetEquipText(ItemCard_mc.itemInfo.type),0);
 				BottomBar_mc.SetButtonText("$Take",1);
 				BottomBar_mc.SetButtonText(bNPCMode ? "" : "$Take All",2);
-			}
-			else {
+			} else {
 				BottomBar_mc.SetButtonText("",0);
 				BottomBar_mc.SetButtonText("$Take",1);
 				BottomBar_mc.SetButtonText(bNPCMode ? "" : "$Take All",2);
 			}
-			BottomBar_mc.SetButtonText("$Exit",3);
-			
+			BottomBar_mc.SetButtonText("$Change Tab",3);
+			BottomBar_mc.SetButtonText("$Exit",4);
+
 
 		} else {
 			BottomBar_mc.SetButtonArt(_bShowEquipButtonHelp ? _equipHelpArt : _defaultEquipArt,0);
 			BottomBar_mc.SetButtonText(InventoryDefines.GetEquipText(ItemCard_mc.itemInfo.type),0);
 			BottomBar_mc.SetButtonText(bNPCMode ? "$Give" : "$Store",1);
 			BottomBar_mc.SetButtonText(ItemCard_mc.itemInfo.favorite ? "$Unfavorite" : "$Favorite",2);
-			BottomBar_mc.SetButtonText("$Exit",3);
+			BottomBar_mc.SetButtonText("$Change Tab",3);
+			BottomBar_mc.SetButtonText("$Exit",4);
 		}
 	}
 
 	function onMouseRotationFastClick(a_mouseButton:Number)
 	{
-        if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu onMouseRotationFastClick()");
+		if (DEBUG_LEVEL > 0) {
+			skse.Log("ContainerMenu onMouseRotationFastClick()");
+		}
 		GameDelegate.call("CheckForMouseEquip",[a_mouseButton],this,"AttemptEquip");
 	}
 
 	function isViewingContainer()
 	{
-                if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu isViewingContainer()");
+		if (DEBUG_LEVEL > 0) {
+			skse.Log("ContainerMenu isViewingContainer()");
+		}
 		return (InventoryLists_mc.CategoriesList.activeSegment == 0);
 	}
 
 	function onQuantityMenuSelect(event)
 	{
-        if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu onQuantityMenuSelect()");
+		if (DEBUG_LEVEL > 0) {
+			skse.Log("ContainerMenu onQuantityMenuSelect()");
+		}
 		if (_equipHand != undefined) {
 			GameDelegate.call("EquipItem",[_equipHand, event.amount]);
 			_equipHand = undefined;
@@ -266,7 +321,9 @@ class ContainerMenu extends ItemMenu
 
 	function AttemptEquip(a_slot:Number, a_bCheckOverList:Boolean)
 	{
-        if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu AttemptEquip()");
+		if (DEBUG_LEVEL > 0) {
+			skse.Log("ContainerMenu AttemptEquip()");
+		}
 		var bCheckOverList = a_bCheckOverList == undefined ? true : a_bCheckOverList;
 
 		if (ShouldProcessItemsListInput(bCheckOverList) && ConfirmSelectedEntry()) {
@@ -284,7 +341,9 @@ class ContainerMenu extends ItemMenu
 
 	function onItemSelect(event)
 	{
-        if (DEBUG_LEVEL > 0) skse.Log("ContainerMenu onItemSelect()");
+		if (DEBUG_LEVEL > 0) {
+			skse.Log("ContainerMenu onItemSelect()");
+		}
 		if (event.keyboardOrMouse != 0) {
 			if (!isViewingContainer()) {
 				StartItemEquip(ContainerMenu.NULL_HAND);
@@ -296,7 +355,9 @@ class ContainerMenu extends ItemMenu
 
 	function StartItemTransfer()
 	{
-                if (DEBUG_LEVEL > 0) _global.skse.Log("ContainerMenu StartItemTransfer()");
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("ContainerMenu StartItemTransfer()");
+		}
 		if (InventoryLists_mc.ItemsList.selectedEntry.enabled) {
 			if (ItemCard_mc.itemInfo.weight == 0 && isViewingContainer()) {
 				onQuantityMenuSelect({amount:InventoryLists_mc.ItemsList.selectedEntry.count});
@@ -314,7 +375,9 @@ class ContainerMenu extends ItemMenu
 
 	function StartItemEquip(a_equipHand)
 	{
-        if (DEBUG_LEVEL > 0) _global.skse.Log("ContainerMenu StartItemEquip()");
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("ContainerMenu StartItemEquip()");
+		}
 		if (isViewingContainer()) {
 			_equipHand = a_equipHand;
 			StartItemTransfer();
@@ -326,7 +389,9 @@ class ContainerMenu extends ItemMenu
 
 	function onItemCardSubMenuAction(event)
 	{
-        if (DEBUG_LEVEL > 0) _global.skse.Log("ContainerMenu onItemCardSubMenuAction()");
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("ContainerMenu onItemCardSubMenuAction()");
+		}
 		super.onItemCardSubMenuAction(event);
 
 		if (event.menu == "quantity") {
@@ -337,7 +402,9 @@ class ContainerMenu extends ItemMenu
 	function SetPlatform(a_platform:Number, a_bPS3Switch:Boolean)
 	{
 		super.SetPlatform(a_platform,a_bPS3Switch);
-		if (DEBUG_LEVEL > 0) _global.skse.Log("ContainerMenu SetPlatform()");
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("ContainerMenu SetPlatform()");
+		}
 		_platform = a_platform;
 		_bShowEquipButtonHelp = a_platform != 0;
 	}

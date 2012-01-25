@@ -8,29 +8,29 @@ import skyui.Config;
 class skyui.DynamicScrollingList extends skyui.DynamicList
 {
 	private var _savedScrollPosition:Number;
-	
+
 	private var _scrollPosition:Number;
 	private var _maxScrollPosition:Number;
 
 	private var _listIndex:Number;
 	private var _maxListIndex:Number;
 	private var _listHeight:Number;
-	
-	private var _entryHeight:Number;
-	
-	
-	private var _scrollTmp: Number;
-	private var _scrollDelta: Number;
-	
-	private var _isScrolling: Number;
-	private var _isFastScrolling: Number;
 
-	
-	private var _scrollRepeaterDelay: Number;
-	private var _scrollRepeatDelay: Number;
-	private var _scrollRepeatPageDelay: Number;
-	
-	private var _config: Config;
+	private var _entryHeight:Number;
+
+
+	private var _scrollTmp:Number;
+	private var _scrollDelta:Number;
+
+	private var _isScrolling:Number;
+	private var _isFastScrolling:Number;
+
+
+	private var _scrollRepeaterDelay:Number;
+	private var _scrollRepeatDelay:Number;
+	private var _scrollRepeatPageDelay:Number;
+
+	private var _config:Config;
 
 	// Children
 	var scrollbar:MovieClip;
@@ -39,7 +39,7 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 	function DynamicScrollingList()
 	{
 		super();
-		
+
 		_savedScrollPosition = 0;
 		_scrollPosition = 0;
 		_maxScrollPosition = 0;
@@ -54,8 +54,8 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 		_entryHeight = 28;
 		_listHeight = border._height;
 		_maxListIndex = Math.floor(_listHeight / _entryHeight);
-		
-		Config.instance.addEventListener("configLoad", this, "onConfigLoad");
+
+		Config.instance.addEventListener("configLoad",this,"onConfigLoad");
 	}
 
 	function onLoad()
@@ -70,26 +70,41 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 
 	function onConfigLoad(event)
 	{
-		if (DEBUG_LEVEL > 0)
+		if (DEBUG_LEVEL > 0) {
 			_global.skse.Log("DynamicScrollingList onConfigLoad()");
-			
+		}
+
 		_config = event.config;
 		_scrollDelta = _config.General.scrollDelta;
-		
+		_scrollRepeaterDelay = _config.General.scrollRepeaterDelay;
+		_scrollRepeatDelay = _config.General.scrollRepeatDelay;
+		_scrollRepeatPageDelay = _config.General.scrollRepeatPageDelay;
+		if (_scrollRepeaterDelay == undefined) {
+			_scrollRepeaterDelay = 500;
+		}
+		if (_scrollRepeatDelay == undefined) {
+			_scrollRepeatDelay = 0;
+		}
+		if (_scrollRepeatPageDelay == undefined) {
+			_scrollRepeatPageDelay = 250;
+		}
 		setScrollDelta(_maxListIndex);
 	}
 
 	function onScroll(event)
 	{
-		if (DEBUG_LEVEL > 1) _global.skse.Log("DynamicScrollingList onScroll()");
+		if (DEBUG_LEVEL > 1) {
+			_global.skse.Log("DynamicScrollingList onScroll()");
+		}
 		updateScrollPosition(Math.floor(event.position + 0.500000));
 	}
-	
-	function setScrollDelta(maxPosition: Number): Void {
+
+	function setScrollDelta(maxPosition:Number):Void
+	{
 		if (_scrollDelta != undefined && _scrollDelta != 0) {
 			if (Math.abs(_scrollDelta) > maxPosition) {
 				// sign(scrollDelta) * maxPosition
-				_scrollDelta = (Math.abs(_scrollDelta)/_scrollDelta) * maxPosition;
+				_scrollDelta = (Math.abs(_scrollDelta) / _scrollDelta) * maxPosition;
 			}
 		} else {
 			_scrollDelta = 1;
@@ -98,7 +113,9 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 
 	function getClipByIndex(a_index:Number)
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("DynamicScrollingList getClipByIndex()");
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("DynamicScrollingList getClipByIndex()");
+		}
 		if (a_index < 0 || a_index >= _maxListIndex) {
 			return undefined;
 		}
@@ -108,24 +125,26 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 
 	function handleInput(details, pathToFocus):Boolean
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("DynamicScrollingList handleInput()");
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("DynamicScrollingList handleInput()");
+		}
 		var processed = false;
 
 		if (!_bDisableInput) {
 			var entry = getClipByIndex(selectedIndex - scrollPosition);
 
 			processed = entry != undefined && entry.handleInput != undefined && entry.handleInput(details, pathToFocus.slice(1));
-			
+
 			if (!processed && (details.value == "keyDown" || details.value == "keyHold" || details.value == "keyUp")) {
-				
+
 				var scroll:Boolean = details.navEquivalent == NavigationCode.UP || details.navEquivalent == NavigationCode.DOWN;
-				var scrollPage:Boolean  = details.navEquivalent == NavigationCode.PAGE_UP || details.navEquivalent == NavigationCode.PAGE_DOWN;
+				var scrollPage:Boolean = details.navEquivalent == NavigationCode.PAGE_UP || details.navEquivalent == NavigationCode.PAGE_DOWN;
 				var scrollUp:Boolean = details.navEquivalent == NavigationCode.UP || details.navEquivalent == NavigationCode.PAGE_UP;
-				
-				var _changeCat : Boolean = details.navEquivalent == NavigationCode.LEFT || details.navEquivalent == NavigationCode.RIGHT;
-				
-				if (details.value == "keyDown")  {
-				
+
+				var _changeCat:Boolean = details.navEquivalent == NavigationCode.LEFT || details.navEquivalent == NavigationCode.RIGHT;
+
+				if (details.value == "keyDown") {
+
 					if (scroll || scrollPage) {
 						// Scroll up or down once
 						scrollUp ? moveSelectionUp(scrollPage) : moveSelectionDown(scrollPage);
@@ -133,12 +152,12 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 							//Stop previous scrolling, if any
 							scrollingRepeatStop();
 						}
-						// Start fast scrolling after a delay of _scrollRepeaterDelay milliseconds
+						// Start fast scrolling after a delay of _scrollRepeaterDelay milliseconds 
 						// Undocumented
 						// _global.setTimeout(objectReference:Object, methodName:String, interval:Number, [param1:Object, param2, ..., paramN]) : Number
 						_isScrolling = _global.setTimeout(this, "scrollingRepeatStart", _scrollRepeaterDelay, scrollUp, scrollPage);
 						processed = true;
-						
+
 					} else if (!_bDisableSelection && details.navEquivalent == NavigationCode.ENTER) {
 						scrollingRepeatStop();
 						onItemPress();
@@ -157,33 +176,35 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 		return processed;
 	}
 
-	function scrollingRepeatStart(scrollUp: Boolean, scrollPage: Boolean) {
-		var scrollDirection: String = (scrollUp) ? "moveSelectionUp" : "moveSelectionDown";
+	function scrollingRepeatStart(scrollUp:Boolean, scrollPage:Boolean)
+	{
+		var scrollDirection:String = (scrollUp) ? "moveSelectionUp" : "moveSelectionDown";
 		var scrollDelay = (scrollPage) ? _scrollRepeatPageDelay : _scrollRepeatDelay;
 		scrollUp ? moveSelectionUp(scrollPage) : moveSelectionDown(scrollPage);
 		_isFastScrolling = setInterval(this, scrollDirection, scrollDelay, scrollPage);
 	}
 
-	function scrollingRepeatStop(): Void {
-		if (_isScrolling  != undefined) {
+	function scrollingRepeatStop():Void
+	{
+		if (_isScrolling != undefined) {
 			// Interrupts the _isScrolling timeout if it's started
 			_global.clearTimeout(_isScrolling);
-			delete(_isScrolling);
+			delete (_isScrolling);
 		}
-		if (_isFastScrolling  != undefined) {
+		if (_isFastScrolling != undefined) {
 			// Stops fast scrolling from continuing
 			clearInterval(_isFastScrolling);
-			delete(_isFastScrolling);
+			delete (_isFastScrolling);
 		}
 	}
-	
+
 	function onMouseWheel(delta)
 	{
 		if (!_bDisableInput) {
 			for (var target = Mouse.getTopMostEntity(); target && target != undefined; target = target._parent) {
 				if (target == this && delta != 0) {
 					_scrollTmp = (delta < 0) ? _scrollTmp + _scrollDelta : _scrollTmp - _scrollDelta;
-					var entriesToScroll: Number = Math.floor(_scrollTmp);
+					var entriesToScroll:Number = Math.floor(_scrollTmp);
 					_scrollTmp = _scrollTmp - entriesToScroll;
 					if (entriesToScroll <= -1 || entriesToScroll >= 1) {
 						scrollPosition = scrollPosition + entriesToScroll;
@@ -193,11 +214,13 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 			_bMouseDrivenNav = true;
 		}
 	}
-	
+
 
 	function doSetSelectedIndex(a_newIndex:Number, a_keyboardOrMouse:Number)
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("DynamicScrollingList doSetSelectedIndex()");
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("DynamicScrollingList doSetSelectedIndex()");
+		}
 		if (!_bDisableSelection && a_newIndex != _selectedIndex) {
 			var oldIndex = _selectedIndex;
 			_selectedIndex = a_newIndex;
@@ -225,13 +248,20 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 
 	function get scrollPosition()
 	{
-		if (DEBUG_LEVEL > 1) _global.skse.Log("DynamicScrollingList get scrollPosition() " + _scrollPosition);
+		if (DEBUG_LEVEL > 1) {
+			_global.skse.Log("DynamicScrollingList get scrollPosition() " + _scrollPosition);
+		}
 		return _scrollPosition;
 	}
 
 	function get maxScrollPosition()
 	{
 		return _maxScrollPosition;
+	}
+
+	function get savedScrollPosition():Number
+	{
+		return _savedScrollPosition;
 	}
 
 	function set savedScrollPosition(a_position:Number)
@@ -241,22 +271,28 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 
 	function set scrollPosition(a_newPosition:Number)
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("DynamicScrollingList set scrollPosition "  + a_newPosition);
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("DynamicScrollingList set scrollPosition " + a_newPosition);
+		}
 		if (a_newPosition != _scrollPosition) {
-		
+
 			if (a_newPosition < 0) {
 				a_newPosition = 0;
 			} else if (a_newPosition > _maxScrollPosition) {
 				a_newPosition = _maxScrollPosition;
 			}
-			
+
 			if (scrollbar != undefined) {
-				if (DEBUG_LEVEL > 1) _global.skse.Log("updating scroll position = " + _scrollPosition);
-				// this is responsible for updating the thumb position on scrollbar 
+				if (DEBUG_LEVEL > 1) {
+					_global.skse.Log("updating scroll position = " + _scrollPosition);
+				}
+				// this is responsible for updating the thumb position on scrollbar  
 				// so it's important we call this
 				scrollbar.position = a_newPosition;
 			} else {
-				if (DEBUG_LEVEL > 1) _global.skse.Log("scrollbar is undefined, calling updateScrollPosition");
+				if (DEBUG_LEVEL > 1) {
+					_global.skse.Log("scrollbar is undefined, calling updateScrollPosition");
+				}
 				updateScrollPosition(a_newPosition);
 			}
 		}
@@ -266,29 +302,38 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 	// Note: if this is called directly, it will break onScroll
 	function updateScrollPosition(a_position:Number)
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("DynamicScrollingList updateScrollPosition()" + " currentScrollPos = " + _scrollPosition + ", new scroll pos = " + a_position);
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("DynamicScrollingList updateScrollPosition()" + " currentScrollPos = " + _scrollPosition + ", new scroll pos = " + a_position);
+		}
 		_scrollPosition = a_position;
 		UpdateList();
 	}
 
 	function updateScrollbar()
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("DynamicScrollingList updateScrollbar()");
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("DynamicScrollingList updateScrollbar()");
+		}
 		if (scrollbar != undefined) {
-			if (DEBUG_LEVEL > 1) _global.skse.Log("updating scrollbar properties...");
+			if (DEBUG_LEVEL > 1) {
+				_global.skse.Log("updating scrollbar properties...");
+			}
 			scrollbar._visible = false;
 			scrollbar.setScrollProperties(_maxListIndex,0,_maxScrollPosition);
 			scrollbar._visible = _maxScrollPosition > 0;
 			// if category has saved scroll position, restore it
-			if (_savedScrollPosition > 0)
+			if (_savedScrollPosition != undefined) {
 				_scrollPosition = _savedScrollPosition;
+			}
 			scrollbar.position = _scrollPosition;
 		}
 	}
 
 	function UpdateList()
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("DynamicScrollingList UpdateList()");
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("DynamicScrollingList UpdateList()");
+		}
 		var yStart = _indent;
 		var h = 0;
 
@@ -321,7 +366,9 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 
 	function InvalidateData()
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("DynamicScrollingList InvalidateData()");
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("DynamicScrollingList InvalidateData()");
+		}
 		calculateMaxScrollPosition();
 
 		super.InvalidateData();
@@ -329,7 +376,9 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 
 	function calculateMaxScrollPosition()
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("DynamicScrollingList calculateMaxScrollPosition()");
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("DynamicScrollingList calculateMaxScrollPosition()");
+		}
 		var t = _entryList.length - _maxListIndex;
 
 		_maxScrollPosition = t > 0 ? t : 0;
@@ -345,9 +394,11 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 	//-------------------------------------//
 	function moveSelectionUp(a_bNextPage:Boolean)
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("DynamicScrollingList moveSelecttionUp()");
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("DynamicScrollingList moveSelecttionUp()");
+		}
 		var lastPosition = _scrollPosition;
-		var d = a_bNextPage? _listIndex : 1;
+		var d = a_bNextPage ? _listIndex : 1;
 
 		if (!_bDisableSelection) {
 			if (selectedIndex == -1) {
@@ -364,7 +415,9 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 
 	function moveSelectionDown(a_bNextPage:Boolean)
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("DynamicScrollingList moveSelectionDown()");
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("DynamicScrollingList moveSelectionDown()");
+		}
 		var lastPosition = _scrollPosition;
 
 		if (!_bDisableSelection) {
@@ -383,17 +436,19 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 
 	function selectDefaultIndex(a_bBottom:Boolean)
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("DynamicScrollingList selectDefaultIndex()");
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("DynamicScrollingList selectDefaultIndex()");
+		}
 		if (_listIndex > 0) {
 			if (a_bBottom) {
 				var firstClip = getClipByIndex(0);
 				if (firstClip.itemIndex != undefined) {
-					doSetSelectedIndex(firstClip.itemIndex, 0);
+					doSetSelectedIndex(firstClip.itemIndex,0);
 				}
 			} else {
 				var lastClip = getClipByIndex(_listIndex - 1);
 				if (lastClip.itemIndex != undefined) {
-					doSetSelectedIndex(lastClip.itemIndex, 0);
+					doSetSelectedIndex(lastClip.itemIndex,0);
 				}
 			}
 		}
@@ -401,7 +456,9 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 
 	function setEntryText(a_entryClip:MovieClip, a_entryObject:Object)
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("DynamicScrollingList setEntryText()");
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("DynamicScrollingList setEntryText()");
+		}
 		if (a_entryClip.textField != undefined) {
 			if (textOption == TEXT_OPTION_SHRINK_TO_FIT) {
 				a_entryClip.textField.textAutoSize = "shrink";
@@ -417,19 +474,5 @@ class skyui.DynamicScrollingList extends skyui.DynamicList
 				a_entryClip.textField.textColor = a_entryObject.disabled == true ? (6316128) : (16777215);
 			}
 		}
-	}
-
-	// this function needs to be called after calculateMaxScrollPosition or else it will reset the saved
-	// scrollposition to 0
-	function RestoreScrollPosition(a_newPosition)
-	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("DynamicScrollingList RestoreScrollPosition() pos = " + a_newPosition);
-		if (a_newPosition < 0) {
-			a_newPosition = 0;
-		} else if (a_newPosition > _maxScrollPosition) {
-			a_newPosition = _maxScrollPosition;
-		}
-		
-		scrollPosition = a_newPosition;
 	}
 }

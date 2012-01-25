@@ -8,19 +8,71 @@ class skyui.InventoryColumnFormatter implements IColumnFormatter
 	private static var STATES = ["None", "Equipped", "LeftEquip", "RightEquip", "LeftAndRightEquip"];
 
 	private var _maxTextLength:Number;
-	
-	private var _config;
-	
+
 	static var DEBUG_LEVEL = 1;
-	
+	// icon vars
+	private var _bShowStolenIcon:Boolean;
+
+	// color vars
+	private var _defaultEnabledColor;
+	private var _defaultDisabledColor;
+	private var _negativeEnabledColor;
+	private var _negativeDisabledColor;
+	private var _stolenEnabledColor;
+	private var _stolenDisabledColor;
+
+	private var _config:Config;
+
 	function InventoryColumnFormatter()
 	{
 		_maxTextLength = 50;
+		_bShowStolenIcon = true;
+		_defaultEnabledColor = 0xffffff;
+		_defaultDisabledColor = 0x4c4c4c;
+
+		_negativeEnabledColor = 0xff0000;
+		_negativeDisabledColor = 0x800000;
+
+		_stolenEnabledColor = 0xffffff;
+		_stolenDisabledColor = 0x4c4c4c;
+
+		Config.instance.addEventListener("configLoad",this,"onConfigLoad");
+	}
+
+	function onConfigLoad(event)
+	{
+		_config = event.config;
+
+		if (_config.ItemList.entry.icon.showStolen != undefined) {
+			_bShowStolenIcon = _config.ItemList.entry.icon.showStolen;
+		}
+		// Enabled entry 
+		if (_config.ItemList.entry.color.enabled.text != undefined) {
+			_defaultEnabledColor = _config.ItemList.entry.color.enabled.text;
+		}
+		if (_config.ItemList.entry.color.enabled.negative != undefined) {
+			_negativeEnabledColor = _config.ItemList.entry.color.enabled.negative;
+		}
+		if (_config.ItemList.entry.color.enabled.stolen != undefined) {
+			_stolenEnabledColor = _config.ItemList.entry.color.enabled.stolen;
+		}
+		// Disabled entry 
+		if (_config.ItemList.entry.color.disabled.text != undefined) {
+			_defaultDisabledColor = _config.ItemList.entry.color.disabled.text;
+		}
+		if (_config.ItemList.entry.color.disabled.negative != undefined) {
+			_negativeDisabledColor = _config.ItemList.entry.color.disabled.negative;
+		}
+		if (_config.ItemList.entry.color.disabled.stolen != undefined) {
+			_stolenDisabledColor = _config.ItemList.entry.color.disabled.stolen;
+		}
 	}
 
 	function set maxTextLength(a_length:Number)
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("InventoryColumnFormatter set maxTextLength()");
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("InventoryColumnFormatter set maxTextLength()");
+		}
 		if (a_length > 3) {
 			_maxTextLength = a_length;
 		}
@@ -28,13 +80,17 @@ class skyui.InventoryColumnFormatter implements IColumnFormatter
 
 	function get maxTextLength():Number
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("InventoryColumnFormatter get maxTextLength()");
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("InventoryColumnFormatter get maxTextLength()");
+		}
 		return _maxTextLength;
 	}
 
 	function formatEquipIcon(a_entryField:Object, a_entryObject:Object)
 	{
-		if (DEBUG_LEVEL > 1) _global.skse.Log("InventoryColumnFormatter formatEquipIcon()");
+		if (DEBUG_LEVEL > 1) {
+			_global.skse.Log("InventoryColumnFormatter formatEquipIcon()");
+		}
 		if (a_entryObject != undefined && a_entryObject.equipState != undefined) {
 			a_entryField.gotoAndStop(STATES[a_entryObject.equipState]);
 		} else {
@@ -74,7 +130,7 @@ class skyui.InventoryColumnFormatter implements IColumnFormatter
 					a_entryField.gotoAndStop("weapon_staff");
 					break;
 				}
-			
+
 				a_entryField.gotoAndStop("default_weapon");
 				break;
 			case InventoryDefines.ICT_ARMOR :
@@ -110,12 +166,14 @@ class skyui.InventoryColumnFormatter implements IColumnFormatter
 
 	function formatName(a_entryField:Object, a_entryObject:Object, a_entryClip:MovieClip)
 	{
-		if (DEBUG_LEVEL > 1) _global.skse.Log("InventoryColumnFormatter formatName()");
+		if (DEBUG_LEVEL > 1) {
+			_global.skse.Log("InventoryColumnFormatter formatName()");
+		}
 		if (a_entryObject.text != undefined) {
 
 			// Text
 			var text = a_entryObject.text;
-			
+
 			if (a_entryObject.soulLVL != undefined) {
 				text = text + " (" + a_entryObject.soulLVL + ")";
 			}
@@ -131,11 +189,7 @@ class skyui.InventoryColumnFormatter implements IColumnFormatter
 			a_entryField.autoSize = "left";
 			a_entryField.SetText(text);
 
-			if (a_entryObject.negativeEffect == true) {
-				a_entryField.textColor = a_entryObject.enabled == false ? 0x800000 : 0xFF0000;
-			} else if (a_entryObject.enabled == false) {
-				a_entryField.textColor = 0x4C4C4C;
-			}
+			formatColor(a_entryField,a_entryObject);
 
 			// BestInClass icon
 			var iconPos = a_entryField._x + a_entryField._width + 5;
@@ -171,7 +225,7 @@ class skyui.InventoryColumnFormatter implements IColumnFormatter
 			}
 
 			// Stolen Icon
-			if (a_entryObject.infoIsStolen == true || a_entryObject.isStealing) {
+			if ((a_entryObject.infoIsStolen == true || a_entryObject.isStealing) && _bShowStolenIcon != false) {
 				a_entryClip.stolenIcon._x = iconPos;
 				iconPos = iconPos + iconSpace;
 				a_entryClip.stolenIcon.gotoAndStop("show");
@@ -193,12 +247,24 @@ class skyui.InventoryColumnFormatter implements IColumnFormatter
 		}
 	}
 
+	function formatColor(a_entryField:Object, a_entryObject:Object)
+	{
+		// Negative Effect
+		if (a_entryObject.negativeEffect == true) {
+			a_entryField.textColor = a_entryObject.enabled == false ? _negativeDisabledColor : _negativeEnabledColor;
+
+			// Stolen
+		} else if (a_entryObject.infoIsStolen == true || a_entryObject.isStealing == true) {
+			a_entryField.textColor = a_entryObject.enabled == false ? _stolenDisabledColor : _stolenEnabledColor;
+
+			// Default
+		} else {
+			a_entryField.textColor = a_entryObject.enabled == false ? _defaultDisabledColor : _defaultEnabledColor;
+		}
+	}
+
 	function formatText(a_entryField:Object, a_entryObject:Object)
 	{
-		if (a_entryObject.negativeEffect == true) {
-			a_entryField.textColor = a_entryObject.enabled == false ? 0x800000 : 0xFF0000;
-		} else if (a_entryObject.enabled == false) {
-				a_entryField.textColor = 0x4C4C4C;
-		}
+		formatColor(a_entryField,a_entryObject);
 	}
 }

@@ -20,7 +20,9 @@ class skyui.ItemNameFilter implements skyui.IFilter
 
 	function EntryMatchesFunc(a_entry):Boolean
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("ItemNameFilter EntryMatchesFunc()");
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("ItemNameFilter EntryMatchesFunc()");
+		}
 		var searchStr = a_entry.text.toLowerCase();
 
 		var seekIndex = 0;
@@ -28,7 +30,7 @@ class skyui.ItemNameFilter implements skyui.IFilter
 
 		for (var i = 0; i < searchStr.length; i++) {
 			var charCode = Util.mapUnicodeChar(_filterText.charCodeAt(seekIndex));
-			
+
 			if (searchStr.charCodeAt(i) == charCode) {
 				if (!seek) {
 					seek = true;
@@ -54,7 +56,7 @@ class skyui.ItemNameFilter implements skyui.IFilter
 	function set filterText(a_filterText:String)
 	{
 		a_filterText = a_filterText.toLowerCase();
-		
+
 		var changed = a_filterText != _filterText;
 		_filterText = a_filterText;
 
@@ -66,7 +68,9 @@ class skyui.ItemNameFilter implements skyui.IFilter
 
 	function process(a_filteredList:Array)
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("ItemNameFilter process()");
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("ItemNameFilter process()");
+		}
 		if (_filterText == undefined || _filterText == "") {
 			return;
 		}

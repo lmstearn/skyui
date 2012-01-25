@@ -7,7 +7,7 @@ class skyui.TabBar extends MovieClip
 {
 	static var LEFT_TAB = 0;
 	static var RIGHT_TAB = 1;
-	
+
 	static var DEBUG_LEVEL = 0;
 	private var _activeTab:Number;
 
@@ -32,7 +32,7 @@ class skyui.TabBar extends MovieClip
 
 		activeTab = LEFT_TAB;
 	}
-	
+
 	function setIcons(a_leftName:String, a_rightName:String)
 	{
 		leftIcon.gotoAndStop(a_leftName);
@@ -47,10 +47,12 @@ class skyui.TabBar extends MovieClip
 
 	function tabPress(a_tabIndex:Number)
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("TabBar tabPress " + a_tabIndex);
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("TabBar tabPress " + a_tabIndex);
+		}
 		dispatchEvent({type:"tabPress", index:a_tabIndex});
 	}
-	
+
 	function tabToggle()
 	{
 		tabPress(_activeTab == LEFT_TAB ? RIGHT_TAB : LEFT_TAB);
@@ -84,8 +86,8 @@ class skyui.TabBar extends MovieClip
 	{
 		leftLabel.textAutoSize = "shrink";
 		rightLabel.textAutoSize = "shrink";
-		
-		
+
+
 		leftButton.onPress = function(a_mouseIndex, a_keyboardOrMouse, a_buttonIndex)
 		{
 			_parent.tabPress(LEFT_TAB);

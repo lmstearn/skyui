@@ -5,6 +5,7 @@ import Shared.GlobalFunc;
 
 import skyui.Config;
 
+
 class skyui.SearchWidget extends MovieClip
 {
 	private var _previousFocus:Object;
@@ -15,46 +16,44 @@ class skyui.SearchWidget extends MovieClip
 	private var _bEnableAutoupdate:Boolean;
 	private var _updateDelay:Number;
 	private var _filterString:String;
-	
+
 	private var _updateTimerId:Number;
-	
-	private var _config;
-	
+
+	private var _config:Config;
+
 	// Children
 	var textField:TextField;
 	var icon:MovieClip;
-	
+
 	//Mixin
 	var dispatchEvent:Function;
 	var addEventListener:Function;
-	
-	
+
+
 	function SearchWidget()
 	{
 		super();
 		EventDispatcher.initialize(this);
-		
+
 		_currentInput = undefined;
 		_bRestoreFocus = false;
-		
+
 		textField.onKillFocus = function(a_newFocus:Object)
 		{
 			_parent.endInput();
 		};
-		
-		Config.instance.addEventListener("configLoad", this, "onConfigLoad");
+
+		Config.instance.addEventListener("configLoad",this,"onConfigLoad");
 	}
-	
+
 	function onConfigLoad(event)
 	{
 		_config = event.config;
 		_bEnableAutoupdate = _config.SearchBox.autoupdate.enable;
 		_updateDelay = _config.SearchBox.autoupdate.delay;
-		_filterString = _config.Strings.filter;
-		
-		textField.SetText(_filterString);
+		_filterString = textField.text;
 	}
-	
+
 	function onPress(a_mouseIndex, a_keyboardOrMouse)
 	{
 		startInput();
@@ -65,32 +64,32 @@ class skyui.SearchWidget extends MovieClip
 		if (_bActive) {
 			return;
 		}
-		
+
 		_previousFocus = FocusHandler.instance.getFocus(0);
 
 		_currentInput = _lastInput = undefined;
-		
+
 		textField.SetText("");
 		textField.type = "input";
 		textField.noTranslate = true;
 		textField.selectable = true;
-		
+
 		Selection.setFocus(textField,0);
 		Selection.setSelection(0,0);
-		
+
 		_bActive = true;
 		skse.AllowTextInput(true);
-		
-		dispatchEvent({type: "inputStart"});
-		
-		if ( _bEnableAutoupdate) {
+
+		dispatchEvent({type:"inputStart"});
+
+		if (_bEnableAutoupdate) {
 			this.onEnterFrame = function()
 			{
 				refreshInput();
-				
+
 				if (_currentInput != _lastInput) {
 					_lastInput = _currentInput;
-					
+
 					if (_updateTimerId != undefined) {
 						clearInterval(_updateTimerId);
 					}
@@ -99,17 +98,17 @@ class skyui.SearchWidget extends MovieClip
 			};
 		}
 	}
-	
+
 	function updateInput()
 	{
 		if (_updateTimerId != undefined) {
 			clearInterval(_updateTimerId);
 			_updateTimerId = undefined;
-			
+
 			if (_currentInput != undefined()) {
-				dispatchEvent({type: "inputChange", data: _currentInput});
+				dispatchEvent({type:"inputChange", data:_currentInput});
 			} else {
-				dispatchEvent({type: "inputChange", data: ""});
+				dispatchEvent({type:"inputChange", data:""});
 			}
 		}
 	}
@@ -121,12 +120,12 @@ class skyui.SearchWidget extends MovieClip
 		}
 
 		delete this.onEnterFrame;
-		
+
 		textField.type = "dynamic";
 		textField.noTranslate = false;
 		textField.selectable = false;
 		textField.maxChars = null;
-		
+
 		var bPrevEnabled = _previousFocus.focusEnabled;
 		_previousFocus.focusEnabled = true;
 		Selection.setFocus(_previousFocus,0);
@@ -138,10 +137,10 @@ class skyui.SearchWidget extends MovieClip
 		refreshInput();
 
 		if (_currentInput != undefined()) {
-			dispatchEvent({type: "inputEnd", data: _currentInput});
+			dispatchEvent({type:"inputEnd", data:_currentInput});
 		} else {
 			textField.SetText(_filterString);
-			dispatchEvent({type: "inputEnd", data: ""});
+			dispatchEvent({type:"inputEnd", data:""});
 		}
 	}
 
@@ -150,10 +149,10 @@ class skyui.SearchWidget extends MovieClip
 		var bCaught = false;
 
 		if (GlobalFunc.IsKeyPressed(details)) {
-			
+
 			if (details.navEquivalent == NavigationCode.ENTER && details.code != 32) {
 				endInput();
-				
+
 			} else if (details.navEquivalent == NavigationCode.TAB || details.navEquivalent == NavigationCode.ESCAPE) {
 				clearText();
 				endInput();
@@ -163,19 +162,19 @@ class skyui.SearchWidget extends MovieClip
 				bCaught = pathToFocus[0].handleInput(details, pathToFocus.slice(1));
 			}
 		}
-		
+
 		return bCaught;
 	}
-	
+
 	function clearText()
 	{
 		textField.SetText("");
 	}
-	
+
 	function refreshInput()
 	{
-		var t =  GlobalFunc.StringTrim(textField.text);
-		
+		var t = GlobalFunc.StringTrim(textField.text);
+
 		if (t != undefined && t != "" && t != _filterString) {
 			_currentInput = t;
 		} else {

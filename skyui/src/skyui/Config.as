@@ -177,15 +177,9 @@ dynamic class skyui.Config
 		} else if (a_str.toLowerCase() == "false") {
 			return false;
 			
-		// Explicit String? (enclosed in single quotes)
+		// Explicit String?
 		} else if (a_str.charAt(0) == "'") {
-			a_str = Util.extract(a_str, "'", "'")
-			return  Util.unescapeString(a_str, ["'", ";"]);
-			
-		// Explicit String? (enclosed in double quotes)
-		} else if (a_str.charAt(0) == "\"") {
-			a_str = Util.extract(a_str, "\"", "\"")
-			return  Util.unescapeString(a_str, ["\"", ";"]);
+			return Util.extract(a_str, "'", "'");
 			
 		// Entry property? - substituted later
 		} else if (a_str.charAt(0) == "@") {

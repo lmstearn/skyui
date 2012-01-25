@@ -44,6 +44,10 @@ class InventoryLists extends MovieClip
 	private var _searchKey:Number;
 	private var _tabToggleKey:Number;
 
+	private var _saveSortHeaders:Number;
+	private var _saveItemSelection:Number;
+
+	private var _bInitMenu:Boolean;
 	// Children
 	var panelContainer:MovieClip;
 
@@ -68,6 +72,8 @@ class InventoryLists extends MovieClip
 		_SearchWidget = panelContainer.searchWidget;
 		_TabBar = panelContainer.tabBar;
 
+		_bInitMenu = false;
+
 		EventDispatcher.initialize(this);
 
 		gotoAndStop("NoPanels");
@@ -87,7 +93,9 @@ class InventoryLists extends MovieClip
 
 	function onLoad()
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("InventoryLists onLoad()");
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("InventoryLists onLoad()");
+		}
 		_ItemsList.addFilter(_typeFilter);
 		_ItemsList.addFilter(_nameFilter);
 		_ItemsList.addFilter(_sortFilter);
@@ -112,7 +120,7 @@ class InventoryLists extends MovieClip
 		_SearchWidget.addEventListener("inputStart",this,"onSearchInputStart");
 		_SearchWidget.addEventListener("inputEnd",this,"onSearchInputEnd");
 		_SearchWidget.addEventListener("inputChange",this,"onSearchInputChange");
-		
+
 		if (_TabBar != undefined) {
 			_TabBar.addEventListener("tabPress",this,"onTabPress");
 		}
@@ -120,48 +128,67 @@ class InventoryLists extends MovieClip
 
 	function onConfigLoad(event)
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("InventoryLists onConfigLoad()");
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("InventoryLists onConfigLoad()");
+		}
 		_config = event.config;
 		_searchKey = _config.Input.hotkey.search;
 		_tabToggleKey = _config.Input.hotkey.tabToggle;
+
+		// 0 - disabled, 1 - per cat, 2 - global
+		_saveSortHeaders = _config.Sort.saveSortHeaders;
+		// 0 - disabled, 1 - save item selection position
+		_saveItemSelection = _config.Sort.saveItemSelection;
+
 	}
 
 	function SetPlatform(a_platform:Number, a_bPS3Switch:Boolean)
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("InventoryLists SetPlatform()");
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("InventoryLists SetPlatform()");
+		}
 		_platform = a_platform;
 
 		_CategoriesList.setPlatform(a_platform,a_bPS3Switch);
 		_ItemsList.setPlatform(a_platform,a_bPS3Switch);
 	}
 
+	function set initMenu(a_flag)
+	{
+		_bInitMenu = a_flag;
+	}
+
+	function get initMenu()
+	{
+		return _bInitMenu;
+	}
+
 	function handleInput(details, pathToFocus)
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("InventoryLists handleInput()");
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("InventoryLists handleInput()");
+		}
 		var bCaught = false;
-		
+
 		if (_currentState == SHOW_PANEL) {
 			if (GlobalFunc.IsKeyPressed(details)) {
-				
+
 				if (details.navEquivalent == NavigationCode.LEFT) {
-					_ItemsList.scrollingRepeatStop();
 					_CategoriesList.moveSelectionLeft();
 					bCaught = true;
 
 				} else if (details.navEquivalent == NavigationCode.RIGHT) {
-					_ItemsList.scrollingRepeatStop();
 					_CategoriesList.moveSelectionRight();
 					bCaught = true;
 
-				// Search hotkey (default space)
+					// Search hotkey (default space)
 				} else if (details.code == _searchKey) {
-					_ItemsList.scrollingRepeatStop();
-					_SearchWidget.startInput();
 					bCaught = true;
-					
-				// Toggle tab (default ALT)
+					_SearchWidget.startInput();
+
+					// Toggle tab (default ALT)
 				} else if (_TabBar != undefined && (details.code == _tabToggleKey || (details.navEquivalent == NavigationCode.GAMEPAD_BACK && details.code != 8))) {
-					_ItemsList.scrollingRepeatStop();
+
 					bCaught = true;
 					_TabBar.tabToggle();
 				}
@@ -175,23 +202,29 @@ class InventoryLists extends MovieClip
 
 	function getContentBounds():Array
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("InventoryLists getContentBounds()");
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("InventoryLists getContentBounds()");
+		}
 		var lb = panelContainer.ListBackground;
 		return [lb._x, lb._y, lb._width, lb._height];
 	}
 
 	function get CategoriesList()
 	{
-		if (DEBUG_LEVEL > 1) _global.skse.Log("InventoryLists get CategoriesList()");
+		if (DEBUG_LEVEL > 1) {
+			_global.skse.Log("InventoryLists get CategoriesList()");
+		}
 		return _CategoriesList;
 	}
 
 	function get ItemsList()
 	{
-		if (DEBUG_LEVEL > 1) _global.skse.Log("InventoryLists get ItemsList()");
+		if (DEBUG_LEVEL > 1) {
+			_global.skse.Log("InventoryLists get ItemsList()");
+		}
 		return _ItemsList;
 	}
-	
+
 	function get TabBar()
 	{
 		return _TabBar;
@@ -204,7 +237,9 @@ class InventoryLists extends MovieClip
 
 	function set currentState(a_newState)
 	{
-	    if (DEBUG_LEVEL > 1) _global.skse.Log("InventoryLists currentState(aiNewState) set currentState to " + a_newState);
+		if (DEBUG_LEVEL > 1) {
+			_global.skse.Log("InventoryLists currentState(aiNewState) set currentState to " + a_newState);
+		}
 		if (a_newState == SHOW_PANEL) {
 			FocusHandler.instance.setFocus(_ItemsList,0);
 		}
@@ -219,7 +254,9 @@ class InventoryLists extends MovieClip
 
 	function ShowCategoriesList(a_bPlayBladeSound:Boolean)
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("InventoryLists ShowCategoriesList()");
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("InventoryLists ShowCategoriesList()");
+		}
 		_currentState = TRANSITIONING_TO_SHOW_PANEL;
 		gotoAndPlay("PanelShow");
 
@@ -232,7 +269,9 @@ class InventoryLists extends MovieClip
 
 	function HideCategoriesList()
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("InventoryLists HideCategoriesList()");
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("InventoryLists HideCategoriesList()");
+		}
 		_currentState = TRANSITIONING_TO_HIDE_PANEL;
 		gotoAndPlay("PanelHide");
 		GameDelegate.call("PlaySound",["UIMenuBladeCloseSD"]);
@@ -240,58 +279,64 @@ class InventoryLists extends MovieClip
 
 	function showItemsList()
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("InventoryLists ShowItemsList()");
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("InventoryLists ShowItemsList()");
+		}
 		skse.Log("initializing timer for showItemsList()...");
 		var startShowItemListTime:Date = new Date();
-		
+
 		_currCategoryIndex = _CategoriesList.selectedIndex;
 		// set category label
 		_CategoryLabel.textField.SetText(_CategoriesList.selectedEntry.text);
-		
+
 		if (_CategoriesList.selectedEntry != undefined) {
 			skse.Log("PHASE 1  - CHANGING ITEM FILTER FLAG...");
-			_typeFilter.changeFilterFlag(_CategoriesList.selectedEntry.flag, true);
+			_typeFilter.changeFilterFlag(_CategoriesList.selectedEntry.flag,true);
 			skse.Log("PHASE 2  - UPDATING COLUMNS, REFRESHING DATA...");
-			_ItemsList.savedScrollPosition = _CategoriesList.selectedEntry.savedScrollPosition;
+			if (_saveItemSelection == 1 || initMenu) {
+				_ItemsList.savedScrollPosition = _CategoriesList.selectedEntry.savedScrollPosition;
+			}
 			_ItemsList.changeFilterFlag(_CategoriesList.selectedEntry.flag);
 			skse.Log("PHASE 3  - SELECTED SAVED ITEM...");
-			if (_CategoriesList.selectedEntry.savedItemIndex != -1)
-				_ItemsList.doSetSelectedIndex(_CategoriesList.selectedEntry.savedItemIndex);
-		} 
-		
+			if (_saveItemSelection == 1 || initMenu) {
+				if (_CategoriesList.selectedEntry.savedItemIndex != -1) {
+					_ItemsList.doSetSelectedIndex(_CategoriesList.selectedEntry.savedItemIndex);
+				}
+			}
+		}
+
 		dispatchEvent({type:"itemHighlightChange", index:_ItemsList.selectedIndex});
-		
+
 		_ItemsList.disableInput = false;
+		GameDelegate.call("PlaySound",["UIMenuFocus"]);
 		var endShowItemListTime:Date = new Date();
-		skse.Log("Time elapsed to execute showItemsList "+String(endShowItemListTime.getTime()-startShowItemListTime.getTime())+" milliseconds");
+		skse.Log("Time elapsed to execute showItemsList " + String(endShowItemListTime.getTime() - startShowItemListTime.getTime()) + " milliseconds");
 		endTime = new Date();
 		skse.Log("ENDED MAIN START TIMER.");
-		skse.Log("Menu opened in : "+String(endTime.getTime()-startTime.getTime())+" milliseconds");
+		skse.Log("Menu opened in : " + String(endTime.getTime() - startTime.getTime()) + " milliseconds");
 	}
 
 	// Not needed anymore, items list always visible
 	function hideItemsList()
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("InventoryLists hideItemsList()");
-		/*
-		_currentState = TRANSITIONING_TO_ONE_PANEL;
-		dispatchEvent({type:"hideItemsList", index:_ItemsList.selectedIndex});
-		_ItemsList.selectedIndex = -1;
-		gotoAndPlay("Panel2Hide");
-		GameDelegate.call("PlaySound",["UIMenuBladeCloseSD"]);
-		_ItemsList.disableInput = true;
-		*/
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("InventoryLists hideItemsList()");
+		}
 	}
 
 	function onCategoriesItemPress()
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("InventoryLists onCategoriesItemPress()");
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("InventoryLists onCategoriesItemPress()");
+		}
 		showItemsList();
 	}
 
 	function onCategoriesListPress()
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("InventoryLists onCategoriesListPress()");
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("InventoryLists onCategoriesListPress()");
+		}
 	}
 
 	function onTabPress(event)
@@ -299,7 +344,7 @@ class InventoryLists extends MovieClip
 		if (_CategoriesList.disableSelection || _CategoriesList.disableInput || _ItemsList.disableSelection || _ItemsList.disableInput) {
 			return;
 		}
-		
+
 		if (event.index == TabBar.LEFT_TAB) {
 			_TabBar.activeTab = TabBar.LEFT_TAB;
 			_CategoriesList.activeSegment = CategoryList.LEFT_SEGMENT;
@@ -307,26 +352,32 @@ class InventoryLists extends MovieClip
 			_TabBar.activeTab = TabBar.RIGHT_TAB;
 			_CategoriesList.activeSegment = CategoryList.RIGHT_SEGMENT;
 		}
-		
+
 		GameDelegate.call("PlaySound",["UIMenuBladeOpenSD"]);
 		showItemsList();
 	}
 
 	function onCategoriesListMoveUp(event)
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("InventoryLists onCategoriesListMoveUp()");
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("InventoryLists onCategoriesListMoveUp()");
+		}
 		doCategorySelectionChange(event);
 	}
 
 	function onCategoriesListMoveDown(event)
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("InventoryLists onCategoriesListMoveDown()");
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("InventoryLists onCategoriesListMoveDown()");
+		}
 		doCategorySelectionChange(event);
 	}
 
 	function onCategoriesListMouseSelectionChange(event)
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("InventoryLists onCategoriesListMouseSelectionChange()");
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("InventoryLists onCategoriesListMouseSelectionChange()");
+		}
 		if (event.keyboardOrMouse == 0) {
 			doCategorySelectionChange(event);
 		}
@@ -334,19 +385,25 @@ class InventoryLists extends MovieClip
 
 	function onItemsListMoveUp(event)
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("InventoryLists onItemsListMoveUp()");
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("InventoryLists onItemsListMoveUp()");
+		}
 		this.doItemsSelectionChange(event);
 	}
 
 	function onItemsListMoveDown(event)
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("InventoryLists onItemsListMoveDown()");
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("InventoryLists onItemsListMoveDown()");
+		}
 		this.doItemsSelectionChange(event);
 	}
 
 	function onItemsListMouseSelectionChange(event)
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("InventoryLists onItemsListMouseSelectionChange()");
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("InventoryLists onItemsListMouseSelectionChange()");
+		}
 		if (event.keyboardOrMouse == 0) {
 			doItemsSelectionChange(event);
 		}
@@ -354,25 +411,26 @@ class InventoryLists extends MovieClip
 
 	function doCategorySelectionChange(event)
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("InventoryLists doCategorySelectionChange()");
-		
-		// save current category info before changing
-		if (_CategoriesList.entryList[_currCategoryIndex] != undefined) {
-			if (_ItemsList.scrollPosition != undefined)
-				_CategoriesList.entryList[_currCategoryIndex].savedScrollPosition = _ItemsList.scrollPosition;
-			_CategoriesList.entryList[_currCategoryIndex].savedItemIndex = _ItemsList.selectedIndex;
-		}		
-		_global.skse.Log("DynamicList category " + _CategoriesList.entryList[_currCategoryIndex].text + " savedItemIndex = " + _CategoriesList.entryList[_currCategoryIndex].savedItemIndex + " scrollPosition = " + _CategoriesList.entryList[_currCategoryIndex].savedScrollPosition);
-		dispatchEvent({type:"categoryChange", index:event.index});
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("InventoryLists doCategorySelectionChange()");
 
-		if (event.index != -1) {
-			GameDelegate.call("PlaySound",["UIMenuFocus"]);
 		}
+		// save current category info before changing   
+		if (_CategoriesList.entryList[_currCategoryIndex] != undefined && _saveItemSelection == 1) {
+			if (_ItemsList.scrollPosition != undefined) {
+				_CategoriesList.entryList[_currCategoryIndex].savedScrollPosition = _ItemsList.scrollPosition;
+			}
+			_CategoriesList.entryList[_currCategoryIndex].savedItemIndex = _ItemsList.selectedIndex;
+		}
+
+		dispatchEvent({type:"categoryChange", index:event.index});
 	}
 
 	function doItemsSelectionChange(event)
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("InventoryLists onItemsSelectionChange()");
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("InventoryLists onItemsSelectionChange()");
+		}
 		dispatchEvent({type:"itemHighlightChange", index:event.index});
 
 		if (event.index != -1) {
@@ -382,19 +440,33 @@ class InventoryLists extends MovieClip
 
 	function onSortChange(event)
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("InventoryLists onSortChange() numUnfilteredItems = " + _ItemsList.numUnfilteredItems);
-		// reset scroll position to top when sorting
-		if (_ItemsList.numUnfilteredItems > 0)
-		{
-			if (DEBUG_LEVEL > 1) _global.skse.Log("RESETTING SCROLL POSITION TO 0");
-			_ItemsList.scrollPosition = 0;
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("InventoryLists onSortChange() numUnfilteredItems = " + _ItemsList.numUnfilteredItems);
 		}
-		_sortFilter.setSortBy(event.attributes, event.options);
+		// reset scroll position to top when sorting and unselect item   
+		_global.skse.Log("pressed = " + event.pressed);
+		if (event.pressed == 1 && _ItemsList.selectedIndex != -1) {
+			_CategoriesList.selectedEntry.savedScrollPosition = 0;
+			_ItemsList.savedScrollPosition = 0;
+			_ItemsList.scrollPosition = 0;
+			if (_saveItemSelection != 1) {
+				// reset category saved scroll positions
+				for (var i = 0; i < _CategoriesList.entryList.length; i++) {
+					_CategoriesList.entryList[i].savedScrollPosition = 0;
+				}
+				_ItemsList.selectedEntry = undefined;
+				_ItemsList.selectedIndex = -1;
+				dispatchEvent({type:"itemHighlightChange", index:-1});
+			}
+		}
+		_sortFilter.setSortBy(event.attributes,event.options);
 	}
 
 	function onSearchInputStart(event)
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("InventoryLists onSearchInputStart()");
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("InventoryLists onSearchInputStart()");
+		}
 		_CategoriesList.disableSelection = true;
 		_ItemsList.disableInput = true;
 		_nameFilter.filterText = "";
@@ -402,13 +474,17 @@ class InventoryLists extends MovieClip
 
 	function onSearchInputChange(event)
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("InventoryLists onSearchInputChange()");
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("InventoryLists onSearchInputChange()");
+		}
 		_nameFilter.filterText = event.data;
 	}
 
 	function onSearchInputEnd(event)
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("InventoryLists onSearchInputEnd()");
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("InventoryLists onSearchInputEnd()");
+		}
 		_CategoriesList.disableSelection = false;
 		_ItemsList.disableInput = false;
 		_nameFilter.filterText = event.data;
@@ -417,7 +493,9 @@ class InventoryLists extends MovieClip
 	// API - Called to initially set the category list
 	function SetCategoriesList()
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("<========================InventoryLists SetCategoriesList==================================" + "\n");
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("<========================InventoryLists SetCategoriesList==================================" + "\n");
+		}
 		skse.Log("initializing MAIN START TIMER...");
 		startTime = new Date();
 		var textOffset = 0;
@@ -435,15 +513,14 @@ class InventoryLists extends MovieClip
 				_CategoriesList.dividerIndex = index;
 			}
 		}
-		
+
 		// Initialize tabbar labels and replace text of segment heads (name -> ALL)
 		if (_TabBar != undefined) {
 			if (_CategoriesList.dividerIndex != -1) {
-				 _TabBar.setLabelText(_CategoriesList.entryList[0].text, _CategoriesList.entryList[_CategoriesList.dividerIndex + 1].text);
-				 _CategoriesList.entryList[0].text = _CategoriesList.entryList[_CategoriesList.dividerIndex + 1].text = _config.Strings.all;
+				_TabBar.setLabelText(_CategoriesList.entryList[0].text,_CategoriesList.entryList[_CategoriesList.dividerIndex + 1].text);
+				_CategoriesList.entryList[0].text = _CategoriesList.entryList[_CategoriesList.dividerIndex + 1].text = "$ALL";
 			}
-			
-			// Restore 0 as default index for tabbed lists
+			// Restore 0 as default index for tabbed lists   
 			_CategoriesList.selectedIndex = 0;
 		}
 
@@ -454,7 +531,9 @@ class InventoryLists extends MovieClip
 	// API - Called whenever the underlying entryList data is updated (using an item, equipping etc.)
 	function InvalidateListData()
 	{
-	if (DEBUG_LEVEL > 0) _global.skse.Log("<========================InventoryLists InvalidateListData==================================" + "\n");
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("<========================InventoryLists InvalidateListData==================================" + "\n");
+		}
 		skse.Log("initializing timer for InvalidateListData()...");
 		var startInvalidateTime:Date = new Date();
 		var flag = _CategoriesList.selectedEntry.flag;
@@ -484,15 +563,14 @@ class InventoryLists extends MovieClip
 			_typeFilter.itemFilter = _CategoriesList.selectedEntry.flag;
 			dispatchEvent({type:"categoryChange", index:_CategoriesList.selectedIndex});
 		}
-		
-		// This is called when an ItemCard list closes(ex. ShowSoulGemList) to refresh ItemCard data    
+		// This is called when an ItemCard list closes(ex. ShowSoulGemList) to refresh ItemCard data       
 		if (_ItemsList.selectedIndex == -1) {
-			dispatchEvent({type:"showItemsList", index: -1});
+			dispatchEvent({type:"showItemsList", index:-1});
 		} else {
 			dispatchEvent({type:"itemHighlightChange", index:_ItemsList.selectedIndex});
 		}
 		var endInvalidateTime:Date = new Date();
-		skse.Log("Time elapsed to execute InvalidateListData() "+String(endInvalidateTime.getTime()-startInvalidateTime.getTime())+" milliseconds");
+		skse.Log("Time elapsed to execute InvalidateListData() " + String(endInvalidateTime.getTime() - startInvalidateTime.getTime()) + " milliseconds");
 		_global.skse.Log("========================END InventoryLists InvalidateListData==================================>" + "\n");
 	}
 }

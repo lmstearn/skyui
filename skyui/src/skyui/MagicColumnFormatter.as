@@ -12,11 +12,13 @@ class skyui.MagicColumnFormatter extends InventoryColumnFormatter
 
 	function formatItemIcon(a_entryField:Object, a_entryObject:Object)
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("MagicColumnFormatter formatItemIcon()");
-		// Default without script extender
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("MagicColumnFormatter formatItemIcon()");
+		}
+		// Default without script extender 
 		switch (a_entryObject.infoType) {
-			
-			// Spell
+
+				// Spell
 			case InventoryDefines.ICT_SPELL :
 				switch (a_entryObject.subType) {
 					case Defines.SPELL_TYPE_ALTERATION :
@@ -34,31 +36,33 @@ class skyui.MagicColumnFormatter extends InventoryColumnFormatter
 					case Defines.SPELL_TYPE_RESTORATION :
 						a_entryField.gotoAndStop("default_restoration");
 						break;
-					default:
+					default :
 						a_entryField.gotoAndStop("default_power");
 				}
 				break;
-			
-			// Power
+
+				// Power
 			case InventoryDefines.ICT_SPELL_DEFAULT :
 				a_entryField.gotoAndStop("default_power");
 				break;
-			
-			// Shout
+
+				// Shout
 			case InventoryDefines.ICT_SHOUT :
 				a_entryField.gotoAndStop("default_shout");
 				break;
-			
-			// Active Effect
+
+				// Active Effect
 			case InventoryDefines.ICT_ACTIVE_EFFECT :
-			default:
-				a_entryField.gotoAndStop("default_effect");			
+			default :
+				a_entryField.gotoAndStop("default_effect");
 		}
 	}
 
 	function formatName(a_entryField:Object, a_entryObject:Object, a_entryClip:MovieClip)
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("MagicColumnFormatter formatName()");
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("MagicColumnFormatter formatName()");
+		}
 		if (a_entryObject.text != undefined) {
 
 			// Text
@@ -77,8 +81,7 @@ class skyui.MagicColumnFormatter extends InventoryColumnFormatter
 			} else if (a_entryObject.enabled == false) {
 				a_entryField.textColor = 0x4C4C4C;
 			}
-
-			// Fav icon
+			// Fav icon 
 			if (a_entryObject.favorite == true) {
 				a_entryClip.favoriteIcon._x = a_entryField._x + a_entryField._width + 5;
 				a_entryClip.favoriteIcon.gotoAndStop("show");

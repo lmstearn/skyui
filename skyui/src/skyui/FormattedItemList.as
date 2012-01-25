@@ -13,42 +13,54 @@ class skyui.FormattedItemList extends skyui.ConfigurableList
 	private var _dataFetcher:IDataFetcher;
 	private var _columnFormatter:IColumnFormatter;
 	private var _itemInfo:Object;
-	
-	
+
+
 	function set columnFormatter(a_columnFormatter:IColumnFormatter)
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("FormattedItemList set columnFormatter()");
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("FormattedItemList set columnFormatter()");
+		}
 		_columnFormatter = a_columnFormatter;
 	}
-	
+
 	function get columnFormatter():IColumnFormatter
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("FormattedItemList get columnFormatter()");
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("FormattedItemList get columnFormatter()");
+		}
 		return _columnFormatter;
 	}
-	
+
 	function set dataFetcher(a_dataFetcher:IDataFetcher)
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("FormattedItemList set dataFetcher()");
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("FormattedItemList set dataFetcher()");
+		}
 		_dataFetcher = a_dataFetcher;
 	}
-	
+
 	function get dataFetcher():IDataFetcher
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("FormattedItemList get dataFetcher()");
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("FormattedItemList get dataFetcher()");
+		}
 		return _dataFetcher;
 	}
 
 	function InvalidateData()
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("<========================FormattedItemList InvalidateData==================================" + "\n");
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("<========================FormattedItemList InvalidateData==================================" + "\n");
+		}
 		if (_dataFetcher != undefined) {
 			for (var i = 0; i < _entryList.length; i++) {
 				requestItemInfo(i);
-				_dataFetcher.processEntry(_entryList[i], _itemInfo);
+				_dataFetcher.processEntry(_entryList[i],_itemInfo);
 			}
 		}
-		if (DEBUG_LEVEL > 0) _global.skse.Log("========================END FormattedItemList InvalidateData==============================>" + "\n");
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("========================END FormattedItemList InvalidateData==============================>" + "\n");
+		}
 		super.InvalidateData();
 	}
 
@@ -61,17 +73,19 @@ class skyui.FormattedItemList extends skyui.ConfigurableList
 	{
 		var oldIndex = _selectedIndex;
 		_selectedIndex = a_index;
-		GameDelegate.call("RequestItemCardInfo", [], this, "updateItemInfo");
+		GameDelegate.call("RequestItemCardInfo",[],this,"updateItemInfo");
 		_selectedIndex = oldIndex;
 	}
 
 	function setEntryText(a_entryClip:MovieClip, a_entryObject:Object)
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("FormattedItemList setEntryText()");
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("FormattedItemList setEntryText()");
+		}
 		if (_columnFormatter == undefined) {
 			return;
 		}
-		
+
 		var columns = currentView.columns;
 
 		for (var i = 0; i < columns.length; i++) {
@@ -83,24 +97,23 @@ class skyui.FormattedItemList extends skyui.ConfigurableList
 					e.SetText(a_entryObject[_columnEntryValues[i].slice(1)]);
 				}
 			}
-			
-			// Process based on column type 
+			// Process based on column type  
 			switch (columns[i].type) {
 				case Config.COL_TYPE_EQUIP_ICON :
-					_columnFormatter.formatEquipIcon(e, a_entryObject);
+					_columnFormatter.formatEquipIcon(e,a_entryObject);
 					break;
 
 				case Config.COL_TYPE_ITEM_ICON :
-					_columnFormatter.formatItemIcon(e, a_entryObject);
+					_columnFormatter.formatItemIcon(e,a_entryObject);
 					break;
 
 				case Config.COL_TYPE_NAME :
-					_columnFormatter.formatName(e, a_entryObject, a_entryClip);
+					_columnFormatter.formatName(e,a_entryObject,a_entryClip);
 					break;
 
 				case Config.COL_TYPE_TEXT :
 				default :
-					_columnFormatter.formatText(e, a_entryObject);
+					_columnFormatter.formatText(e,a_entryObject);
 			}
 		}
 	}

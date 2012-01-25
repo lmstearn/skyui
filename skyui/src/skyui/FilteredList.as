@@ -18,13 +18,17 @@ class skyui.FilteredList extends skyui.DynamicScrollingList
 
 	function addFilter(a_filter:IFilter)
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("FilteredList addFilter()");		
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("FilteredList addFilter()");
+		}
 		_filterChain.push(a_filter);
 	}
 
 	function getFilteredEntry(a_index:Number):Object
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("FilteredList getFilteredEntry()");
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("FilteredList getFilteredEntry()");
+		}
 		return _filteredList[a_index];
 	}
 
@@ -36,7 +40,9 @@ class skyui.FilteredList extends skyui.DynamicScrollingList
 
 	function generateFilteredList()
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("FilteredList generateFilteredList()");
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("FilteredList generateFilteredList()");
+		}
 		_filteredList.splice(0);
 
 		for (var i = 0; i < _entryList.length; i++) {
@@ -50,7 +56,9 @@ class skyui.FilteredList extends skyui.DynamicScrollingList
 			_filterChain[i].process(_filteredList);
 		}
 
-		if (DEBUG_LEVEL > 1) _global.skse.Log("generating new filteredList..."); 
+		if (DEBUG_LEVEL > 1) {
+			_global.skse.Log("generating new filteredList...");
+		}
 		for (var i = 0; i < _filteredList.length; i++) {
 			_filteredList[i].filteredIndex = i;
 		}
@@ -63,7 +71,9 @@ class skyui.FilteredList extends skyui.DynamicScrollingList
 
 	function UpdateList()
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("<========================FilteredList UpdateList==================================" + "\n");
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("<========================FilteredList UpdateList==================================" + "\n");
+		}
 		var yStart = _indent;
 		var h = 0;
 
@@ -72,11 +82,15 @@ class skyui.FilteredList extends skyui.DynamicScrollingList
 		}
 
 		_listIndex = 0;
-		
-		if (DEBUG_LEVEL > 0) _global.skse.Log("FilteredList UpdateList() scrollPosition = " + _scrollPosition);
+
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("FilteredList UpdateList() scrollPosition = " + _scrollPosition);
+		}
 		for (var i = _scrollPosition; i < _filteredList.length && _listIndex < _maxListIndex; i++) {
 			var entryClip = getClipByIndex(_listIndex);
-			if (DEBUG_LEVEL > 1) _global.skse.Log("FilteredList UpdateList() setEntry " + _filteredList[i].text + " unfilteredIndex = " + _filteredList[i].unfilteredIndex);
+			if (DEBUG_LEVEL > 1) {
+				_global.skse.Log("FilteredList UpdateList() setEntry " + _filteredList[i].text + " unfilteredIndex = " + _filteredList[i].unfilteredIndex);
+			}
 			setEntry(entryClip,_filteredList[i]);
 			entryClip.itemIndex = _filteredList[i].unfilteredIndex;
 			_filteredList[i].clipIndex = _listIndex;
@@ -88,7 +102,7 @@ class skyui.FilteredList extends skyui.DynamicScrollingList
 
 			_listIndex++;
 		}
-		
+
 		for (var i = _scrollPosition + _listIndex; i < _filteredList.length; i++) {
 			_filteredList[i].clipIndex = undefined;
 		}
@@ -102,7 +116,9 @@ class skyui.FilteredList extends skyui.DynamicScrollingList
 		if (_bMouseDrivenNav) {
 			for (var e = Mouse.getTopMostEntity(); e != undefined; e = e._parent) {
 				if (e._parent == this && e._visible && e.itemIndex != undefined) {
-					if (DEBUG_LEVEL > 0) _global.skse.Log("FilteredList UpdateList() doSetSelectedIndex " + e.itemIndex + " for entry " + e.text);
+					if (DEBUG_LEVEL > 0) {
+						_global.skse.Log("FilteredList UpdateList() doSetSelectedIndex " + e.itemIndex + " for entry " + e.text);
+					}
 					doSetSelectedIndex(e.itemIndex,0);
 				}
 			}
@@ -112,98 +128,91 @@ class skyui.FilteredList extends skyui.DynamicScrollingList
 
 	function InvalidateData()
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("<========================FilteredList InvalidateData==================================" + "\n");
-		if (DEBUG_LEVEL > 1) _global.skse.Log("selectedEntry = " + selectedEntry.text + " index = " + selectedEntry.unfilteredIndex + " filteredIndex = " + selectedEntry.filteredIndex);
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("<========================FilteredList InvalidateData==================================" + "\n");
+		}
+		if (DEBUG_LEVEL > 1) {
+			_global.skse.Log("selectedEntry = " + selectedEntry.text + " index = " + selectedEntry.unfilteredIndex + " filteredIndex = " + selectedEntry.filteredIndex);
+		}
 		generateFilteredList();
-		if (DEBUG_LEVEL > 1) _global.skse.Log("selectedEntry = " + selectedEntry.text + " index = " + selectedEntry.unfilteredIndex + " filteredIndex = " + selectedEntry.filteredIndex);
+		if (DEBUG_LEVEL > 1) {
+			_global.skse.Log("selectedEntry = " + selectedEntry.text + " index = " + selectedEntry.unfilteredIndex + " filteredIndex = " + selectedEntry.filteredIndex);
+		}
 		super.InvalidateData();
-		if (DEBUG_LEVEL > 1) _global.skse.Log("selectedEntry = " + selectedEntry.text + " index = " + selectedEntry.unfilteredIndex + " filteredIndex = " + selectedEntry.filteredIndex);
-		
-		// Restore selection
+		if (DEBUG_LEVEL > 1) {
+			_global.skse.Log("selectedEntry = " + selectedEntry.text + " index = " + selectedEntry.unfilteredIndex + " filteredIndex = " + selectedEntry.filteredIndex);
+
+		}
+		// Restore selection 
 		if (_curClipIndex != undefined && _curClipIndex != -1 && _listIndex > 0) {
-			
 			if (_curClipIndex >= _listIndex) {
 				_curClipIndex = _listIndex - 1;
 			}
-			
+
 			var entryClip = getClipByIndex(_curClipIndex);
-			if (DEBUG_LEVEL > 0) _global.skse.Log("Restoring entry " + entryClip.text + " at clip index " + entryClip.clipIndex);
-			doSetSelectedIndex(entryClip.itemIndex, 1);
+			if (DEBUG_LEVEL > 0) {
+				_global.skse.Log("Restoring entry " + entryClip.text + " at clip index " + entryClip.clipIndex);
+			}
+			doSetSelectedIndex(entryClip.itemIndex,1);
 		}
 		_global.skse.Log("========================END FilteredList InvalidateData==================================>" + "\n");
 	}
 
 	function calculateMaxScrollPosition()
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("FilteredList calculateMaxScrollPosition");
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("FilteredList calculateMaxScrollPosition");
+		}
 		var t = _filteredList.length - _maxListIndex;
 		_maxScrollPosition = (t > 0) ? t : 0;
 
 		if (_scrollPosition > _maxScrollPosition) {
 			scrollPosition = _maxScrollPosition;
 		}
-		
+
 		_global.skse.Log("FilteredList calculateMaxScrollPosition = " + _maxScrollPosition);
 		updateScrollbar();
 	}
-	
-	// Could make these into one function...
-	function moveSelectionUp(a_bScrollPage:Boolean, ammountToScroll: Number)
+
+	function moveSelectionUp(a_bScrollPage:Boolean)
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("FilteredList moveSelectionUp()");
-		
-		ammountToScroll = (!ammountToScroll || ammountToScroll <= 0) ? 1 : ammountToScroll; //Math.abs(Math.floor(ammountToScroll));
-		
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("FilteredList moveSelectionUp()");
+		}
 		if (!_bDisableSelection && !a_bScrollPage) {
 			if (_selectedIndex == -1) {
 				selectDefaultIndex(false);
-			} else if (_selectedIndex != _filteredList[0].unfilteredIndex) {
-				// If you're not already at the top of the list.....
-				if (selectedEntry.filteredIndex - ammountToScroll > 0) {
-					doSetSelectedIndex(_filteredList[selectedEntry.filteredIndex - ammountToScroll].unfilteredIndex,1);
-					_bMouseDrivenNav = false;
-					dispatchEvent({type:"listMovedUp", index:_selectedIndex, scrollChanged:true});
-				} else {
-					doSetSelectedIndex(_filteredList[0].unfilteredIndex,1);
-					_bMouseDrivenNav = false;
-					dispatchEvent({type:"listMovedUp", index:_selectedIndex, scrollChanged:true});
-				}
+			} else if (selectedEntry.filteredIndex > 0) {
+				doSetSelectedIndex(_filteredList[selectedEntry.filteredIndex - 1].unfilteredIndex,1);
+				_bMouseDrivenNav = false;
+				dispatchEvent({type:"listMovedUp", index:_selectedIndex, scrollChanged:true});
 			}
 		} else if (a_bScrollPage) {
 			var t = scrollPosition - _listIndex;
 			scrollPosition = t > 0 ? t : 0;
-			doSetSelectedIndex(-1, 0);
+			doSetSelectedIndex(-1,0);
 		} else {
 			scrollPosition = scrollPosition - 1;
 		}
 	}
 
-	function moveSelectionDown(a_bScrollPage:Boolean, ammountToScroll: Number)
+	function moveSelectionDown(a_bScrollPage:Boolean)
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("FilteredList moveSelectionDown()");
-		
-		ammountToScroll = (!ammountToScroll || ammountToScroll <= 0) ? 1 : ammountToScroll; //Math.abs(Math.floor(ammountToScroll));
-		
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("FilteredList moveSelectionDown()");
+		}
 		if (!_bDisableSelection && !a_bScrollPage) {
 			if (_selectedIndex == -1) {
 				selectDefaultIndex(true);
-			} else if (_selectedIndex != _filteredList[_filteredList.length - 1].unfilteredIndex) {
-				// If you're not already at the bottom of the list.....
-				if (selectedEntry.filteredIndex + ammountToScroll < _filteredList.length) {
-					doSetSelectedIndex(_filteredList[selectedEntry.filteredIndex + ammountToScroll].unfilteredIndex,1);
-					_bMouseDrivenNav = false;
-					dispatchEvent({type:"listMovedDown", index:_selectedIndex, scrollChanged:true});
-				} else {
-					// Select last selectable item
-					doSetSelectedIndex(_filteredList[_filteredList.length - 1].unfilteredIndex,1);
-					_bMouseDrivenNav = false;
-					dispatchEvent({type:"listMovedDown", index:_selectedIndex, scrollChanged:true});
-				}
+			} else if (selectedEntry.filteredIndex < _filteredList.length - 1) {
+				doSetSelectedIndex(_filteredList[selectedEntry.filteredIndex + 1].unfilteredIndex,1);
+				_bMouseDrivenNav = false;
+				dispatchEvent({type:"listMovedDown", index:_selectedIndex, scrollChanged:true});
 			}
 		} else if (a_bScrollPage) {
 			var t = scrollPosition + _listIndex;
 			scrollPosition = t < _maxScrollPosition ? t : _maxScrollPosition;
-			doSetSelectedIndex(-1, 0);
+			doSetSelectedIndex(-1,0);
 		} else {
 			scrollPosition = scrollPosition + 1;
 		}
@@ -211,48 +220,57 @@ class skyui.FilteredList extends skyui.DynamicScrollingList
 
 	function doSetSelectedIndex(a_newIndex:Number, a_keyboardOrMouse:Number)
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("FilteredList doSetSelectedIndex entry " + _entryList[a_newIndex].text + "filterFlag = " + _entryList[a_newIndex].filterFlag + " at index " + a_newIndex + " count = " + _entryList[a_newIndex].count + " , lastSelectedEntry = " + _entryList[_selectedIndex].text + "filterFlag = " + _entryList[_selectedIndex].filterFlag + " at index " + _selectedIndex + " , bDisableSelection = " + _bDisableSelection);
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("FilteredList doSetSelectedIndex entry " + _entryList[a_newIndex].text + "filterFlag = " + _entryList[a_newIndex].filterFlag + " at index " + a_newIndex + " count = " + _entryList[a_newIndex].count + " , lastSelectedEntry = " + _entryList[_selectedIndex].text + "filterFlag = " + _entryList[_selectedIndex].filterFlag + " at index " + _selectedIndex + " , bDisableSelection = " + _bDisableSelection);
 
-		/* There are 2 checks that must be performed before we allow entries to be set :
-		* 1. if new selected index is the same and input is disabled, ignore
-		* reason: if the same entry was selected, then there is nothing to update so we can safely ignore.
-		* 2. if both the new and old selected entries do not have filteredIndex defined, ignore
-		* reason: The game seems to randomly call GetInventoryItemList() which triggers this method without an InvalidListData() call
-		* which would result in an updateScrollPosition call with the wrong values and cause the list to jump.
-		*/
-		if ((!_bDisableSelection && a_newIndex != _selectedIndex) && (_entryList[a_newIndex].filteredIndex != undefined || _entryList[_selectedIndex].filteredIndex != undefined)) {
-			var oldIndex = _selectedIndex;
-			_selectedIndex = a_newIndex;
+			/* There are 2 checks that must be performed before we allow entries to be set :
+			* 1. if new selected index is the same and input is disabled, ignore
+			* reason: if the same entry was selected, then there is nothing to update so we can safely ignore.
+			* 2. if the new selected entry does not have filteredIndex defined, ignore
+			* reason: The game seems to randomly call GetInventoryItemList() which triggers this method without an InvalidListData() call
+			* which would result in an updateScrollPosition call with the wrong values and cause the list to jump.
+			*/
+			if (!_bDisableSelection && a_newIndex != _selectedIndex && _entryList[a_newIndex].filteredIndex != undefined) {
+				var oldIndex = _selectedIndex;
+				_selectedIndex = a_newIndex;
 
-			if (oldIndex != -1 && _entryList[oldIndex].clipIndex != undefined && _entryList[oldIndex].filteredIndex != undefined) {
-				setEntry(getClipByIndex(_entryList[oldIndex].clipIndex), _entryList[oldIndex]);
-			}
-
-			if (_selectedIndex != -1) {
-				if (selectedEntry.filteredIndex < _scrollPosition) {
-					if (DEBUG_LEVEL > 1) _global.skse.Log(selectedEntry.text +" filteredIndex = " + selectedEntry.filteredIndex + " , scrollPosition = " + _scrollPosition);
-					scrollPosition = selectedEntry.filteredIndex;
-				} else if (selectedEntry.filteredIndex >= _scrollPosition + _listIndex) {
-					if (DEBUG_LEVEL > 1) _global.skse.Log(selectedEntry.text + " filteredIndex = " + selectedEntry.filteredIndex + " , scrollPosition = " + _scrollPosition + " , listIndex = " + _listIndex);
-					scrollPosition = Math.min(selectedEntry.filteredIndex - _listIndex + 1, _maxScrollPosition);
-				} else {
-					setEntry(getClipByIndex(_entryList[_selectedIndex].clipIndex),_entryList[_selectedIndex]);
+				if (oldIndex != -1 && _entryList[oldIndex].clipIndex != undefined && _entryList[oldIndex].filteredIndex != undefined) {
+					setEntry(getClipByIndex(_entryList[oldIndex].clipIndex),_entryList[oldIndex]);
 				}
-				
-				_curClipIndex = _entryList[_selectedIndex].clipIndex;
-			} else {
+
+				if (_selectedIndex != -1) {
+					if (selectedEntry.filteredIndex < _scrollPosition) {
+						if (DEBUG_LEVEL > 1) {
+							_global.skse.Log(selectedEntry.text + " filteredIndex = " + selectedEntry.filteredIndex + " , scrollPosition = " + _scrollPosition);
+						}
+						scrollPosition = selectedEntry.filteredIndex;
+					} else if (selectedEntry.filteredIndex >= _scrollPosition + _listIndex) {
+						if (DEBUG_LEVEL > 1) {
+							_global.skse.Log(selectedEntry.text + " filteredIndex = " + selectedEntry.filteredIndex + " , scrollPosition = " + _scrollPosition + " , listIndex = " + _listIndex);
+						}
+						scrollPosition = Math.min(selectedEntry.filteredIndex - _listIndex + 1, _maxScrollPosition);
+					} else {
+						setEntry(getClipByIndex(_entryList[_selectedIndex].clipIndex),_entryList[_selectedIndex]);
+					}
+
+					_curClipIndex = _entryList[_selectedIndex].clipIndex;
+				} else {
+					_curClipIndex = -1;
+				}
+
+				dispatchEvent({type:"selectionChange", index:_selectedIndex, keyboardOrMouse:a_keyboardOrMouse});
+			} else if (a_newIndex == -1) {
+				_selectedIndex = -1;
 				_curClipIndex = -1;
 			}
-			
-			dispatchEvent({type:"selectionChange", index:_selectedIndex, keyboardOrMouse:a_keyboardOrMouse});
 		}
 	}
 
 	function onFilterChange()
 	{
-		if (DEBUG_LEVEL > 0) _global.skse.Log("FilteredList onFilterChange()");
-		generateFilteredList();
-		calculateMaxScrollPosition();
-		UpdateList();
+		if (DEBUG_LEVEL > 0) {
+			_global.skse.Log("FilteredList onFilterChange()");
+		}
+		InvalidateData();
 	}
 }
