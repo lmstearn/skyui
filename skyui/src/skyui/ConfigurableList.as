@@ -25,7 +25,6 @@ class skyui.ConfigurableList extends skyui.FilteredList
 
 	private var _bEnableItemIcon:Boolean;
 	private var _bEnableEquipIcon:Boolean;
-	private var _bRestoreColumnData:Boolean;
 
 	// Preset in config
 	private var _entryWidth:Number;
@@ -76,7 +75,6 @@ class skyui.ConfigurableList extends skyui.FilteredList
 		_entryHeight = 28;
 		_activeViewIndex = -1;
 		_lastViewIndex = -1;
-		_bRestoreColumnData = false;
 		_bEnableItemIcon = false;
 		_bEnableEquipIcon = false;
 		_pressed = 0;
@@ -110,11 +108,6 @@ class skyui.ConfigurableList extends skyui.FilteredList
 	function get categoryData()
 	{
 		return _categoryData;
-	}
-
-	function set restoreColumnData(a_flag:Boolean)
-	{
-		_bRestoreColumnData = a_flag;
 	}
 
 	function onConfigLoad(event)
@@ -281,7 +274,7 @@ class skyui.ConfigurableList extends skyui.FilteredList
 			_global.skse.Log("ConfigurableList restorePrefState()");
 		}
 		// No preference to restore yet 
-		if (_prefData == undefined) {
+		if (_prefData == undefined && _saveSortHeaders != 1) {
 			return false;
 		}
 		if (_saveSortHeaders == 1 && findCategoryMatch()) {
