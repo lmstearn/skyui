@@ -1,4 +1,4 @@
-﻿import gfx.io.GameDelegate;
+import gfx.io.GameDelegate;
 import gfx.ui.NavigationCode;
 import gfx.ui.InputDetails;
 import gfx.managers.FocusHandler;
@@ -109,6 +109,10 @@ class Map.MapMenu
 	
 	// @GFx
 	public var bPCControlsReady: Boolean = true;
+	
+		//QuestPage Variables
+	private var playerPosition = new Array (0, 0);	
+	private var YouAreHere: MovieClip;
 
 
   /* INITIALIZATION */
@@ -216,7 +220,12 @@ class Map.MapMenu
 		
 		var markersLen = _markerList.length;
 		var dataLen = MarkerData.length;
-			
+		
+		//CREATE_ICONTYPE: Number = 1;
+		//CREATE_UNDISCOVERED: Number = 2;
+		//CREATE_STRIDE: Number = 3;
+		//MARKER_CREATE_PER_FRAME: Number = 10;
+				
 		while (_nextCreateIndex < markersLen && idx < dataLen && i < MARKER_CREATE_PER_FRAME) {
 			var markerType = MarkerData[idx + CREATE_ICONTYPE];
 			var markerName = MarkerData[idx + CREATE_NAME];
@@ -226,8 +235,11 @@ class Map.MapMenu
 			_markerList[_nextCreateIndex] = mapMarker;
 			
 			if (markerType == PlayerLocationMarkerType) {
-				YouAreHereMarker = mapMarker.IconClip;
+				YouAreHereMarker = mapMarker.Icon;
+				//For Quest
+				YouAreHere = mapMarker;
 			}
+			
 			mapMarker.index = _nextCreateIndex;
 			mapMarker.label = markerName;
 			mapMarker.visible = false;
@@ -353,6 +365,10 @@ class Map.MapMenu
 	// @API
 	public function ShowJournal(a_bShow: Boolean): Void
 	{
+			//For quest
+			playerPosition [0] = YouAreHere._x;
+			playerPosition [1] = YouAreHere._y;
+			Shared.coords.SetplayerPosition (playerPosition)
 		if (_bottomBar != undefined) {
 			_bottomBar._visible = !a_bShow;
 		}
@@ -377,6 +393,18 @@ class Map.MapMenu
 		if (_platform == ButtonChange.PLATFORM_PC) {
 			if (GlobalFunc.IsKeyPressed(details) && (details.skseKeycode == 33)) {
 				LocalMapMenu.showLocationFinder();
+		
+						
+				//For Debugging
+/*	if (Shared.coords.GetplayerPosition [1] == null || Shared.coords.GetplayerPosition [1] == undefined)
+	{LocalMapMenu.showLocationFinder();
+				
+//} else {
+	if (playerPosition [0] == 0) {
+	LocalMapMenu.showLocationFinder();
+}
+}*/
+
 			}
 		}
 
