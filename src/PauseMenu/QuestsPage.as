@@ -1,519 +1,894 @@
+import Components.CrossPlatformButtons;
 import gfx.io.GameDelegate;
-import gfx.ui.NavigationCode;
 import gfx.ui.InputDetails;
-import gfx.managers.FocusHandler;
-import gfx.managers.InputDelegate;
-
-import Map.LocalMap;
-import Map.LocationFinder;
-import Shared.ButtonChange;
 import Shared.GlobalFunc;
-
-import skyui.components.ButtonPanel;
-import skyui.components.MappedButton;
-import skyui.defines.Input;
+import gfx.ui.NavigationCode;
+import gfx.managers.FocusHandler;
 import Shared.coords;
 
-/*
-	A few comments:
-	* The map menu set up somewhat complicated. There's a lot of @API, so changing that was not an option.
-	* The top-level clip contains 3 main components, and the bottombar.
-		Root
-		+-- MapMenu (aka WorldMap. this class)
-		+-- LocalMap
-		+-- LocationFinder (new)
-		+-- BottomBar
-	* To prevent WSAD etc from zooming while the location finder is active, we have to enter a fake local map mode.
-	* LocalMap handles the overall state of the menu: worldmap(aka hidden), localmap, locationfinder
-	* To open the LocationFinder, we send a request to localmap, which prepares the fake mode, then shows the location finder.
-	* For handleInput, MapMenu acts as the root.
-	* The bottombar changes happen in LocalMap when the mode is changed.
-	* To detect E as NavEquivalent.ENTER, we have to enable a custom fixup in InputDelegate.
-	* To receive mouse wheel input for the scrolling list, we need skse.EnableMapMenuMouseWheel(true).
-	* Oh, and the localmap reuses this class somehow for its IconView...
- */
 
-class Map.MapMenu
+
+
+
+dynamic class QuestsPage extends MovieClip
 {
-	#include "../../version.as"
-	
-  /* CONSTANTS */
-  
-	private static var REFRESH_SHOW: Number = 0;
-	private static var REFRESH_X: Number = 1;
-	private static var REFRESH_Y: Number = 2;
-	private static var REFRESH_ROTATION: Number = 3;
-	private static var REFRESH_STRIDE: Number = 4;
-	private static var CREATE_NAME: Number = 0;
-	private static var CREATE_ICONTYPE: Number = 1;
-	private static var CREATE_UNDISCOVERED: Number = 2;
-	private static var CREATE_STRIDE: Number = 3;
-	private static var MARKER_CREATE_PER_FRAME: Number = 10;
-	
-	
-  /* PRIVATE VARIABLES */
-  
-	private var _markerList: Array;
-	
+	var DescriptionText: TextField;
+	var Divider: MovieClip;
+	var NoQuestsText: TextField;
+	var ObjectiveList: Object;
+	var ObjectivesHeader: MovieClip;
+	var QuestTitleText: TextField;
+	var TitleList: MovieClip;
+	var TitleList_mc: MovieClip;
+	var bAllowShowOnMap: Boolean;
+	var bHasMiscQuests: Boolean;
+	var bUpdated: Boolean;
+	var iPlatform: Number;
+	var objectiveList: Object;
+	var objectivesHeader: MovieClip;
+	var questDescriptionText: TextField;
+	var questTitleEndpieces: MovieClip;
+	var questTitleText: TextField;
+
+
+	private var _showOnMapButton: MovieClip;
+	private var _toggleActiveButton: MovieClip;
 	private var _bottomBar: MovieClip;
 
-	private var _nextCreateIndex: Number = -1;
-	private var _mapWidth: Number = 0;
-	private var _mapHeight: Number = 0;
-	
-	private var _mapMovie: MovieClip;
-	private var _markerDescriptionHolder: MovieClip;
-	private var _markerContainer: MovieClip;
-	
-	private var _selectedMarker: MovieClip;
-	
-	private var _platform: Number;
-	
-	private var _localMapButton: MovieClip;
-	private var _journalButton: MovieClip;
-	private var _playerLocButton: MovieClip;
-	private var _findLocButton: MovieClip;
-	private var _searchButton: MovieClip;
-	
-	private var _locationFinder: LocationFinder;
-	
-	private var _localMapControls: Object;
-	private var _journalControls: Object;
-	private var _zoomControls: Object;
-	private var _playerLocControls: Object;
-	private var _setDestControls: Object;
-	private var _findLocControls: Object;
-	
-	
-  /* STAGE ELEMENTS */
-  
-  	public var locationFinderFader: MovieClip;
-	public var localMapFader: MovieClip;
-	
+	private var _toggleActiveControls: Object;
+	private var _showOnMapControls: Object;
+	private var _deleteControls: Object;
 
-  /* PROPERTIES */
-
-	// @API
-	public var LocalMapMenu: MovieClip;
-
-	// @API
-	public var MarkerDescriptionObj: MovieClip;
+	//For Quest
+	private var _toggleActiveButton1: MovieClip;
+	private var holdInput = new  Array();
+	private var holdsToggle: Boolean;
+	private var holdTitleList: MovieClip;
+	private var shelfTitleList: MovieClip;
 	
-	// @API
-	public var PlayerLocationMarkerType: String;
 	
-	// @API
-	public var MarkerData: Array;
-	
-	// @API
-	public var YouAreHereMarker: MovieClip;
-	
-	// @GFx
-	public var bPCControlsReady: Boolean = true;
-
-	//QuestPage Variables
-	private var playerPosition = new Array (0, 0);	
-	private var YouAreHere: MovieClip;
-	
-  /* INITIALIZATION */
-
-	public function MapMenu(a_mapMovie: MovieClip)
+	function QuestsPage()
 	{
-		_mapMovie = a_mapMovie == undefined ? _root : a_mapMovie;
-		_markerContainer = _mapMovie.createEmptyMovieClip("MarkerClips", 1);
+		super();
+		TitleList = TitleList_mc.List_mc;
+		DescriptionText = questDescriptionText;
+		QuestTitleText = questTitleText;
+		ObjectiveList = objectiveList;
+		ObjectivesHeader = objectivesHeader;
+		bHasMiscQuests = false;
+		bUpdated = false;
+
+		_bottomBar = _parent._parent.BottomBar_mc;
+	}
+
+	function onLoad()
+	{
+		QuestTitleText.SetText(" ");
+		DescriptionText.SetText(" ");
+		DescriptionText.verticalAutoSize = "top";
+		QuestTitleText.textAutoSize = "shrink";
+		TitleList.addEventListener("itemPress", this, "onTitleListSelect");
+		TitleList.addEventListener("listMovedUp", this, "onTitleListMoveUp");
+		TitleList.addEventListener("listMovedDown", this, "onTitleListMoveDown");
+		TitleList.addEventListener("selectionChange", this, "onTitleListMouseSelectionChange");
+		TitleList.disableInput = true; // Bugfix for vanilla
+		ObjectiveList.addEventListener("itemPress", this, "onObjectiveListSelect");
+		ObjectiveList.addEventListener("selectionChange", this, "onObjectiveListHighlight");
 		
-		_markerList = new Array();
-		_nextCreateIndex = -1;
+	}
+
+	function startPage()
+	{
+		TitleList.disableInput = false; // Bugfix for vanilla
 		
-		LocalMapMenu = _mapMovie.localMapFader.MapClip;
-		
-		_locationFinder = _mapMovie.locationFinderFader.locationFinder;
-		
-		_bottomBar = _root.bottomBar;
-		
-		if (LocalMapMenu != undefined) {
-			LocalMapMenu.setBottomBar(_bottomBar);
-			LocalMapMenu.setLocationFinder(_locationFinder);
+		if (!bUpdated) {
+			holdsToggle = false; //hold stuff
+			//ShowOnMapButton = _parent._parent._bottomBar.Button2_mc;
+			//static function call(methodName, params, scope, callBack)
+			GameDelegate.call("RequestQuestsData", [TitleList], this, "onQuestsDataComplete");
 			
-			Mouse.addListener(this);
-			FocusHandler.instance.setFocus(this,0);
+			//For Quest
+			InitHoldTitleList();
+			bUpdated = true;
 		}
 		
-		_markerDescriptionHolder = _mapMovie.attachMovie("DescriptionHolder", "markerDescriptionHolder", _mapMovie.getNextHighestDepth());
-		_markerDescriptionHolder._visible = false;
-		_markerDescriptionHolder.hitTestDisable = true;
 		
-		MarkerDescriptionObj = _markerDescriptionHolder.Description;
+		_bottomBar.buttonPanel.clearButtons();
+		_toggleActiveButton = _bottomBar.buttonPanel.addButton({text: "$Toggle Active", controls: _toggleActiveControls});
+		if (bAllowShowOnMap)
+			_showOnMapButton = _bottomBar.buttonPanel.addButton({text: "$Show on Map", controls: _showOnMapControls});
 		
-		Stage.addListener(this);
+			
+		//For Quest
+		//The GFX requires a match on "Toggle Active" Can change it to something like "Local Hold" but no "$" spoils it.
+		_toggleActiveButton1 = _bottomBar.buttonPanel.addButton({text: "$Toggle Active", controls: _toggleActiveControls});
+		// Other button creation methods
+		//_toggleActiveButton1 = new toggleActiveButton;
+		//this.addProperty (_toggleActiveButton1);
+		//_toggleActiveButton = new _parent._parent._bottomBar.Button1_mc;
+			
+		//Listeners and click events added for the buttons which don't work.
+		_showOnMapButton.addEventListener("click", this, "_ShowOnMapButtonClick");
+		_toggleActiveButton.addEventListener("click", this, "_ToggleActiveButtonClick");
+		_toggleActiveButton1.addEventListener("click", this, "_ToggleActiveButton1Click");
+		//_toggleActiveButton1.addEventListener("click", this, "onAcceptMousePress"); //Tried this but useless
+		//End for Quest
 		
-		initialize();
-	}
-	
-	public function InitExtensions(): Void
-	{
-		skse.EnableMapMenuMouseWheel(true);
-	}
-	
-	private function initialize(): Void
-	{
-		onResize();
 		
-		if (_bottomBar != undefined)
-			_bottomBar.swapDepths(4);
 		
-		if (_mapMovie.localMapFader != undefined) {
-			_mapMovie.localMapFader.swapDepths(3);
-			_mapMovie.localMapFader.gotoAndStop("hide");
-		}
+		_bottomBar.buttonPanel.updateButtons(true);
+		switchFocusToTitles();
 		
-		if (_mapMovie.locationFinderFader != undefined) {
-			_mapMovie.locationFinderFader.swapDepths(6);
-		}
 		
-		GameDelegate.addCallBack("RefreshMarkers", this, "RefreshMarkers");
-		GameDelegate.addCallBack("SetSelectedMarker", this, "SetSelectedMarker");
-		GameDelegate.addCallBack("ClickSelectedMarker", this, "ClickSelectedMarker");
-		GameDelegate.addCallBack("SetDateString", this, "SetDateString");
-		GameDelegate.addCallBack("ShowJournal", this, "ShowJournal");
-	}
-	
-	
-  /* PUBLIC FUNCTIONS */
-
-	// @API
-	public function SetNumMarkers(a_numMarkers: Number): Void
-	{
-		if (_markerContainer != null)
-		{
-			_markerContainer.removeMovieClip();
-			_markerContainer = _mapMovie.createEmptyMovieClip("MarkerClips", 1);
-			onResize();
-		}
-		
-		delete _markerList;
-		_markerList = new Array(a_numMarkers);
-		
-		Map.MapMarker.topDepth = a_numMarkers;
-
-		_nextCreateIndex = 0;
-		SetSelectedMarker(-1);
-		
-		_locationFinder.list.clearList();
-		_locationFinder.setLoading(true);
 	}
 
-	// @API
-	public function GetCreatingMarkers(): Boolean
+	function endPage()
 	{
-		return _nextCreateIndex != -1;
+		_showOnMapButton._alpha = 100;
+		_toggleActiveButton._alpha = 100;
+
+		_bottomBar.buttonPanel.clearButtons();
+
+		TitleList.disableInput = true; // Bugfix for vanilla
 	}
 
-	// @API
-	public function CreateMarkers(): Void
+	function get selectedQuestID(): Number
 	{
-		if (_nextCreateIndex == -1 || _markerContainer == null)
-			return;
-			
-		var i = 0;
-		var j = _nextCreateIndex * Map.MapMenu.CREATE_STRIDE;
-		var markersLen = _markerList.length;
-		var dataLen = MarkerData.length;
-		
-		
-	//CREATE_ICONTYPE: Number = 1;
-	//CREATE_UNDISCOVERED: Number = 2;
-	//CREATE_STRIDE: Number = 3;
-	//MARKER_CREATE_PER_FRAME: Number = 10;
-		
-		while (_nextCreateIndex < markersLen && j < dataLen && i < Map.MapMenu.MARKER_CREATE_PER_FRAME) {
-			var markerType = MarkerData[j + Map.MapMenu.CREATE_ICONTYPE];
-			var markerName = MarkerData[j + Map.MapMenu.CREATE_NAME];
-			var isUndiscovered = MarkerData[j + Map.MapMenu.CREATE_UNDISCOVERED];
-			
-			var mapMarker: MovieClip = _markerContainer.attachMovie(Map.MapMarker.ICON_TYPES[markerType], "Marker" + _nextCreateIndex, _nextCreateIndex);
-			_markerList[_nextCreateIndex] = mapMarker;
-		
+		return TitleList.entryList.length <= 0 ? undefined : TitleList.centeredEntry.formID;
+	}
 
-			if (markerType == PlayerLocationMarkerType) {
-				YouAreHereMarker = mapMarker.Icon;
-				//For Quest
-				YouAreHere = mapMarker;
-			}
+	function get selectedQuestInstance(): Number
+	{
+		return TitleList.entryList.length <= 0 ? undefined : TitleList.centeredEntry.instance;
+	}
 
-			
-			
-			mapMarker.index = _nextCreateIndex;
-			mapMarker.label = markerName;				
-			mapMarker.textField._visible = false;
-			mapMarker.visible = false;
-			mapMarker.iconType = markerType;
-			
+	function handleInput(details: InputDetails, pathToFocus: Array): Boolean
+	{
+		var bhandledInput: Boolean = false;
+		var quest: Object = undefined;
+		if (GlobalFunc.IsKeyPressed(details)) {
+			if ((details.navEquivalent == NavigationCode.GAMEPAD_X || details.code == 77) && bAllowShowOnMap) 
+			{
 				
+				if (ObjectiveList.selectedEntry != undefined && ObjectiveList.selectedEntry.questTargetID != undefined) {
+					quest = ObjectiveList.selectedEntry;
+				} else {
+					quest = ObjectiveList.entryList[0];
+				}
+				
+				if (quest != undefined && quest.questTargetID != undefined) {
+					_parent._parent.CloseMenu();
+					GameDelegate.call("ShowTargetOnMap", [quest.questTargetID]);
+				} else {
+					GameDelegate.call("PlaySound", ["UIMenuCancel"]);
+				}
+				bhandledInput = true;
 
-			
-			// Adding the markers directly so we don't have to create data objects.
-			// NOTE: Make sure internal entry properties (mappedIndex etc) dont conflict with marker properties
-			if (0 < markerType && markerType < Map.LocationFinder.TYPE_RANGE) {
-				_locationFinder.list.entryList.push(mapMarker);
+				}  else if (details.code == 72 && _platform == PLATFORM_PC && bAllowShowOnMap) {//Local stuff
+
+				////For quest: Hope this works, Note that to call onQuestsDataComplete directly -ahem- requires parms.
+				holdsToggle = !holdsToggle;
+				GameDelegate.call("RequestQuestsData", [TitleList], this, "onQuestsDataComplete");
+
+
+				bhandledInput = true;
+			}	else if (TitleList.entryList.length > 0) {
+				if (details.navEquivalent == NavigationCode.LEFT && FocusHandler.instance.getFocus(0) != TitleList) {
+					switchFocusToTitles();
+					bhandledInput = true;
+				} else if (details.navEquivalent == NavigationCode.RIGHT && FocusHandler.instance.getFocus(0) != 
+				eList) {
+					switchFocusToObjectives();
+					bhandledInput = true;
+				}
+				
 			}
 			
-			if (isUndiscovered && mapMarker.IconClip != undefined) {
-				var depth: Number = mapMarker.IconClip.getNextHighestDepth();
-				mapMarker.IconClip.attachMovie(Map.MapMarker.ICON_TYPES[markerType] + "Undiscovered", "UndiscoveredIcon", depth);
-			}
 			
-			++i;
-			++_nextCreateIndex;
-			
-			j = j + Map.MapMenu.CREATE_STRIDE;
 		}
-		
-		_locationFinder.list.InvalidateData();
-		
-		if (_nextCreateIndex >= markersLen) {
-			_locationFinder.setLoading(false);
-			_nextCreateIndex = -1;
+		//Deleted the following and made no perceivable difference on my rig.
+		if (!bhandledInput && pathToFocus != undefined && pathToFocus.length > 0) {
+			bhandledInput = pathToFocus[0].handleInput(details, pathToFocus.slice(1));
 		}
+		return bhandledInput;
 	}
-
-	// @API
-	public function RefreshMarkers(): Void
-	{
-		var i: Number = 0;
-		var j: Number = 0;
-		var markersLen: Number = _markerList.length;
-		var dataLen: Number = MarkerData.length;
-		
-		while (i < markersLen && j < dataLen) {
-			var marker: MovieClip = _markerList[i];
-			marker._visible = MarkerData[j + Map.MapMenu.REFRESH_SHOW];
-			if (marker._visible) {
-				marker._x = MarkerData[j + Map.MapMenu.REFRESH_X] * _mapWidth;
-				marker._y = MarkerData[j + Map.MapMenu.REFRESH_Y] * _mapHeight;
-				marker._rotation = MarkerData[j + Map.MapMenu.REFRESH_ROTATION];
-			}
-			++i;
-			j = j + Map.MapMenu.REFRESH_STRIDE;
-		}
-		if (_selectedMarker != undefined) {
-			_markerDescriptionHolder._x = _selectedMarker._x + _markerContainer._x;
-			_markerDescriptionHolder._y = _selectedMarker._y + _markerContainer._y;
-		}
-	}
-
-	// @API
-	public function SetSelectedMarker(a_selectedMarkerIndex: Number): Void
-	{
-		var marker: MovieClip = a_selectedMarkerIndex < 0 ? null : _markerList[a_selectedMarkerIndex];
-		
-		if (marker == _selectedMarker)
-			return;
-			
-		if (_selectedMarker != null) {
-			_selectedMarker.MarkerRollOut();
-			_selectedMarker = null;
-			_markerDescriptionHolder.gotoAndPlay("Hide");
-		}
-		
-		if (marker != null && !_bottomBar.hitTest(_root._xmouse, _root._ymouse) && marker.visible && marker.MarkerRollOver()) {
-			_selectedMarker = marker;
-			_markerDescriptionHolder._visible = true;
-			_markerDescriptionHolder.gotoAndPlay("Show");
-			return;
-		}
-		_selectedMarker = null;
-	}
-
-	// @API
-	public function ClickSelectedMarker(): Void
-	{
-		if (_selectedMarker != undefined) {
-			_selectedMarker.MarkerClick();
-		}
-	}
-
-	// @API
-	public function SetPlatform(a_platform: Number, a_bPS3Switch: Boolean): Void
-	{
 	
-		if (a_platform == ButtonChange.PLATFORM_PC) {
-			_localMapControls = {keyCode: 38}; // L
-			_journalControls = {name: "Journal", context: Input.CONTEXT_GAMEPLAY};
-			_zoomControls = {keyCode: 283}; // special: mouse wheel
-			_playerLocControls = {keyCode: 18}; // E
-			_setDestControls = {keyCode: 256}; // Mouse1
-			_findLocControls = {keyCode: 33}; // F
+
+	private function isViewingMiscObjectives(): Boolean
+	{
+		return bHasMiscQuests && TitleList.selectedEntry.formID == 0;
+	}
+
+	function onTitleListSelect(): Void
+	{
+		
+		if (TitleList.selectedEntry != undefined && !TitleList.selectedEntry.completed) {
+			if (!isViewingMiscObjectives()) {
+				GameDelegate.call("ToggleQuestActiveStatus", [TitleList.selectedEntry.formID, TitleList.selectedEntry.instance], this, "onToggleQuestActive");
+				return;
+			}
+			TitleList.selectedEntry.active = !TitleList.selectedEntry.active;
+			GameDelegate.call("ToggleShowMiscObjectives", [TitleList.selectedEntry.active]);
+			TitleList.UpdateList();
+		}
+	}
+
+	function onObjectiveListSelect(): Void
+	{
+		if (isViewingMiscObjectives()) {
+			GameDelegate.call("ToggleQuestActiveStatus", [ObjectiveList.selectedEntry.formID, ObjectiveList.selectedEntry.instance], this, "onToggleQuestActive");
+		}
+	}
+
+	private function switchFocusToTitles(): Void
+	{
+		FocusHandler.instance.setFocus(TitleList, 0);
+		Divider.gotoAndStop("Right");
+		_toggleActiveButton._alpha = 100;
+		ObjectiveList.selectedIndex = -1;
+		if (iPlatform != 0) {
+			ObjectiveList.disableSelection = true;
+		}
+		updateShowOnMapButtonAlpha(0);
+	}
+
+	private function switchFocusToObjectives(): Void
+	{
+		FocusHandler.instance.setFocus(ObjectiveList, 0);
+		Divider.gotoAndStop("Left");
+		_toggleActiveButton._alpha = isViewingMiscObjectives() ? 100 : 50;
+		if (iPlatform != 0) {
+			ObjectiveList.disableSelection = false;
+		}
+		ObjectiveList.selectedIndex = 0;
+		updateShowOnMapButtonAlpha(0);
+	}
+
+	private function onObjectiveListHighlight(event): Void
+	{
+		updateShowOnMapButtonAlpha(event.index);
+	}
+
+	private function updateShowOnMapButtonAlpha(a_entryIdx: Number): Void
+	{
+		var alpha: Number = 50;
+
+		if (bAllowShowOnMap && (a_entryIdx >= 0 && ObjectiveList.entryList[a_entryIdx].questTargetID != undefined) || (ObjectiveList.entryList.length > 0 && ObjectiveList.entryList[0].questTargetID != undefined)) {
+			alpha = 100;
+		}
+		_toggleActiveButton._alpha = ((!TitleList.selectedEntry.completed) ? 100 : 50);
+
+		_showOnMapButton._alpha = alpha;
+	}
+
+	private function onToggleQuestActive(a_bnewActiveStatus: Number): Void
+	{
+		if (isViewingMiscObjectives()) {
+			var iformID: Number = ObjectiveList.selectedEntry.formID;
+			var iinstance: Number = ObjectiveList.selectedEntry.instance;
+			for (var i: String in ObjectiveList.entryList) {
+				if (ObjectiveList.entryList[i].formID == iformID && ObjectiveList.entryList[i].instance == iinstance) {
+					ObjectiveList.entryList[i].active = a_bnewActiveStatus;
+				}
+			}
+			ObjectiveList.UpdateList();
 		} else {
-			_localMapControls = {keyCode: 278}; // X
-			_journalControls = {keyCode: 270}; // START
-			_zoomControls = [	// LT/RT
-				{keyCode: 280},
-				{keyCode: 281}
-			];
-			_playerLocControls = {keyCode: 279}; // Y
-			_setDestControls = {keyCode: 276}; // A
-			_findLocControls = {keyCode: 273}; // RS
+			TitleList.selectedEntry.active = a_bnewActiveStatus;
+			TitleList.UpdateList();
 		}
-		
-		if (_bottomBar != undefined) {
-			
-			_bottomBar.buttonPanel.setPlatform(a_platform, a_bPS3Switch);
-
-			createButtons(a_platform != ButtonChange.PLATFORM_PC);
+		if (a_bnewActiveStatus) {
+			GameDelegate.call("PlaySound", ["UIQuestActive"]);
+			return;
 		}
-		
-		InputDelegate.instance.isGamepad = a_platform != ButtonChange.PLATFORM_PC;
-		InputDelegate.instance.enableControlFixup(true);
-		
-		_platform = a_platform;
-	}
-
-	// @API
-	public function SetDateString(a_strDate: String): Void
-	{
-		_bottomBar.DateText.SetText(a_strDate);
-	}
-
-	// @API
-	public function ShowJournal(a_bShow: Boolean): Void
-	{
-				//For quest
-				playerPosition [0] = YouAreHere._x;
-				playerPosition [1] = YouAreHere._y;
-				Shared.coords.SetplayerPosition (playerPosition)
-
-				
-		if (_bottomBar != undefined) {
-			_bottomBar._visible = !a_bShow;
-		}
-	}
-
-	// @API
-	public function SetCurrentLocationEnabled(a_bEnabled: Boolean): Void
-	{
-		if (_bottomBar != undefined && _platform == ButtonChange.PLATFORM_PC) {
-			_bottomBar.PlayerLocButton.disabled = !a_bEnabled;
-		}
+		GameDelegate.call("PlaySound", ["UIQuestInactive"]);
 	}
 	
-	// @GFx
-	public function handleInput(details: InputDetails, pathToFocus: Array): Boolean
-	{			
-		var nextClip = pathToFocus.shift();
-		if (nextClip.handleInput(details, pathToFocus))
-			return true;
+	private function InitHoldTitleList():Void 
+	{
+		var questNew: Object;
+		var quest: Object;
+		var targCoordsX: Number;
+		var targCoordsY: Number;
+		var questHold: Number;
+		var playerHold: Number;
+		var k: Number;
 		
-		// Find Location - L
-		if (_platform == ButtonChange.PLATFORM_PC) {
-			if (GlobalFunc.IsKeyPressed(details) && (details.skseKeycode == 33)) {
-				
+		k = 0
+		//shelfTitleList = TitleList; Needed?
+		var playerCoords = Shared.coords.GetplayerPosition;
+		var playerCoordsX = playerCoords [0];
+		var playerCoordsY = playerCoords [1];
 
-				
-				
-				
-
-				
-				//For Debugging
-/*	if (Shared.coords.GetplayerPosition [1] == null || Shared.coords.GetplayerPosition [1] == undefined)
-	{LocalMapMenu.showLocationFinder();
-				
-//} else {
-	if (playerPosition [0] == 0) {
-	LocalMapMenu.showLocationFinder();
+		if (playerCoordsX == null || playerCoordsY == undefined)
+{
+	
+				//For Debug: Currently this condition is always satisfied,- so... broken.
+		_parent._parent.CloseMenu();
+		GameDelegate.call("ShowTargetOnMap", []);				
+} else
+{
+	//Put better debug coed here, too.
 }
-}*/
+
+		//playerHold initialised here
+		playerHold = this.GetHoldCoords (playerCoordsX, playerCoordsY);
 
 
-
-		} 
-
-	
-	
-	}
-
-		return false;
-	}
-	
-	
-  /* PRIVATE FUNCTIONS */
-	
-	private function OnLocalButtonClick(): Void
-	{
-		GameDelegate.call("ToggleMapCallback", []);
-	}
-
-	private function OnJournalButtonClick(): Void
-	{
-					playerPosition [0] = YouAreHere._x;
-				playerPosition [1] = YouAreHere._y;
-				Shared.coords.SetplayerPosition (playerPosition)
-		GameDelegate.call("OpenJournalCallback", []);
-	}
-
-	private function OnPlayerLocButtonClick(): Void
-	{
-		GameDelegate.call("CurrentLocationCallback", []);
-	}
-	
-	private function OnFindLocButtonClick(): Void
-	{
-		LocalMapMenu.showLocationFinder();
-	}
-	
-	private function onMouseDown(): Void
-	{
-		if (_bottomBar.hitTest(_root._xmouse, _root._ymouse))
-			return;
-		GameDelegate.call("ClickCallback", []);
-	}
-	
-	private function onResize(): Void
-	{
-		_mapWidth = Stage.visibleRect.right - Stage.visibleRect.left;
-		_mapHeight = Stage.visibleRect.bottom - Stage.visibleRect.top;
 		
-		if (_mapMovie == _root) {
-			_markerContainer._x = Stage.visibleRect.left;
-			_markerContainer._y = Stage.visibleRect.top;
-		} else {
-			var localMap: LocalMap = LocalMap(_mapMovie);
-			if (localMap != undefined) {
-				_mapWidth = localMap.TextureWidth;
-				_mapHeight = localMap.TextureHeight;
+		
+		
+		for (var i: Number = 0; i < TitleList.entryList.length; i++) {
+			
+			
+			shelfTitleList.entryList[i] = TitleList.entryList[i]; //"deep copy" list over
+
+			questHold = -1
+			quest = null;
+			//Build Hold TitleList here Need last OBJECTIVE however
+
+			
+			//Can we fill our "selected entry" property in this way. Probably not.
+			TitleList.selectedEntry =TitleList.entryList[i];
+			GameDelegate.call("RequestObjectivesData", []); //This grabs the "selectedEntry" apparently
+			ObjectiveList.entryList = TitleList.selectedEntry.objectives;
+				if (ObjectiveList.entryList == null || ObjectiveList.entryList == undefined) {
+				
+				{ throw new Error("Error: No Objectives");
+				}
+			
+			try {
+				
+				// output: No Objectives.
+				} catch (e_err:Error) {
+				trace(e_err.toString());
+				}
+				
 			}
+				
+
+			//
+			
+			for (var j: String in ObjectiveList.entryList) {
+				
+				questNew = ObjectiveList.entryList[j];
+				if (questNew.active == 1)//presumably objectives iterate from first to last in "timeline"?
+				{
+					quest = questNew;
+				} else
+				{
+					if (quest != null && questHold > -1)//If undefined do nothing -if all undefined add to the completed log
+					{
+					//quest.targetID._xy works?? 
+					var targCoordsX = quest.questTargetID._x;
+					var targCoordsy = quest.questTargetID._y;
+					
+					
+					questHold = GetHoldCoords (targCoordsX, targCoordsY); //on success leave- don't care about newer entries
+					//questHold = 8;
+			
+					}
+
+					
+				}
+				}
+			
+			if (TitleList.entryList[i].completed)
+			{
+			holdTitleList.entryList[k] = TitleList.entryList[i];
+			k = k + 1;
+			
+			} else {
+				if (questHold == playerHold) //Populate holdTitleList
+				{
+				holdTitleList.entryList[k] = TitleList.entryList[i];
+				k = k + 1;
+				}
+			}	
+
+		}	
+	}
+
+	private function onQuestsDataComplete(auiSavedFormID: Number, auiSavedInstance: Number, abAddMiscQuest: Boolean, abMiscQuestActive: Boolean, abAllowShowOnMap: Boolean): Void
+	{
+		var titlelistTemp = new MovieClip;
+		titlelistTemp = TitleList;
+	
+		bAllowShowOnMap = abAllowShowOnMap;
+
+		var itimeCompleted: Number = undefined;
+		var bCompleted = false;
+		var bUncompleted = false;
+	//Two problems: Misc not location dependent, and duplicating on screen when 
+	//The problem occurs when returning from the save/load or Stats tab.
+		if (abAddMiscQuest)	{
+			TitleList.entryList.push({text: "$MISCELLANEOUS", formID: 0, instance: 0, active: abMiscQuestActive, completed: false, type: 0});
+			bHasMiscQuests = true;
+		}		
+		
+			
+			//For Quest: This block may need repositioning in this fucntion
+		for (var i: Number = 0; i < TitleList.entryList.length; i++) {			
+			
+			
+			if (TitleList.entryList[i].formID == 0) {
+				// Is a misc quest
+				TitleList.entryList[i].timeIndex = Number.MAX_VALUE;
+			} else {
+				TitleList.entryList[i].timeIndex = i;
+			}
+			if (TitleList.entryList[i].completed) {
+				if (itimeCompleted == undefined) {
+					itimeCompleted = TitleList.entryList[i].timeIndex - 0.5;
+				}
+				bCompleted = true;
+			} else {
+				bUncompleted = true;
+			}
+		}
+		
+		if (itimeCompleted != undefined && bCompleted && bUncompleted) {
+			// i.e. at least one completed and one uncompleted quest in the list
+			TitleList.entryList.push({divider: true, completed: true, timeIndex: itimeCompleted});
+		}
+
+		
+		
+		
+		
+		
+		
+			for (var i: Number = 0; i < TitleList.entryList.length; i++) 
+				{
+					//backup updated TitleList
+					titlelistTemp.entryList[i] = TitleList.entryList[i];
+				
+					//titlelistTemp.entryList[i].active = TitleList.entryList[i].active; //Not Needed
+				}
+
+			if (titlelistTemp.entryList[0] == null || titlelistTemp.entryList[0] == undefined) {
+				
+
+				
+				{ throw new Error("Error: No Quests");
+				}
+			
+			try {
+				
+				// output: No Quests.
+				} catch (e_err:Error) {
+				trace(e_err.toString());
+				}
+				
+			}
+				
+				
+		
+		//Copy over active status before restoring
+		
+			for (var i: String in titleListTemp.entryList) 
+			
+			var currQuest= titlelistTemp.entryList[i];
+		{
+					if (holdsToggle) {
+						
+							for (var j: String in holdTitleList.entryList) {
+				
+								if (currQuest == holdTitleList.entryList[j]); //Save active status
+								{
+									holdTitleList.entryList[j].active = currQuest.active;
+								}
+							}
+					
+					
+				} else { 
+							for (var j: String in holdTitleList.entryList)
+							{
+							
+							if (currQuest == shelfTitleList[j] && shelfTitleList.entryList[i] != null && shelfTitleList.entryList[i] != undefined)
+							//Save active status, extra null condition for startup
+							{
+								shelfTitleList.entryList[j].active = currQuest.active;
+							}
+							}
+						}
+
+
+				}
+		
+		
+		for (var i: Number = 0; i < TitleList.entryList.length; i++) 
+		{
+				if (holdsToggle) {
+					TitleList.entryList[i] = holdTitleList.entryList[i]; //Restore with Hold List
+				} else {
+					if (shelfTitleList.entryList[i] != null && shelfTitleList.entryList[i] != undefined) {
+					TitleList.entryList[i] = shelfTitleList.entryList[i];
+					} //Restore original
+				}
+		}
+				//End for Quest
+		
+		
+		
+		
+		
+		
+		
+		
+		TitleList.entryList.sort(completedQuestSort);
+		
+		var isavedIndex: Number = 0;
+
+		for (var i: Number = 0; i < TitleList.entryList.length; i++) {
+			if (TitleList.entryList[i].text != undefined) {
+				TitleList.entryList[i].text = TitleList.entryList[i].text.toUpperCase();
+			}
+			if (TitleList.entryList[i].formID == auiSavedFormID && TitleList.entryList[i].instance == auiSavedInstance) {
+				isavedIndex = i;
+			}
+		}
+
+
+		
+		
+		TitleList.InvalidateData();
+		TitleList.RestoreScrollPosition(isavedIndex, true);
+		TitleList.UpdateList();
+		onQuestHighlight();
+	}
+
+		private function _ToggleActiveButtonClick(): Void //Click events added
+	{
+		holdsToggle = false;
+		GameDelegate.call("RequestQuestsData", [TitleList], this, "onQuestsDataComplete");
+	}
+		private function _ToggleActiveButton1Click(): Void
+	{
+		holdsToggle = true;
+		GameDelegate.call("RequestQuestsData", [TitleList], this, "onQuestsDataComplete");
+	}
+		private function _ShowOnMapButtonClick(): Void
+	{
+		var quest: Object = undefined;
+					if (ObjectiveList.selectedEntry != undefined && ObjectiveList.selectedEntry.questTargetID != undefined) {
+					quest = ObjectiveList.selectedEntry;
+				} else {
+					quest = ObjectiveList.entryList[0];
+				}
+				
+				if (quest != undefined && quest.questTargetID != undefined) {
+					_parent._parent.CloseMenu();
+					GameDelegate.call("ShowTargetOnMap", [quest.questTargetID]);
+				} else {
+					GameDelegate.call("PlaySound", ["UIMenuCancel"]);
+				}
+	}
+	
+	function completedQuestSort(aObj1: Object, aObj2: Object): Number
+	{
+		if (!aObj1.completed && aObj2.completed) 
+		{
+			return -1;
+		}
+		if (aObj1.completed && !aObj2.completed) 
+		{
+			return 1;
+		}
+		if (aObj1.timeIndex < aObj2.timeIndex) 
+		{
+			return -1;
+		}
+		if (aObj1.timeIndex > aObj2.timeIndex) 
+		{
+			return 1;
+		}
+		return 0;
+	}
+
+	function onQuestHighlight(): Void
+	{
+		if (TitleList.entryList.length > 0) {
+			var aCategories: Array = ["Misc", "Main", "MagesGuild", "ThievesGuild", "DarkBrotherhood", "Companion", "Favor", "Daedric", "Misc", "CivilWar", "DLC01", "DLC02"];
+			QuestTitleText.SetText(TitleList.selectedEntry.text);
+			if (TitleList.selectedEntry.objectives == undefined) {
+				GameDelegate.call("RequestObjectivesData", []);
+			}
+			ObjectiveList.entryList = TitleList.selectedEntry.objectives;
+			SetDescriptionText();
+			questTitleEndpieces.gotoAndStop(aCategories[TitleList.selectedEntry.type]);
+			questTitleEndpieces._visible = true;
+			ObjectivesHeader._visible = !isViewingMiscObjectives();
+			ObjectiveList.selectedIndex = -1;
+			ObjectiveList.scrollPosition = 0;
+			if (iPlatform != 0) {
+				ObjectiveList.disableSelection = true;
+			}
+
+			_showOnMapButton._visible = true;
+			updateShowOnMapButtonAlpha(0);
+		} else {
+			NoQuestsText.SetText("No Active Quests");
+			DescriptionText.SetText(" ");
+			QuestTitleText.SetText(" ");
+			ObjectiveList.ClearList();
+			questTitleEndpieces._visible = false;
+			ObjectivesHeader._visible = false;
+
+			_showOnMapButton._visible = false;
+		}
+		ObjectiveList.InvalidateData();
+	}
+
+	function SetDescriptionText(): Void
+	{
+		var iHeaderyOffset: Number = 25;
+		var iObjectiveyOffset: Number = 10;
+		var iObjectiveBorderMaxy: Number = 470;
+		var iObjectiveBorderMiny: Number = 40;
+		DescriptionText.SetText(TitleList.selectedEntry.description);
+		var oCharBoundaries: Object = DescriptionText.getCharBoundaries(DescriptionText.getLineOffset(DescriptionText.numLines - 1));
+		ObjectivesHeader._y = DescriptionText._y + oCharBoundaries.bottom + iHeaderyOffset;
+		if (isViewingMiscObjectives()) {
+			ObjectiveList._y = DescriptionText._y;
+		} else {
+			ObjectiveList._y = ObjectivesHeader._y + ObjectivesHeader._height + iObjectiveyOffset;
+		}
+		ObjectiveList.border._height = Math.max(iObjectiveBorderMaxy - ObjectiveList._y, iObjectiveBorderMiny);
+		ObjectiveList.scrollbar.height = ObjectiveList.border._height - 20;
+	}
+
+	function onTitleListMoveUp(event: Object): Void
+	{
+		onQuestHighlight();
+		GameDelegate.call("PlaySound", ["UIMenuFocus"]);
+		if (event.scrollChanged == true) {
+			TitleList._parent.gotoAndPlay("moveUp");
+		}
+	}
+
+	function onTitleListMoveDown(event: Object): Void
+	{
+		onQuestHighlight();
+		GameDelegate.call("PlaySound", ["UIMenuFocus"]);
+		if (event.scrollChanged == true) {
+			TitleList._parent.gotoAndPlay("moveDown");
+		}
+	}
+
+	function onTitleListMouseSelectionChange(event: Object): Void
+	{
+		if (event.keyboardOrMouse == 0 && event.index != -1) {
+			onQuestHighlight();
+			GameDelegate.call("PlaySound", ["UIMenuFocus"]);
+		}
+	}
+
+	function onRightStickInput(afX: Number, afY: Number): Void
+	{
+		if (afY < 0) {
+			ObjectiveList.moveSelectionDown();
+			return;
+		}
+		ObjectiveList.moveSelectionUp();
+	}
+
+	function SetPlatform(a_platform: Number, a_bPS3Switch: Boolean): Void
+	{
+		
+	//static var PLATFORM_PC: Number = 0; from buttonchange
+	//static var PLATFORM_PC_GAMEPAD: Number = 1;
+	//static var PLATFORM_360: Number = 2;
+	//static var PLATFORM_PS3: Number = 3;
+		
+		if (a_platform == 0) { //but these are Linux codes???
+			_toggleActiveControls = {keyCode: 28}; // Enter
+			_showOnMapControls = {keyCode: 50}; // M
+			_deleteControls = {keyCode: 45}; // X
+		} else {
+			_toggleActiveControls = {keyCode: 276}; // 360_A
+			_showOnMapControls = {keyCode: 278}; // 360_X
+			_deleteControls = {keyCode: 278}; // 360_X
+		}
+
+		iPlatform = a_platform;
+		TitleList.SetPlatform(a_platform, a_bPS3Switch);
+		ObjectiveList.SetPlatform(a_platform, a_bPS3Switch);
+	}
+
+	private function GetHoldCoords(coordsX: Number, coordsY: Number): Number /* New implementation: This function returns the hold value*/
+	{
+
+
+			
+		if (holdInput[1] == null || holdInput[1] == undefined) //Populate holdData just once
+		{
+
+			var holdTemp = new Array();
+			var holdNum = new Array();
+			//Define the holdmap here. All currently set on Hjaalmarch. This is only half the map size. Taleden to supply CSV cell map with partial fill.
+			holdInput[0] =  [565452504846444240383634323028262422201816141210080604020004060810121416182022242628303234384042444648];
+			holdInput[1] =  [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3];//48
+			holdInput[2] =  [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3];//46
+			holdInput[3] =  [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3];//44
+			holdInput[4] =  [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3];//42
+			holdInput[5] =  [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3];//40
+			holdInput[6] =  [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3];//38
+			holdInput[7] =  [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3];//36
+			holdInput[8] =  [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3];//34
+			holdInput[9] =  [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3];//32
+			holdInput[10] = [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3];//30
+			holdInput[11] = [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3];//28
+			holdInput[12] = [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3];//26
+			holdInput[13] = [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3];//24
+			holdInput[14] = [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3];//22
+			holdInput[15] = [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3];//20
+			holdInput[16] = [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3];//18
+			holdInput[17] = [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3];//16
+			holdInput[18] = [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3];//14
+			holdInput[19] = [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3];//12
+			holdInput[20] = [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3];//10
+			holdInput[21] = [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3];//08
+			holdInput[22] = [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3];//06
+			holdInput[23] = [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3];//04
+			holdInput[24] = [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3];//02
+			holdInput[25] = [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3];//00
+			holdInput[26] = [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3];//02
+			holdInput[27] = [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3];//04
+			holdInput[28] = [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3];//06
+			holdInput[29] = [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3];//08
+			holdInput[30] = [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3];//10
+			holdInput[31] = [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3];//12
+			holdInput[32] = [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3];//14
+			holdInput[33] = [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3];//16
+			holdInput[34] = [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3];//18
+			holdInput[35] = [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3];//20
+			holdInput[36] = [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3];//22
+			holdInput[37] = [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3];//24
+			holdInput[38] = [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3];//26
+			holdInput[39] = [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3];//28
+			holdInput[40] = [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3];//30
+			holdInput[41] = [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3];//34
+			holdInput[42] = [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3];//36
+			holdInput[43] = [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3];//38
+			holdInput[44] = [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3];//40
+			
+/*			//Preferred method is below
+			// a Line Feed \x0A or Carriage Return \x0D
+			var holdData:LoadVars = new LoadVars();
+			holdData.load("Holds.txt"); //& used as a variable separator in Holds.txt
+			holdData.onLoad = function (success: Boolean)
+			{ 
+			if (success)
+				{ 
+			//"this.L..." is better than holdData.L...
+			//don't worry about 0th element strip carriage returns
+			holdInput[1] = (holdData.L01).split(String.fromCharCode(13));
+			holdInput[2] = (holdData.L02).split(String.fromCharCode(13));
+			holdInput[3] = (holdData.L03).split(String.fromCharCode(13));
+			holdInput[4] = (holdData.L04).split(String.fromCharCode(13));
+			holdInput[5] = (holdData.L05).split(String.fromCharCode(13));
+			holdInput[6] = (holdData.L06).split(String.fromCharCode(13));
+			holdInput[7] = (holdData.L07).split(String.fromCharCode(13));
+			holdInput[8] = (holdData.L08).split(String.fromCharCode(13));
+			holdInput[9] = (holdData.L09).split(String.fromCharCode(13));
+			holdInput[10] = (holdData.L10).split(String.fromCharCode(13));
+			holdInput[11] = (holdData.L11).split(String.fromCharCode(13));
+			holdInput[12] = (holdData.L12).split(String.fromCharCode(13));
+			holdInput[13] = (holdData.L13).split(String.fromCharCode(13));
+			holdInput[14] = (holdData.L14).split(String.fromCharCode(13));
+			holdInput[15] = (holdData.L15).split(String.fromCharCode(13));
+			holdInput[16] = (holdData.L16).split(String.fromCharCode(13));
+			holdInput[17] = (holdData.L17).split(String.fromCharCode(13));
+			holdInput[18] = (holdData.L18).split(String.fromCharCode(13));
+			holdInput[19] = (holdData.L19).split(String.fromCharCode(13));
+			holdInput[20] = (holdData.L20).split(String.fromCharCode(13));
+			holdInput[21] = (holdData.L21).split(String.fromCharCode(13));
+			holdInput[22] = (holdData.L22).split(String.fromCharCode(13));
+			holdInput[23] = (holdData.L23).split(String.fromCharCode(13));
+			holdInput[24] = (holdData.L24).split(String.fromCharCode(13));
+			holdInput[25] = (holdData.L25).split(String.fromCharCode(13));
+			holdInput[26] = (holdData.L26).split(String.fromCharCode(13));
+			holdInput[27] = (holdData.L27).split(String.fromCharCode(13));
+			holdInput[28] = (holdData.L28).split(String.fromCharCode(13));
+			holdInput[29] = (holdData.L29).split(String.fromCharCode(13));
+			holdInput[30] = (holdData.L30).split(String.fromCharCode(13));
+			holdInput[31] = (holdData.L31).split(String.fromCharCode(13));
+			holdInput[32] = (holdData.L32).split(String.fromCharCode(13));
+			holdInput[33] = (holdData.L33).split(String.fromCharCode(13));
+			holdInput[34] = (holdData.L34).split(String.fromCharCode(13));
+			holdInput[35] = (holdData.L35).split(String.fromCharCode(13));
+			holdInput[36] = (holdData.L36).split(String.fromCharCode(13));
+			holdInput[37] = (holdData.L37).split(String.fromCharCode(13));
+			holdInput[38] = (holdData.L38).split(String.fromCharCode(13));
+			holdInput[39] = (holdData.L39).split(String.fromCharCode(13));
+			holdInput[40] = (holdData.L40).split(String.fromCharCode(13));
+			holdInput[41] = (holdData.L41).split(String.fromCharCode(13));
+			holdInput[42] = (holdData.L42).split(String.fromCharCode(13));
+			holdInput[43] = (holdData.L43).split(String.fromCharCode(13));
+			holdInput[44] = (holdData.L44).split(String.fromCharCode(13));
+			  }	else {
+					//DEBUG TEST
+  					_parent._parent.CloseMenu();
+					GameDelegate.call("ShowTargetOnMap", []);	
+					throw new Error("Error: Can't find Holds.txt");
+			
+			try {
+				
+				// output: Strings do not match.
+				} catch (e_err:Error)
+				{
+				trace(e_err.toString());
+				}
+			
+				  
+			  }
+			
+				
+		}
+*/
 		
 		}
-		GlobalFunc.SetLockFunction();
-		_bottomBar.Lock("B");
-	}
-	
-	private function createButtons(a_bGamepad: Boolean): Void
-	{
-		var buttonPanel: ButtonPanel = _bottomBar.buttonPanel;
-		buttonPanel.clearButtons();
 
-		_localMapButton =	buttonPanel.addButton({text: "$Local Map", controls: _localMapControls});			// 0
-		_journalButton =	buttonPanel.addButton({text: "$Journal", controls: _journalControls});				// 1
-							buttonPanel.addButton({text: "$Zoom", controls: _zoomControls});					// 2
-		_playerLocButton =	buttonPanel.addButton({text: "$Current Location", controls: _playerLocControls});	// 3
-		_findLocButton =	buttonPanel.addButton({text: "$Find Location", controls: _findLocControls});		// 4
-							buttonPanel.addButton({text: "$Set Destination", controls: _setDestControls});		// 5
-		_searchButton =		buttonPanel.addButton({text: "$Search", controls: Input.Space});					// 6
+
+
+
+			
+
+		for (i = 1; i < 45; i++)
+			{
+				
+				if (i == coordsX) {
+	
+
+				holdTemp = holdInput[i];
+				if (holdTemp != null && holdTemp != undefined) {
+				
+					//holdTemp = holdTemp.split(",");
+					holdNum.length = 0;
+					
+					for (var j:Number = 0; i < holdTemp.length; j++)
+					{
+					   // cast each array element as a number and push into new array 	
+					   holdNum.push(Number(holdTemp[j]));
+					}
+					
+					
+					
+					for (j=1; j<53; j++) {
+					
+					if (coordsY == j) {
+					return holdNum[j]; //mission accomplished
+					}
+					}
+				}
+				
+				
+				} else
+				
+				{
+								  
+				throw new Error("Error: Invalid data in Holds.txt");
+			
+					try {
+						
+						// output: Strings do not match.
+						} 
+					catch (e_err:Error)
+						{
+						trace(e_err.toString());
+
+						}	
+				}
+
+			}
+
 		
-		_localMapButton.addEventListener("click", this, "OnLocalButtonClick");
-		_journalButton.addEventListener("click", this, "OnJournalButtonClick");
-		_playerLocButton.addEventListener("click", this, "OnPlayerLocButtonClick");
-		_findLocButton.addEventListener("click", this, "OnFindLocButtonClick");
+			
+
+	return 0 //0 is for Wilderness cells
 		
-		_localMapButton.disabled = a_bGamepad;
-		_journalButton.disabled = a_bGamepad;
-		_playerLocButton.disabled = a_bGamepad;
-		_findLocButton.disabled = a_bGamepad;
-		
-		_findLocButton.visible = !a_bGamepad;
-		_searchButton.visible = false;
-		
-		buttonPanel.updateButtons(true);
-	}
+	
+
+				}
+	
 }
