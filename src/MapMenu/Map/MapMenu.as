@@ -12,6 +12,7 @@ import Shared.GlobalFunc;
 import skyui.components.ButtonPanel;
 import skyui.components.MappedButton;
 import skyui.defines.Input;
+import Shared.coords;
 
 /*
 	A few comments:
@@ -99,7 +100,7 @@ class Map.MapMenu
 	public var MarkerDescriptionObj: MovieClip;
 	
 	// @API
-	public var PlayerLocationMarkerType: Number;
+	public var PlayerLocationMarkerType: String;
 	
 	// @API
 	public var MarkerData: Array;
@@ -110,7 +111,10 @@ class Map.MapMenu
 	// @GFx
 	public var bPCControlsReady: Boolean = true;
 
-
+	//QuestPage Variables
+	private var playerPosition = new Array (0, 0);	
+	private var YouAreHere: MovieClip;
+	
   /* INITIALIZATION */
 
 	public function MapMenu(a_mapMovie: MovieClip)
@@ -212,36 +216,57 @@ class Map.MapMenu
 			return;
 			
 		var i = 0;
-		var idx = _nextCreateIndex * CREATE_STRIDE;
-		
+		var j = _nextCreateIndex * Map.MapMenu.CREATE_STRIDE;
 		var markersLen = _markerList.length;
 		var dataLen = MarkerData.length;
+		
+		
+	//CREATE_ICONTYPE: Number = 1;
+	//CREATE_UNDISCOVERED: Number = 2;
+	//CREATE_STRIDE: Number = 3;
+	//MARKER_CREATE_PER_FRAME: Number = 10;
+		
+		while (_nextCreateIndex < markersLen && j < dataLen && i < Map.MapMenu.MARKER_CREATE_PER_FRAME) {
+			var markerType = MarkerData[j + Map.MapMenu.CREATE_ICONTYPE];
+			var markerName = MarkerData[j + Map.MapMenu.CREATE_NAME];
+			var isUndiscovered = MarkerData[j + Map.MapMenu.CREATE_UNDISCOVERED];
 			
-		while (_nextCreateIndex < markersLen && idx < dataLen && i < MARKER_CREATE_PER_FRAME) {
-			var markerType = MarkerData[idx + CREATE_ICONTYPE];
-			var markerName = MarkerData[idx + CREATE_NAME];
-			var isUndiscovered = MarkerData[idx + CREATE_UNDISCOVERED];
-			
-			var mapMarker: MovieClip = _markerContainer.attachMovie("MapMarker", "Marker" + _nextCreateIndex, _nextCreateIndex, {markerType: markerType, isUndiscovered: isUndiscovered});
+			var mapMarker: MovieClip = _markerContainer.attachMovie(Map.MapMarker.ICON_TYPES[markerType], "Marker" + _nextCreateIndex, _nextCreateIndex);
 			_markerList[_nextCreateIndex] = mapMarker;
-			
+		
+
 			if (markerType == PlayerLocationMarkerType) {
-				YouAreHereMarker = mapMarker.IconClip;
+				YouAreHereMarker = mapMarker.Icon;
+				//For Quest
+				YouAreHere = mapMarker;
 			}
-			mapMarker.index = _nextCreateIndex;
-			mapMarker.label = markerName;
-			mapMarker.visible = false;
+
 			
-			// Adding the markers directly so we don't have to create data obidxects.
+			
+			mapMarker.index = _nextCreateIndex;
+			mapMarker.label = markerName;				
+			mapMarker.textField._visible = false;
+			mapMarker.visible = false;
+			mapMarker.iconType = markerType;
+			
+				
+
+			
+			// Adding the markers directly so we don't have to create data objects.
 			// NOTE: Make sure internal entry properties (mappedIndex etc) dont conflict with marker properties
 			if (0 < markerType && markerType < Map.LocationFinder.TYPE_RANGE) {
 				_locationFinder.list.entryList.push(mapMarker);
 			}
 			
-			i++;
-			_nextCreateIndex++;
-
-			idx += CREATE_STRIDE;
+			if (isUndiscovered && mapMarker.IconClip != undefined) {
+				var depth: Number = mapMarker.IconClip.getNextHighestDepth();
+				mapMarker.IconClip.attachMovie(Map.MapMarker.ICON_TYPES[markerType] + "Undiscovered", "UndiscoveredIcon", depth);
+			}
+			
+			++i;
+			++_nextCreateIndex;
+			
+			j = j + Map.MapMenu.CREATE_STRIDE;
 		}
 		
 		_locationFinder.list.InvalidateData();
@@ -256,20 +281,20 @@ class Map.MapMenu
 	public function RefreshMarkers(): Void
 	{
 		var i: Number = 0;
-		var idx: Number = 0;
+		var j: Number = 0;
 		var markersLen: Number = _markerList.length;
 		var dataLen: Number = MarkerData.length;
 		
-		while (i < markersLen && idx < dataLen) {
+		while (i < markersLen && j < dataLen) {
 			var marker: MovieClip = _markerList[i];
-			marker._visible = MarkerData[idx + REFRESH_SHOW];
+			marker._visible = MarkerData[j + Map.MapMenu.REFRESH_SHOW];
 			if (marker._visible) {
-				marker._x = MarkerData[idx + REFRESH_X] * _mapWidth;
-				marker._y = MarkerData[idx + REFRESH_Y] * _mapHeight;
-				marker._rotation = MarkerData[idx + REFRESH_ROTATION];
+				marker._x = MarkerData[j + Map.MapMenu.REFRESH_X] * _mapWidth;
+				marker._y = MarkerData[j + Map.MapMenu.REFRESH_Y] * _mapHeight;
+				marker._rotation = MarkerData[j + Map.MapMenu.REFRESH_ROTATION];
 			}
-			i++;
-			idx += REFRESH_STRIDE;
+			++i;
+			j = j + Map.MapMenu.REFRESH_STRIDE;
 		}
 		if (_selectedMarker != undefined) {
 			_markerDescriptionHolder._x = _selectedMarker._x + _markerContainer._x;
@@ -353,6 +378,12 @@ class Map.MapMenu
 	// @API
 	public function ShowJournal(a_bShow: Boolean): Void
 	{
+				//For quest
+				playerPosition [0] = YouAreHere._x;
+				playerPosition [1] = YouAreHere._y;
+				Shared.coords.SetplayerPosition (playerPosition)
+
+				
 		if (_bottomBar != undefined) {
 			_bottomBar._visible = !a_bShow;
 		}
@@ -373,12 +404,33 @@ class Map.MapMenu
 		if (nextClip.handleInput(details, pathToFocus))
 			return true;
 		
-		// Find Location - F
+		// Find Location - L
 		if (_platform == ButtonChange.PLATFORM_PC) {
 			if (GlobalFunc.IsKeyPressed(details) && (details.skseKeycode == 33)) {
-				LocalMapMenu.showLocationFinder();
-			}
-		}
+				
+
+				
+				
+				
+
+				
+				//For Debugging
+/*	if (Shared.coords.GetplayerPosition [1] == null || Shared.coords.GetplayerPosition [1] == undefined)
+	{LocalMapMenu.showLocationFinder();
+				
+//} else {
+	if (playerPosition [0] == 0) {
+	LocalMapMenu.showLocationFinder();
+}
+}*/
+
+
+
+		} 
+
+	
+	
+	}
 
 		return false;
 	}
@@ -393,6 +445,9 @@ class Map.MapMenu
 
 	private function OnJournalButtonClick(): Void
 	{
+					playerPosition [0] = YouAreHere._x;
+				playerPosition [1] = YouAreHere._y;
+				Shared.coords.SetplayerPosition (playerPosition)
 		GameDelegate.call("OpenJournalCallback", []);
 	}
 
