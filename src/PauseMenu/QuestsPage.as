@@ -1,405 +1,519 @@
-import Components.CrossPlatformButtons;
 import gfx.io.GameDelegate;
-import gfx.ui.InputDetails;
-import Shared.GlobalFunc;
 import gfx.ui.NavigationCode;
+import gfx.ui.InputDetails;
 import gfx.managers.FocusHandler;
+import gfx.managers.InputDelegate;
 
-class QuestsPage extends MovieClip
+import Map.LocalMap;
+import Map.LocationFinder;
+import Shared.ButtonChange;
+import Shared.GlobalFunc;
+
+import skyui.components.ButtonPanel;
+import skyui.components.MappedButton;
+import skyui.defines.Input;
+import Shared.coords;
+
+/*
+	A few comments:
+	* The map menu set up somewhat complicated. There's a lot of @API, so changing that was not an option.
+	* The top-level clip contains 3 main components, and the bottombar.
+		Root
+		+-- MapMenu (aka WorldMap. this class)
+		+-- LocalMap
+		+-- LocationFinder (new)
+		+-- BottomBar
+	* To prevent WSAD etc from zooming while the location finder is active, we have to enter a fake local map mode.
+	* LocalMap handles the overall state of the menu: worldmap(aka hidden), localmap, locationfinder
+	* To open the LocationFinder, we send a request to localmap, which prepares the fake mode, then shows the location finder.
+	* For handleInput, MapMenu acts as the root.
+	* The bottombar changes happen in LocalMap when the mode is changed.
+	* To detect E as NavEquivalent.ENTER, we have to enable a custom fixup in InputDelegate.
+	* To receive mouse wheel input for the scrolling list, we need skse.EnableMapMenuMouseWheel(true).
+	* Oh, and the localmap reuses this class somehow for its IconView...
+ */
+
+class Map.MapMenu
 {
-	var DescriptionText: TextField;
-	var Divider: MovieClip;
-	var NoQuestsText: TextField;
-	var ObjectiveList: Object;
-	var ObjectivesHeader: MovieClip;
-	var QuestTitleText: TextField;
-	var TitleList: MovieClip;
-	var TitleList_mc: MovieClip;
-	var bAllowShowOnMap: Boolean;
-	var bHasMiscQuests: Boolean;
-	var bUpdated: Boolean;
-	var iPlatform: Number;
-	var objectiveList: Object;
-	var objectivesHeader: MovieClip;
-	var questDescriptionText: TextField;
-	var questTitleEndpieces: MovieClip;
-	var questTitleText: TextField;
-
-	private var _showOnMapButton: MovieClip;
-	private var _toggleActiveButton: MovieClip;
+	#include "../../version.as"
+	
+  /* CONSTANTS */
+  
+	private static var REFRESH_SHOW: Number = 0;
+	private static var REFRESH_X: Number = 1;
+	private static var REFRESH_Y: Number = 2;
+	private static var REFRESH_ROTATION: Number = 3;
+	private static var REFRESH_STRIDE: Number = 4;
+	private static var CREATE_NAME: Number = 0;
+	private static var CREATE_ICONTYPE: Number = 1;
+	private static var CREATE_UNDISCOVERED: Number = 2;
+	private static var CREATE_STRIDE: Number = 3;
+	private static var MARKER_CREATE_PER_FRAME: Number = 10;
+	
+	
+  /* PRIVATE VARIABLES */
+  
+	private var _markerList: Array;
+	
 	private var _bottomBar: MovieClip;
 
-	private var _toggleActiveControls: Object;
-	private var _showOnMapControls: Object;
-	private var _deleteControls: Object;
+	private var _nextCreateIndex: Number = -1;
+	private var _mapWidth: Number = 0;
+	private var _mapHeight: Number = 0;
+	
+	private var _mapMovie: MovieClip;
+	private var _markerDescriptionHolder: MovieClip;
+	private var _markerContainer: MovieClip;
+	
+	private var _selectedMarker: MovieClip;
+	
+	private var _platform: Number;
+	
+	private var _localMapButton: MovieClip;
+	private var _journalButton: MovieClip;
+	private var _playerLocButton: MovieClip;
+	private var _findLocButton: MovieClip;
+	private var _searchButton: MovieClip;
+	
+	private var _locationFinder: LocationFinder;
+	
+	private var _localMapControls: Object;
+	private var _journalControls: Object;
+	private var _zoomControls: Object;
+	private var _playerLocControls: Object;
+	private var _setDestControls: Object;
+	private var _findLocControls: Object;
+	
+	
+  /* STAGE ELEMENTS */
+  
+  	public var locationFinderFader: MovieClip;
+	public var localMapFader: MovieClip;
+	
 
-	function QuestsPage()
+  /* PROPERTIES */
+
+	// @API
+	public var LocalMapMenu: MovieClip;
+
+	// @API
+	public var MarkerDescriptionObj: MovieClip;
+	
+	// @API
+	public var PlayerLocationMarkerType: String;
+	
+	// @API
+	public var MarkerData: Array;
+	
+	// @API
+	public var YouAreHereMarker: MovieClip;
+	
+	// @GFx
+	public var bPCControlsReady: Boolean = true;
+
+	//QuestPage Variables
+	private var playerPosition = new Array (0, 0);	
+	private var YouAreHere: MovieClip;
+	
+  /* INITIALIZATION */
+
+	public function MapMenu(a_mapMovie: MovieClip)
 	{
-		super();
-		TitleList = TitleList_mc.List_mc;
-		DescriptionText = questDescriptionText;
-		QuestTitleText = questTitleText;
-		ObjectiveList = objectiveList;
-		ObjectivesHeader = objectivesHeader;
-		bHasMiscQuests = false;
-		bUpdated = false;
-
-		_bottomBar = _parent._parent.BottomBar_mc;
-	}
-
-	function onLoad()
-	{
-		QuestTitleText.SetText(" ");
-		DescriptionText.SetText(" ");
-		DescriptionText.verticalAutoSize = "top";
-		QuestTitleText.textAutoSize = "shrink";
-		TitleList.addEventListener("itemPress", this, "onTitleListSelect");
-		TitleList.addEventListener("listMovedUp", this, "onTitleListMoveUp");
-		TitleList.addEventListener("listMovedDown", this, "onTitleListMoveDown");
-		TitleList.addEventListener("selectionChange", this, "onTitleListMouseSelectionChange");
-		TitleList.disableInput = true; // Bugfix for vanilla
-		ObjectiveList.addEventListener("itemPress", this, "onObjectiveListSelect");
-		ObjectiveList.addEventListener("selectionChange", this, "onObjectiveListHighlight");
-	}
-
-	function startPage()
-	{
-		TitleList.disableInput = false; // Bugfix for vanilla
-
-		if (!bUpdated) {
-			//ShowOnMapButton = _parent._parent._bottomBar.Button2_mc;
-			GameDelegate.call("RequestQuestsData", [TitleList], this, "onQuestsDataComplete");
-			//_toggleActiveButton = _parent._parent._bottomBar.Button1_mc;
-			bUpdated = true;
-		}
-
-		_bottomBar.buttonPanel.clearButtons();
-		_toggleActiveButton = _bottomBar.buttonPanel.addButton({text: "$Toggle Active", controls: _toggleActiveControls});
-		if (bAllowShowOnMap)
-			_showOnMapButton = _bottomBar.buttonPanel.addButton({text: "$Show on Map", controls: _showOnMapControls});
-		_bottomBar.buttonPanel.updateButtons(true);
+		_mapMovie = a_mapMovie == undefined ? _root : a_mapMovie;
+		_markerContainer = _mapMovie.createEmptyMovieClip("MarkerClips", 1);
 		
-		switchFocusToTitles();
+		_markerList = new Array();
+		_nextCreateIndex = -1;
+		
+		LocalMapMenu = _mapMovie.localMapFader.MapClip;
+		
+		_locationFinder = _mapMovie.locationFinderFader.locationFinder;
+		
+		_bottomBar = _root.bottomBar;
+		
+		if (LocalMapMenu != undefined) {
+			LocalMapMenu.setBottomBar(_bottomBar);
+			LocalMapMenu.setLocationFinder(_locationFinder);
+			
+			Mouse.addListener(this);
+			FocusHandler.instance.setFocus(this,0);
+		}
+		
+		_markerDescriptionHolder = _mapMovie.attachMovie("DescriptionHolder", "markerDescriptionHolder", _mapMovie.getNextHighestDepth());
+		_markerDescriptionHolder._visible = false;
+		_markerDescriptionHolder.hitTestDisable = true;
+		
+		MarkerDescriptionObj = _markerDescriptionHolder.Description;
+		
+		Stage.addListener(this);
+		
+		initialize();
+	}
+	
+	public function InitExtensions(): Void
+	{
+		skse.EnableMapMenuMouseWheel(true);
+	}
+	
+	private function initialize(): Void
+	{
+		onResize();
+		
+		if (_bottomBar != undefined)
+			_bottomBar.swapDepths(4);
+		
+		if (_mapMovie.localMapFader != undefined) {
+			_mapMovie.localMapFader.swapDepths(3);
+			_mapMovie.localMapFader.gotoAndStop("hide");
+		}
+		
+		if (_mapMovie.locationFinderFader != undefined) {
+			_mapMovie.locationFinderFader.swapDepths(6);
+		}
+		
+		GameDelegate.addCallBack("RefreshMarkers", this, "RefreshMarkers");
+		GameDelegate.addCallBack("SetSelectedMarker", this, "SetSelectedMarker");
+		GameDelegate.addCallBack("ClickSelectedMarker", this, "ClickSelectedMarker");
+		GameDelegate.addCallBack("SetDateString", this, "SetDateString");
+		GameDelegate.addCallBack("ShowJournal", this, "ShowJournal");
+	}
+	
+	
+  /* PUBLIC FUNCTIONS */
+
+	// @API
+	public function SetNumMarkers(a_numMarkers: Number): Void
+	{
+		if (_markerContainer != null)
+		{
+			_markerContainer.removeMovieClip();
+			_markerContainer = _mapMovie.createEmptyMovieClip("MarkerClips", 1);
+			onResize();
+		}
+		
+		delete _markerList;
+		_markerList = new Array(a_numMarkers);
+		
+		Map.MapMarker.topDepth = a_numMarkers;
+
+		_nextCreateIndex = 0;
+		SetSelectedMarker(-1);
+		
+		_locationFinder.list.clearList();
+		_locationFinder.setLoading(true);
 	}
 
-	function endPage()
+	// @API
+	public function GetCreatingMarkers(): Boolean
 	{
-		_showOnMapButton._alpha = 100;
-		_toggleActiveButton._alpha = 100;
-
-		_bottomBar.buttonPanel.clearButtons();
-
-		TitleList.disableInput = true; // Bugfix for vanilla
+		return _nextCreateIndex != -1;
 	}
 
-	function get selectedQuestID(): Number
+	// @API
+	public function CreateMarkers(): Void
 	{
-		return TitleList.entryList.length <= 0 ? undefined : TitleList.centeredEntry.formID;
-	}
+		if (_nextCreateIndex == -1 || _markerContainer == null)
+			return;
+			
+		var i = 0;
+		var j = _nextCreateIndex * Map.MapMenu.CREATE_STRIDE;
+		var markersLen = _markerList.length;
+		var dataLen = MarkerData.length;
+		
+		
+	//CREATE_ICONTYPE: Number = 1;
+	//CREATE_UNDISCOVERED: Number = 2;
+	//CREATE_STRIDE: Number = 3;
+	//MARKER_CREATE_PER_FRAME: Number = 10;
+		
+		while (_nextCreateIndex < markersLen && j < dataLen && i < Map.MapMenu.MARKER_CREATE_PER_FRAME) {
+			var markerType = MarkerData[j + Map.MapMenu.CREATE_ICONTYPE];
+			var markerName = MarkerData[j + Map.MapMenu.CREATE_NAME];
+			var isUndiscovered = MarkerData[j + Map.MapMenu.CREATE_UNDISCOVERED];
+			
+			var mapMarker: MovieClip = _markerContainer.attachMovie(Map.MapMarker.ICON_TYPES[markerType], "Marker" + _nextCreateIndex, _nextCreateIndex);
+			_markerList[_nextCreateIndex] = mapMarker;
+		
 
-	function get selectedQuestInstance(): Number
-	{
-		return TitleList.entryList.length <= 0 ? undefined : TitleList.centeredEntry.instance;
-	}
-
-	function handleInput(details: InputDetails, pathToFocus: Array): Boolean
-	{
-		var bhandledInput: Boolean = false;
-		if (GlobalFunc.IsKeyPressed(details)) {
-			if ((details.navEquivalent == NavigationCode.GAMEPAD_X || details.code == 77) && bAllowShowOnMap) 
-			{
-				var quest: Object = undefined;
-				if (ObjectiveList.selectedEntry != undefined && ObjectiveList.selectedEntry.questTargetID != undefined) {
-					quest = ObjectiveList.selectedEntry;
-				} else {
-					quest = ObjectiveList.entryList[0];
-				}
-				if (quest != undefined && quest.questTargetID != undefined) {
-					_parent._parent.CloseMenu();
-					GameDelegate.call("ShowTargetOnMap", [quest.questTargetID]);
-				} else {
-					GameDelegate.call("PlaySound", ["UIMenuCancel"]);
-				}
-				bhandledInput = true;
-			} else if (TitleList.entryList.length > 0) {
-				if (details.navEquivalent == NavigationCode.LEFT && FocusHandler.instance.getFocus(0) != TitleList) {
-					switchFocusToTitles();
-					bhandledInput = true;
-				} else if (details.navEquivalent == NavigationCode.RIGHT && FocusHandler.instance.getFocus(0) != ObjectiveList) {
-					switchFocusToObjectives();
-					bhandledInput = true;
-				}
+			if (markerType == PlayerLocationMarkerType) {
+				YouAreHereMarker = mapMarker.Icon;
+				//For Quest
+				YouAreHere = mapMarker;
 			}
-		}
-		if (!bhandledInput && pathToFocus != undefined && pathToFocus.length > 0) {
-			bhandledInput = pathToFocus[0].handleInput(details, pathToFocus.slice(1));
-		}
-		return bhandledInput;
-	}
 
-	private function isViewingMiscObjectives(): Boolean
-	{
-		return bHasMiscQuests && TitleList.selectedEntry.formID == 0;
-	}
+			
+			
+			mapMarker.index = _nextCreateIndex;
+			mapMarker.label = markerName;				
+			mapMarker.textField._visible = false;
+			mapMarker.visible = false;
+			mapMarker.iconType = markerType;
+			
+				
 
-	function onTitleListSelect(): Void
-	{
-		if (TitleList.selectedEntry != undefined && !TitleList.selectedEntry.completed) {
-			if (!isViewingMiscObjectives()) {
-				GameDelegate.call("ToggleQuestActiveStatus", [TitleList.selectedEntry.formID, TitleList.selectedEntry.instance], this, "onToggleQuestActive");
-				return;
+			
+			// Adding the markers directly so we don't have to create data objects.
+			// NOTE: Make sure internal entry properties (mappedIndex etc) dont conflict with marker properties
+			if (0 < markerType && markerType < Map.LocationFinder.TYPE_RANGE) {
+				_locationFinder.list.entryList.push(mapMarker);
 			}
-			TitleList.selectedEntry.active = !TitleList.selectedEntry.active;
-			GameDelegate.call("ToggleShowMiscObjectives", [TitleList.selectedEntry.active]);
-			TitleList.UpdateList();
-		}
-	}
-
-	function onObjectiveListSelect(): Void
-	{
-		if (isViewingMiscObjectives()) {
-			GameDelegate.call("ToggleQuestActiveStatus", [ObjectiveList.selectedEntry.formID, ObjectiveList.selectedEntry.instance], this, "onToggleQuestActive");
-		}
-	}
-
-	private function switchFocusToTitles(): Void
-	{
-		FocusHandler.instance.setFocus(TitleList, 0);
-		Divider.gotoAndStop("Right");
-		_toggleActiveButton._alpha = 100;
-		ObjectiveList.selectedIndex = -1;
-		if (iPlatform != 0) {
-			ObjectiveList.disableSelection = true;
-		}
-		updateShowOnMapButtonAlpha(0);
-	}
-
-	private function switchFocusToObjectives(): Void
-	{
-		FocusHandler.instance.setFocus(ObjectiveList, 0);
-		Divider.gotoAndStop("Left");
-		_toggleActiveButton._alpha = isViewingMiscObjectives() ? 100 : 50;
-		if (iPlatform != 0) {
-			ObjectiveList.disableSelection = false;
-		}
-		ObjectiveList.selectedIndex = 0;
-		updateShowOnMapButtonAlpha(0);
-	}
-
-	private function onObjectiveListHighlight(event): Void
-	{
-		updateShowOnMapButtonAlpha(event.index);
-	}
-
-	private function updateShowOnMapButtonAlpha(a_entryIdx: Number): Void
-	{
-		var alpha: Number = 50;
-
-		if (bAllowShowOnMap && (a_entryIdx >= 0 && ObjectiveList.entryList[a_entryIdx].questTargetID != undefined) || (ObjectiveList.entryList.length > 0 && ObjectiveList.entryList[0].questTargetID != undefined)) {
-			alpha = 100;
-		}
-		_toggleActiveButton._alpha = ((!TitleList.selectedEntry.completed) ? 100 : 50);
-
-		_showOnMapButton._alpha = alpha;
-	}
-
-	private function onToggleQuestActive(a_bnewActiveStatus: Number): Void
-	{
-		if (isViewingMiscObjectives()) {
-			var iformID: Number = ObjectiveList.selectedEntry.formID;
-			var iinstance: Number = ObjectiveList.selectedEntry.instance;
-			for (var i: String in ObjectiveList.entryList) {
-				if (ObjectiveList.entryList[i].formID == iformID && ObjectiveList.entryList[i].instance == iinstance) {
-					ObjectiveList.entryList[i].active = a_bnewActiveStatus;
-				}
+			
+			if (isUndiscovered && mapMarker.IconClip != undefined) {
+				var depth: Number = mapMarker.IconClip.getNextHighestDepth();
+				mapMarker.IconClip.attachMovie(Map.MapMarker.ICON_TYPES[markerType] + "Undiscovered", "UndiscoveredIcon", depth);
 			}
-			ObjectiveList.UpdateList();
-		} else {
-			TitleList.selectedEntry.active = a_bnewActiveStatus;
-			TitleList.UpdateList();
+			
+			++i;
+			++_nextCreateIndex;
+			
+			j = j + Map.MapMenu.CREATE_STRIDE;
 		}
-		if (a_bnewActiveStatus) {
-			GameDelegate.call("PlaySound", ["UIQuestActive"]);
+		
+		_locationFinder.list.InvalidateData();
+		
+		if (_nextCreateIndex >= markersLen) {
+			_locationFinder.setLoading(false);
+			_nextCreateIndex = -1;
+		}
+	}
+
+	// @API
+	public function RefreshMarkers(): Void
+	{
+		var i: Number = 0;
+		var j: Number = 0;
+		var markersLen: Number = _markerList.length;
+		var dataLen: Number = MarkerData.length;
+		
+		while (i < markersLen && j < dataLen) {
+			var marker: MovieClip = _markerList[i];
+			marker._visible = MarkerData[j + Map.MapMenu.REFRESH_SHOW];
+			if (marker._visible) {
+				marker._x = MarkerData[j + Map.MapMenu.REFRESH_X] * _mapWidth;
+				marker._y = MarkerData[j + Map.MapMenu.REFRESH_Y] * _mapHeight;
+				marker._rotation = MarkerData[j + Map.MapMenu.REFRESH_ROTATION];
+			}
+			++i;
+			j = j + Map.MapMenu.REFRESH_STRIDE;
+		}
+		if (_selectedMarker != undefined) {
+			_markerDescriptionHolder._x = _selectedMarker._x + _markerContainer._x;
+			_markerDescriptionHolder._y = _selectedMarker._y + _markerContainer._y;
+		}
+	}
+
+	// @API
+	public function SetSelectedMarker(a_selectedMarkerIndex: Number): Void
+	{
+		var marker: MovieClip = a_selectedMarkerIndex < 0 ? null : _markerList[a_selectedMarkerIndex];
+		
+		if (marker == _selectedMarker)
+			return;
+			
+		if (_selectedMarker != null) {
+			_selectedMarker.MarkerRollOut();
+			_selectedMarker = null;
+			_markerDescriptionHolder.gotoAndPlay("Hide");
+		}
+		
+		if (marker != null && !_bottomBar.hitTest(_root._xmouse, _root._ymouse) && marker.visible && marker.MarkerRollOver()) {
+			_selectedMarker = marker;
+			_markerDescriptionHolder._visible = true;
+			_markerDescriptionHolder.gotoAndPlay("Show");
 			return;
 		}
-		GameDelegate.call("PlaySound", ["UIQuestInactive"]);
+		_selectedMarker = null;
 	}
 
-	private function onQuestsDataComplete(auiSavedFormID: Number, auiSavedInstance: Number, abAddMiscQuest: Boolean, abMiscQuestActive: Boolean, abAllowShowOnMap: Boolean): Void
+	// @API
+	public function ClickSelectedMarker(): Void
 	{
-		bAllowShowOnMap = abAllowShowOnMap;
-
-		if (abAddMiscQuest)	{
-			TitleList.entryList.push({text: "$MISCELLANEOUS", formID: 0, instance: 0, active: abMiscQuestActive, completed: false, type: 0});
-			bHasMiscQuests = true;
+		if (_selectedMarker != undefined) {
+			_selectedMarker.MarkerClick();
 		}
-		var itimeCompleted: Number = undefined;
-		var bCompleted = false;
-		var bUncompleted = false;
-		
-		for (var i: Number = 0; i < TitleList.entryList.length; i++) {
-			if (TitleList.entryList[i].formID == 0) {
-				// Is a misc quest
-				TitleList.entryList[i].timeIndex = Number.MAX_VALUE;
-			} else {
-				TitleList.entryList[i].timeIndex = i;
-			}
-			if (TitleList.entryList[i].completed) {
-				if (itimeCompleted == undefined) {
-					itimeCompleted = TitleList.entryList[i].timeIndex - 0.5;
-				}
-				bCompleted = true;
-			} else {
-				bUncompleted = true;
-			}
-		}
-		
-		if (itimeCompleted != undefined && bCompleted && bUncompleted) {
-			// i.e. at least one completed and one uncompleted quest in the list
-			TitleList.entryList.push({divider: true, completed: true, timeIndex: itimeCompleted});
-		}
-		TitleList.entryList.sort(completedQuestSort);
-		
-		var isavedIndex: Number = 0;
-
-		for (var i: Number = 0; i < TitleList.entryList.length; i++) {
-			if (TitleList.entryList[i].text != undefined) {
-				TitleList.entryList[i].text = TitleList.entryList[i].text.toUpperCase();
-			}
-			if (TitleList.entryList[i].formID == auiSavedFormID && TitleList.entryList[i].instance == auiSavedInstance) {
-				isavedIndex = i;
-			}
-		}
-
-		TitleList.InvalidateData();
-		TitleList.RestoreScrollPosition(isavedIndex, true);
-		TitleList.UpdateList();
-		onQuestHighlight();
 	}
 
-	function completedQuestSort(aObj1: Object, aObj2: Object): Number
+	// @API
+	public function SetPlatform(a_platform: Number, a_bPS3Switch: Boolean): Void
 	{
-		if (!aObj1.completed && aObj2.completed) 
-		{
-			return -1;
-		}
-		if (aObj1.completed && !aObj2.completed) 
-		{
-			return 1;
-		}
-		if (aObj1.timeIndex < aObj2.timeIndex) 
-		{
-			return -1;
-		}
-		if (aObj1.timeIndex > aObj2.timeIndex) 
-		{
-			return 1;
-		}
-		return 0;
-	}
-
-	function onQuestHighlight(): Void
-	{
-		if (TitleList.entryList.length > 0) {
-			var aCategories: Array = ["Misc", "Main", "MagesGuild", "ThievesGuild", "DarkBrotherhood", "Companion", "Favor", "Daedric", "Misc", "CivilWar", "DLC01", "DLC02"];
-			QuestTitleText.SetText(TitleList.selectedEntry.text);
-			if (TitleList.selectedEntry.objectives == undefined) {
-				GameDelegate.call("RequestObjectivesData", []);
-			}
-			ObjectiveList.entryList = TitleList.selectedEntry.objectives;
-			SetDescriptionText();
-			questTitleEndpieces.gotoAndStop(aCategories[TitleList.selectedEntry.type]);
-			questTitleEndpieces._visible = true;
-			ObjectivesHeader._visible = !isViewingMiscObjectives();
-			ObjectiveList.selectedIndex = -1;
-			ObjectiveList.scrollPosition = 0;
-			if (iPlatform != 0) {
-				ObjectiveList.disableSelection = true;
-			}
-
-			_showOnMapButton._visible = true;
-			updateShowOnMapButtonAlpha(0);
+	
+		if (a_platform == ButtonChange.PLATFORM_PC) {
+			_localMapControls = {keyCode: 38}; // L
+			_journalControls = {name: "Journal", context: Input.CONTEXT_GAMEPLAY};
+			_zoomControls = {keyCode: 283}; // special: mouse wheel
+			_playerLocControls = {keyCode: 18}; // E
+			_setDestControls = {keyCode: 256}; // Mouse1
+			_findLocControls = {keyCode: 33}; // F
 		} else {
-			NoQuestsText.SetText("No Active Quests");
-			DescriptionText.SetText(" ");
-			QuestTitleText.SetText(" ");
-			ObjectiveList.ClearList();
-			questTitleEndpieces._visible = false;
-			ObjectivesHeader._visible = false;
-
-			_showOnMapButton._visible = false;
+			_localMapControls = {keyCode: 278}; // X
+			_journalControls = {keyCode: 270}; // START
+			_zoomControls = [	// LT/RT
+				{keyCode: 280},
+				{keyCode: 281}
+			];
+			_playerLocControls = {keyCode: 279}; // Y
+			_setDestControls = {keyCode: 276}; // A
+			_findLocControls = {keyCode: 273}; // RS
 		}
-		ObjectiveList.InvalidateData();
+		
+		if (_bottomBar != undefined) {
+			
+			_bottomBar.buttonPanel.setPlatform(a_platform, a_bPS3Switch);
+
+			createButtons(a_platform != ButtonChange.PLATFORM_PC);
+		}
+		
+		InputDelegate.instance.isGamepad = a_platform != ButtonChange.PLATFORM_PC;
+		InputDelegate.instance.enableControlFixup(true);
+		
+		_platform = a_platform;
 	}
 
-	function SetDescriptionText(): Void
+	// @API
+	public function SetDateString(a_strDate: String): Void
 	{
-		var iHeaderyOffset: Number = 25;
-		var iObjectiveyOffset: Number = 10;
-		var iObjectiveBorderMaxy: Number = 470;
-		var iObjectiveBorderMiny: Number = 40;
-		DescriptionText.SetText(TitleList.selectedEntry.description);
-		var oCharBoundaries: Object = DescriptionText.getCharBoundaries(DescriptionText.getLineOffset(DescriptionText.numLines - 1));
-		ObjectivesHeader._y = DescriptionText._y + oCharBoundaries.bottom + iHeaderyOffset;
-		if (isViewingMiscObjectives()) {
-			ObjectiveList._y = DescriptionText._y;
-		} else {
-			ObjectiveList._y = ObjectivesHeader._y + ObjectivesHeader._height + iObjectiveyOffset;
-		}
-		ObjectiveList.border._height = Math.max(iObjectiveBorderMaxy - ObjectiveList._y, iObjectiveBorderMiny);
-		ObjectiveList.scrollbar.height = ObjectiveList.border._height - 20;
+		_bottomBar.DateText.SetText(a_strDate);
 	}
 
-	function onTitleListMoveUp(event: Object): Void
+	// @API
+	public function ShowJournal(a_bShow: Boolean): Void
 	{
-		onQuestHighlight();
-		GameDelegate.call("PlaySound", ["UIMenuFocus"]);
-		if (event.scrollChanged == true) {
-			TitleList._parent.gotoAndPlay("moveUp");
-		}
-	}
+				//For quest
+				playerPosition [0] = YouAreHere._x;
+				playerPosition [1] = YouAreHere._y;
+				Shared.coords.SetplayerPosition (playerPosition)
 
-	function onTitleListMoveDown(event: Object): Void
-	{
-		onQuestHighlight();
-		GameDelegate.call("PlaySound", ["UIMenuFocus"]);
-		if (event.scrollChanged == true) {
-			TitleList._parent.gotoAndPlay("moveDown");
+				
+		if (_bottomBar != undefined) {
+			_bottomBar._visible = !a_bShow;
 		}
 	}
 
-	function onTitleListMouseSelectionChange(event: Object): Void
+	// @API
+	public function SetCurrentLocationEnabled(a_bEnabled: Boolean): Void
 	{
-		if (event.keyboardOrMouse == 0 && event.index != -1) {
-			onQuestHighlight();
-			GameDelegate.call("PlaySound", ["UIMenuFocus"]);
+		if (_bottomBar != undefined && _platform == ButtonChange.PLATFORM_PC) {
+			_bottomBar.PlayerLocButton.disabled = !a_bEnabled;
 		}
 	}
+	
+	// @GFx
+	public function handleInput(details: InputDetails, pathToFocus: Array): Boolean
+	{			
+		var nextClip = pathToFocus.shift();
+		if (nextClip.handleInput(details, pathToFocus))
+			return true;
+		
+		// Find Location - L
+		if (_platform == ButtonChange.PLATFORM_PC) {
+			if (GlobalFunc.IsKeyPressed(details) && (details.skseKeycode == 33)) {
+				
 
-	function onRightStickInput(afX: Number, afY: Number): Void
+				
+				
+				
+
+				
+				//For Debugging
+/*	if (Shared.coords.GetplayerPosition [1] == null || Shared.coords.GetplayerPosition [1] == undefined)
+	{LocalMapMenu.showLocationFinder();
+				
+//} else {
+	if (playerPosition [0] == 0) {
+	LocalMapMenu.showLocationFinder();
+}
+}*/
+
+
+
+		} 
+
+	
+	
+	}
+
+		return false;
+	}
+	
+	
+  /* PRIVATE FUNCTIONS */
+	
+	private function OnLocalButtonClick(): Void
 	{
-		if (afY < 0) {
-			ObjectiveList.moveSelectionDown();
+		GameDelegate.call("ToggleMapCallback", []);
+	}
+
+	private function OnJournalButtonClick(): Void
+	{
+					playerPosition [0] = YouAreHere._x;
+				playerPosition [1] = YouAreHere._y;
+				Shared.coords.SetplayerPosition (playerPosition)
+		GameDelegate.call("OpenJournalCallback", []);
+	}
+
+	private function OnPlayerLocButtonClick(): Void
+	{
+		GameDelegate.call("CurrentLocationCallback", []);
+	}
+	
+	private function OnFindLocButtonClick(): Void
+	{
+		LocalMapMenu.showLocationFinder();
+	}
+	
+	private function onMouseDown(): Void
+	{
+		if (_bottomBar.hitTest(_root._xmouse, _root._ymouse))
 			return;
-		}
-		ObjectiveList.moveSelectionUp();
+		GameDelegate.call("ClickCallback", []);
 	}
-
-	function SetPlatform(a_platform: Number, a_bPS3Switch: Boolean): Void
+	
+	private function onResize(): Void
 	{
-		if (a_platform == 0) {
-			_toggleActiveControls = {keyCode: 28}; // Enter
-			_showOnMapControls = {keyCode: 50}; // M
-			_deleteControls = {keyCode: 45}; // X
+		_mapWidth = Stage.visibleRect.right - Stage.visibleRect.left;
+		_mapHeight = Stage.visibleRect.bottom - Stage.visibleRect.top;
+		
+		if (_mapMovie == _root) {
+			_markerContainer._x = Stage.visibleRect.left;
+			_markerContainer._y = Stage.visibleRect.top;
 		} else {
-			_toggleActiveControls = {keyCode: 276}; // 360_A
-			_showOnMapControls = {keyCode: 278}; // 360_X
-			_deleteControls = {keyCode: 278}; // 360_X
+			var localMap: LocalMap = LocalMap(_mapMovie);
+			if (localMap != undefined) {
+				_mapWidth = localMap.TextureWidth;
+				_mapHeight = localMap.TextureHeight;
+			}
+		
 		}
-
-		iPlatform = a_platform;
-		TitleList.SetPlatform(a_platform, a_bPS3Switch);
-		ObjectiveList.SetPlatform(a_platform, a_bPS3Switch);
+		GlobalFunc.SetLockFunction();
+		_bottomBar.Lock("B");
 	}
+	
+	private function createButtons(a_bGamepad: Boolean): Void
+	{
+		var buttonPanel: ButtonPanel = _bottomBar.buttonPanel;
+		buttonPanel.clearButtons();
 
+		_localMapButton =	buttonPanel.addButton({text: "$Local Map", controls: _localMapControls});			// 0
+		_journalButton =	buttonPanel.addButton({text: "$Journal", controls: _journalControls});				// 1
+							buttonPanel.addButton({text: "$Zoom", controls: _zoomControls});					// 2
+		_playerLocButton =	buttonPanel.addButton({text: "$Current Location", controls: _playerLocControls});	// 3
+		_findLocButton =	buttonPanel.addButton({text: "$Find Location", controls: _findLocControls});		// 4
+							buttonPanel.addButton({text: "$Set Destination", controls: _setDestControls});		// 5
+		_searchButton =		buttonPanel.addButton({text: "$Search", controls: Input.Space});					// 6
+		
+		_localMapButton.addEventListener("click", this, "OnLocalButtonClick");
+		_journalButton.addEventListener("click", this, "OnJournalButtonClick");
+		_playerLocButton.addEventListener("click", this, "OnPlayerLocButtonClick");
+		_findLocButton.addEventListener("click", this, "OnFindLocButtonClick");
+		
+		_localMapButton.disabled = a_bGamepad;
+		_journalButton.disabled = a_bGamepad;
+		_playerLocButton.disabled = a_bGamepad;
+		_findLocButton.disabled = a_bGamepad;
+		
+		_findLocButton.visible = !a_bGamepad;
+		_searchButton.visible = false;
+		
+		buttonPanel.updateButtons(true);
+	}
 }
