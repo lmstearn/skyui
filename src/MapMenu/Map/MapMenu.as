@@ -1,4 +1,4 @@
-﻿import gfx.io.GameDelegate;
+import gfx.io.GameDelegate;
 import gfx.ui.NavigationCode;
 import gfx.ui.InputDetails;
 import gfx.managers.FocusHandler;
